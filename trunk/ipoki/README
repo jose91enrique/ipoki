@@ -1,6 +1,0 @@
-Ipoki plugin is a client application for www.ipoki.com site.
-The app reads the phone gps and sends the coordenates to the server, so the user can share his location with his friends, or with the public in general.
-The user provides a login and a password for ipoki.com, and sets the frequency (in seconds) of the calls to the server. When connected, the user can also see messages sent to him, and he can send messages to the site too.
-Registration at Ipoki is free, but we have set up a test user:
-username: android
-passwore: android
