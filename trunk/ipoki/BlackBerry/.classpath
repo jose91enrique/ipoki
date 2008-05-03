@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-	<classpathentry exported="true" kind="lib" path="C:/eclipse3/plugins/net.rim.eide.componentpack4.3.0_4.3.0.8/components/lib/net_rim_api.jar"/>
-	<classpathentry kind="output" path="bin"/>
-</classpath>
