@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="_svn/|com/_svn/|com/hipoqih/_svn/|com/hipoqih/plugin/UI/_svn/|com/hipoqih/plugin/Web/_svn/|com/hipoqih/plugin/_svn/|com/hipoqih/plugin/gps/_svn/|com/hipoqih/plugin/task/_svn/|com/hipoqih/plugin/s60_3rd/_svn/|com/hipoqih/plugin/s60_2nd/|com/hipoqih/plugin/s60_3rd/gps/_svn/" path="src" kind="src"/>
+	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER/com.nokia.phone.tools.sdk.plugin.eclipse.UEIEmulatorType/S60 3rd Edition FP1 SDK for MIDP" kind="con"/>
+	<classpathentry path="bin" kind="output"/>
+</classpath>
