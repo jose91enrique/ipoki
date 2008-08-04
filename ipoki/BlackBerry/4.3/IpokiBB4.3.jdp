@@ -30,13 +30,14 @@ HaveAlxImports=0
 HaveDefs=0
 HaveImports=0
 [Icons
+src\com\ipoki\plugin\blackberry\ipokito.png
 ]
 [ImplicitRules
 ]
 [Imports
 ]
 Listing=0
-Options=-quiet
+Options=-quiet -deprecation
 OutputFileName=Ipoki
 [PackageProtection
 ]
@@ -44,5 +45,12 @@ RibbonPosition=0
 RunOnStartup=0
 StartupTier=7
 SystemModule=0
-Title=Ipoki4.2
+Title=Ipoki for BlackBerry
+TitleResourceBundle=com.ipoki.plugin.blackberry.resource.Ipoki
+TitleResourceBundleDescription=APP_TITLE
+TitleResourceBundleKey=APP_TITLE
+TitleResourceBundleName=Ipoki
+TitleResourceBundlePath=src\com\ipoki\plugin\blackberry\resource\Ipoki.rrh
 Type=0
+Vendor=Ipoki Technologies 
+Version=4.3.01

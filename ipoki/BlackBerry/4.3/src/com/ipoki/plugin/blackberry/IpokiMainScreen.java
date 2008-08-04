@@ -85,9 +85,6 @@ final class IpokiMainScreen extends MainScreen implements IpokiResource
         menu.addSeparator();
         menu.add(invokeSendMessage);
         menu.add(invokeMap);
-        menu.add(test1);
-        menu.add(test2);
-        menu.add(test3);
         //menu.add(invokeFriends);
         //menu.addSeparator();
         //menu.add(invokePositionLog);
@@ -97,36 +94,11 @@ final class IpokiMainScreen extends MainScreen implements IpokiResource
         menu.add(invokeClose);
     }
     
-    MenuItem test1 = new MenuItem("Test1",0,0)
-    {
-        public void run()
-        {
-        	_app.Test1();
-        }        
-    };
-    
-    MenuItem test2 = new MenuItem("Test2",0,0)
-    {
-        public void run()
-        {
-        	_app.Test2();
-        }        
-    };
-    
-    MenuItem test3 = new MenuItem("Test3",0,0)
-    {
-        public void run()
-        {
-        	_app.Test3();
-        }        
-    };
-    
     MenuItem invokeConnect  = new MenuItem(_resources.getString(MNU_CONNECT),0,0)
     {
         public void run()
         {
             _app.connect();
-            
         }        
     };    
     
