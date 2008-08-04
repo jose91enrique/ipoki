@@ -33,6 +33,7 @@ import net.rim.device.api.ui.component.*;
 import net.rim.device.api.i18n.*;
 import net.rim.device.api.xml.parsers.*;
 import net.rim.device.api.util.*;
+import net.rim.device.api.system.CodeModuleManager;
 import com.ipoki.plugin.blackberry.resource.*;
 
 public class Ipoki  extends UiApplication implements IpokiResource
@@ -64,6 +65,7 @@ public class Ipoki  extends UiApplication implements IpokiResource
     static String _pass;
     static int _freq;
     static boolean _isConnected = false;
+    static String _osVersion = DeviceInfo.getSoftwareVersion();
     
     static 
     {
@@ -85,26 +87,6 @@ public class Ipoki  extends UiApplication implements IpokiResource
         }
     }
     
-    public void Test1()
-    {
-    	_listenThread.pause();
-        Test1Screen sc = new Test1Screen(this._lblLatitude.getText(), this._lblLongitude.getText());
-        pushScreen(sc);
-    	_listenThread.go();
-    }
-    
-    public void Test2()
-    {
-        Test2Screen sc = new Test2Screen();
-        pushScreen(sc);
-    }
-
-    public void Test3()
-    {
-        Test3Screen sc = new Test3Screen();
-        pushScreen(sc);
-    }
-
     public void viewOptions()
     {
         SetupScreen setupScreen = new SetupScreen();
@@ -137,251 +119,6 @@ public class Ipoki  extends UiApplication implements IpokiResource
             _freqStore.commit();
             _freq = Integer.parseInt(freq);
         }
-    }
-    
-    private class Test1Screen extends MainScreen
-    {
-        private int _zoom = 3;
-        private String _latitude;
-        private String _longitude;
-        private String _width;
-        private String _height;
-        private EditField _urlLabel;
-        
-        public Test1Screen(String latitude, String longitude) 
-        {
-            _latitude = latitude.substring(0, 6);
-            _longitude = longitude.substring(0, 6);
-            
-            _width = Integer.toString(Graphics.getScreenWidth());
-            _height = Integer.toString(Graphics.getScreenHeight());
-            _urlLabel = new EditField();
-            add(_urlLabel);
-
-            invokeLater(new Runnable() 
-            {
-                public void run()
-                {
-                    showMap();
-                }
-            });
-        }
-        
-        private void showMap()
-        {
-            StreamConnection s = null;
-            try
-            {
-                String url = getUrl(_latitude, _longitude, _width, _height, Integer.toString(_zoom));
-                s = (StreamConnection)Connector.open(url);
-                HttpConnection httpConn = (HttpConnection)s;
-                httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
-                
-                int status = httpConn.getResponseCode();
-                if (status == HttpConnection.HTTP_OK)
-                {
-                    try
-                    {
-                        DocumentBuilder doc = DocumentBuilderFactory.newInstance().newDocumentBuilder(); 
-                        DataInputStream dis = s.openDataInputStream();
-                        Document d = doc.parse(dis);
-                        Element el = d.getDocumentElement();
-                        url = el.getFirstChild().getNodeValue() + ";deviceside=true";
-                        dis.close();
-                    }
-                    catch(SAXException e)
-                    {
-                        System.err.println(e.toString());
-                    }
-                    catch(ParserConfigurationException e)
-                    {
-                        System.err.println(e.toString());
-                    }
-                }
-                
-                _urlLabel.setText(url);
-                
-                s.close();                
-            }
-            catch (java.io.IOException e) 
-            {
-                System.err.println(e.toString());
-            }
-            catch(Exception e)
-            {
-                System.err.println(e.toString());
-            }
-        }
-        
-        private String getUrl(String latitude, String longitude, String width, String height, String zoom)
-        {
-            String url = "http://local.yahooapis.com/MapsService/V1/mapImage?appid=08REOqLV34HybSt1yvZRY7DcL5hbUGyaFpRP.hsVJve.01qb6KWXP78TmIPi_w--" + 
-                    "&latitude=" + latitude + 
-                    "&longitude=" + longitude + 
-                    "&image_height=" + 32 + 
-                    "&image_width=" + 32 + 
-                    "&zoom=" + zoom;
-            return url + ";deviceside=true";
-        }
-        
-
-        protected void makeMenu( Menu menu, int instance )
-        {
-            super.makeMenu(menu, instance);
-        }
-    }
-    
-    
-    private class Test2Screen extends MainScreen
-    {
-        private BitmapField _mapField;
-        
-        public Test2Screen() 
-        {
-            _mapField = new BitmapField();
-            add(_mapField);
-
-            invokeLater(new Runnable() 
-            {
-                public void run()
-                {
-                    showMap();
-                }
-            });
-        }
-        
-        private void showMap()
-        {
-        	InputStream input = null;
-        	byte[] data = new byte[3771];
-        	try
-        	{
-                _mapField.setBitmap(Bitmap.getBitmapResource("mapimage.png"));
-                this.invalidate();
-        	}
-        	catch(IllegalArgumentException e)
-        	{
-        		System.err.println(e.toString());
-        	}
-        	
-        	/*StreamConnection s = null;
-            try
-            {
-               String url = "http://gws.maps.yahoo.com/mapimage?MAPDATA=EPR93.d6wXUKRCCveKnn9tCtml6zw_1C8IoE9yD6z027KI6tiuJBU8wLpcmsQTngCg2Egz1hFeyISUfINW1xFY8h6gz3KNJh_w0zDzR3o7RUqJNwLJEdLqWVPNd9NTM2PPSrFE1nidB9L1B5pw--&mvt=m?cltype=onnetwork&.intl=us;deviceside=true";
-                
-                s = (StreamConnection)Connector.open(url);
-                HttpConnection httpConn = (HttpConnection)s;
-                httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
-                
-                int status = httpConn.getResponseCode();
-                if (status == HttpConnection.HTTP_OK)
-                {
-                    java.io.InputStream input = s.openInputStream();
-                    byte[] data = new byte[1];
-                    ByteVector bv = new ByteVector();
-                    while ( -1 != input.read(data) )
-                    {
-                        bv.addElement(data[0]);
-                    }                    
-                    try
-                    {
-                        _mapField.setBitmap(Bitmap.createBitmapFromPNG(bv.getArray(), 0, -1));
-                        this.invalidate();
-                    }
-                    catch(Exception e)
-                    {
-                        System.err.println(e.toString());
-                    }
-                    input.close();
-                }
-                s.close();                
-            }
-            catch (java.io.IOException e) 
-            {
-                System.err.println(e.toString());
-            }
-            catch(Exception e)
-            {
-                System.err.println(e.toString());
-            }*/
-        }
-        
-        protected void makeMenu( Menu menu, int instance )
-        {
-            super.makeMenu(menu, instance);
-        }
-
-    }
-    
-    private class Test3Screen extends MainScreen
-    {
-        private BitmapField _mapField;
-        
-        public Test3Screen() 
-        {
-            _mapField = new BitmapField();
-            add(_mapField);
-
-            invokeLater(new Runnable() 
-            {
-                public void run()
-                {
-                    showMap();
-                }
-            });
-        }
-        
-        private void showMap()
-        {
-            StreamConnection s = null;
-            try
-            {
-                String url = "http://gws.maps.yahoo.com/mapimage?MAPDATA=EPR93.d6wXUKRCCveKnn9tCtml6zw_1C8IoE9yD6z027KI6tiuJBU8wLpcmsQTngCg2Egz1hFeyISUfINW1xFY8h6gz3KNJh_w0zDzR3o7RUqJNwLJEdLqWVPNd9NTM2PPSrFE1nidB9L1B5pw--&mvt=m?cltype=onnetwork&.intl=us;deviceside=true";
-                
-                s = (StreamConnection)Connector.open(url);
-                HttpConnection httpConn = (HttpConnection)s;
-                httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
-                
-                int status = httpConn.getResponseCode();
-                if (status == HttpConnection.HTTP_OK)
-                {
-                    java.io.InputStream input = s.openInputStream();
-                    byte[] data = new byte[5000];
-                    //ByteVector bv = new ByteVector();
-                    while ( -1 != input.read(data) )
-                    {
-                        //bv.addElement(data[0]);
-                        
-                    }
-                    try
-                    {
-                        //_mapField.setBitmap(Bitmap.createBitmapFromPNG(bv.getArray(), 0, -1));
-                        _mapField.setBitmap(Bitmap.createBitmapFromPNG(data, 0, -1));
-                        this.invalidate();
-                    }
-                    catch(Exception e)
-                    {
-                        System.err.println(e.toString());
-                    }
-                    input.close();
-                }
-                s.close();                
-            }
-            catch (java.io.IOException e) 
-            {
-                System.err.println(e.toString());
-            }
-            catch(Exception e)
-            {
-                System.err.println(e.toString());
-            }
-        }
-        
-        protected void makeMenu( Menu menu, int instance )
-        {
-            super.makeMenu(menu, instance);
-        }
-
     }
     
     private class MapScreen extends MainScreen
@@ -691,8 +428,8 @@ public class Ipoki  extends UiApplication implements IpokiResource
     public void showAbout()
     {
         Bitmap bitmap = Bitmap.getBitmapResource("ipokito.png");
-        Dialog about = new Dialog(Dialog.D_OK, "Ipoki Plugin for BlackBerry", 0, bitmap, 0);
-        LabelField text1 = new LabelField("Ipoki Technologies S.L.");
+        Dialog about = new Dialog(Dialog.D_OK, _resources.getString(APP_TITLE), 0, bitmap, 0);
+        LabelField text1 = new LabelField(_resources.getString(APP_COMPANY));
         about.add(text1);
         pushScreen(about);
     }
@@ -822,6 +559,17 @@ public class Ipoki  extends UiApplication implements IpokiResource
                 _gauge.setValue(i);
             }
         });
+    }
+    
+    private static String getOSVersion()
+    {
+    	String version = "Unknown";
+    	int handle = CodeModuleManager.getModuleHandle( "net_rim_bb_browser_daemon" );
+    	if( handle != 0 ){
+    	    version = CodeModuleManager.getModuleVersion( handle );
+    	}
+    	
+    	return version;
     }
 } 
 
