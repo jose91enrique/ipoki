@@ -35,7 +35,7 @@ import net.rim.device.api.xml.parsers.*;
 import net.rim.device.api.util.*;
 import com.ipoki.plugin.blackberry.resource.*;
 
-public class IpokiPlugin  extends UiApplication implements IpokiPluginResource
+public class Ipoki  extends UiApplication implements IpokiResource
 {
     IpokiMainScreen _mainScreen;
 
@@ -175,7 +175,7 @@ public class IpokiPlugin  extends UiApplication implements IpokiPluginResource
                 String url = getUrl(_latitude, _longitude, _width, _height, Integer.toString(_zoom));
                 s = (StreamConnection)Connector.open(url);
                 HttpConnection httpConn = (HttpConnection)s;
-                httpConn.setRequestProperty("User-Agent", "IpokiPlugin/BlackBerry/0.1");
+                httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
                 
                 int status = httpConn.getResponseCode();
                 if (status == HttpConnection.HTTP_OK)
@@ -271,7 +271,7 @@ public class IpokiPlugin  extends UiApplication implements IpokiPluginResource
                 
                 s = (StreamConnection)Connector.open(url);
                 HttpConnection httpConn = (HttpConnection)s;
-                httpConn.setRequestProperty("User-Agent", "IpokiPlugin/BlackBerry/0.1");
+                httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
                 
                 int status = httpConn.getResponseCode();
                 if (status == HttpConnection.HTTP_OK)
@@ -340,7 +340,7 @@ public class IpokiPlugin  extends UiApplication implements IpokiPluginResource
                 
                 s = (StreamConnection)Connector.open(url);
                 HttpConnection httpConn = (HttpConnection)s;
-                httpConn.setRequestProperty("User-Agent", "IpokiPlugin/BlackBerry/0.1");
+                httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
                 
                 int status = httpConn.getResponseCode();
                 if (status == HttpConnection.HTTP_OK)
@@ -420,7 +420,7 @@ public class IpokiPlugin  extends UiApplication implements IpokiPluginResource
                 String url = getUrl(_latitude, _longitude, _width, _height, Integer.toString(_zoom));
                 s = (StreamConnection)Connector.open(url);
                 HttpConnection httpConn = (HttpConnection)s;
-                httpConn.setRequestProperty("User-Agent", "IpokiPlugin/BlackBerry/0.1");
+                httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
                 
                 int status = httpConn.getResponseCode();
                 if (status == HttpConnection.HTTP_OK)
@@ -446,7 +446,7 @@ public class IpokiPlugin  extends UiApplication implements IpokiPluginResource
                 
                 s = (StreamConnection)Connector.open(url);
                 httpConn = (HttpConnection)s;
-                httpConn.setRequestProperty("User-Agent", "IpokiPlugin/BlackBerry/0.1");
+                httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
                 
                 status = httpConn.getResponseCode();
                 if (status == HttpConnection.HTTP_OK)
@@ -492,7 +492,7 @@ public class IpokiPlugin  extends UiApplication implements IpokiPluginResource
             return url + ";deviceside=true";
         }
         
-        private MenuItem _zoomIn = new MenuItem(IpokiPlugin._resources, MNU_ZOOMIN, 200000, 10) {
+        private MenuItem _zoomIn = new MenuItem(Ipoki._resources, MNU_ZOOMIN, 200000, 10) {
             public void run()
             {   
                 if (_zoom > 1)
@@ -509,7 +509,7 @@ public class IpokiPlugin  extends UiApplication implements IpokiPluginResource
             }
         };
         
-        private MenuItem _zoomOut = new MenuItem(IpokiPlugin._resources, MNU_ZOOMOUT, 200000, 10) {
+        private MenuItem _zoomOut = new MenuItem(Ipoki._resources, MNU_ZOOMOUT, 200000, 10) {
             public void run()
             {
                 if (_zoom < 12)
@@ -545,14 +545,14 @@ public class IpokiPlugin  extends UiApplication implements IpokiPluginResource
         
         public MessageScreen(String last) 
         {    
-            _messageLabel = new LabelField(IpokiPlugin._resources.getString(LBL_MESSAGE), DrawStyle.ELLIPSIS);
+            _messageLabel = new LabelField(Ipoki._resources.getString(LBL_MESSAGE), DrawStyle.ELLIPSIS);
             Font font = _messageLabel.getFont();
             Font newFont = font.derive(Font.BOLD);
             _messageLabel.setFont(newFont);
             add(_messageLabel);
             _messageEdit = new EditField("", "", 144, Field.EDITABLE);
             add(_messageEdit);
-            _lastLabel = new LabelField(IpokiPlugin._resources.getString(LBL_LAST_MESSAGE), DrawStyle.ELLIPSIS);
+            _lastLabel = new LabelField(Ipoki._resources.getString(LBL_LAST_MESSAGE), DrawStyle.ELLIPSIS);
             font = _lastLabel.getFont();
             newFont = font.derive(Font.BOLD);
             _lastLabel.setFont(newFont);
@@ -561,14 +561,14 @@ public class IpokiPlugin  extends UiApplication implements IpokiPluginResource
             add(_lastMessageLabel);
         }
         
-        private MenuItem _cancel = new MenuItem(IpokiPlugin._resources, MNU_CANCEL,  300000, 10) {
+        private MenuItem _cancel = new MenuItem(Ipoki._resources, MNU_CANCEL,  300000, 10) {
             public void run()
             {
                  MessageScreen.this.close();
             }
         };  
         
-        private MenuItem _send = new MenuItem(IpokiPlugin._resources, MNU_SEND, 200000, 10) {
+        private MenuItem _send = new MenuItem(Ipoki._resources, MNU_SEND, 200000, 10) {
             public void run()
             {   
                 _messageToSend = _messageEdit.getText();
@@ -597,28 +597,28 @@ public class IpokiPlugin  extends UiApplication implements IpokiPluginResource
         
         public SetupScreen() 
         {    
-            _userLabel = new LabelField(IpokiPlugin._resources.getString(LBL_USER), DrawStyle.ELLIPSIS);
+            _userLabel = new LabelField(Ipoki._resources.getString(LBL_USER), DrawStyle.ELLIPSIS);
             add(_userLabel);
-            _userEdit = new EditField("", IpokiPlugin._user, 20, Field.EDITABLE);
+            _userEdit = new EditField("", Ipoki._user, 20, Field.EDITABLE);
             add(_userEdit);
-            _passLabel = new LabelField(IpokiPlugin._resources.getString(LBL_PASSWORD), DrawStyle.ELLIPSIS);
+            _passLabel = new LabelField(Ipoki._resources.getString(LBL_PASSWORD), DrawStyle.ELLIPSIS);
             add(_passLabel);
-            _passEdit = new PasswordEditField("", IpokiPlugin._pass, 20, Field.EDITABLE);
+            _passEdit = new PasswordEditField("", Ipoki._pass, 20, Field.EDITABLE);
             add(_passEdit);
-            _freqLabel = new LabelField(IpokiPlugin._resources.getString(LBL_FREQ), DrawStyle.ELLIPSIS);
+            _freqLabel = new LabelField(Ipoki._resources.getString(LBL_FREQ), DrawStyle.ELLIPSIS);
             add(_freqLabel);
-            _freqEdit = new EditField("", String.valueOf(IpokiPlugin._freq), 20, Field.EDITABLE | EditField.FILTER_INTEGER);
+            _freqEdit = new EditField("", String.valueOf(Ipoki._freq), 20, Field.EDITABLE | EditField.FILTER_INTEGER);
             add(_freqEdit);
         }
         
-        private MenuItem _cancel = new MenuItem(IpokiPlugin._resources, MNU_CANCEL,  300000, 10) {
+        private MenuItem _cancel = new MenuItem(Ipoki._resources, MNU_CANCEL,  300000, 10) {
             public void run()
             {
                  SetupScreen.this.close();
             }
         };  
         
-        private MenuItem _save = new MenuItem(IpokiPlugin._resources, MNU_SAVE, 200000, 10) {
+        private MenuItem _save = new MenuItem(Ipoki._resources, MNU_SAVE, 200000, 10) {
             public void run()
             {   
                 invokeLater(new Runnable() 
@@ -628,8 +628,8 @@ public class IpokiPlugin  extends UiApplication implements IpokiPluginResource
                         _lblUser.setText(_userEdit.getText());
                     }
                 });    
-                IpokiPlugin.saveOptions(_userEdit.getText(), _passEdit.getText(), _freqEdit.getText());
-                IpokiPlugin.this.popScreen(SetupScreen.this);
+                Ipoki.saveOptions(_userEdit.getText(), _passEdit.getText(), _freqEdit.getText());
+                Ipoki.this.popScreen(SetupScreen.this);
             }
         };
         
@@ -649,11 +649,11 @@ public class IpokiPlugin  extends UiApplication implements IpokiPluginResource
     // App entry point
     public static void main(String[] args)
     {
-        IpokiPlugin app = new IpokiPlugin();
+        Ipoki app = new Ipoki();
         app.enterEventDispatcher();
     }
     
-    public IpokiPlugin()
+    public Ipoki()
     {
         _mainScreen = new IpokiMainScreen();
         _label = new LabelField("");
