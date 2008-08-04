@@ -65,7 +65,7 @@ public class Ipoki  extends UiApplication implements IpokiResource
     static String _pass;
     static int _freq;
     static boolean _isConnected = false;
-    static String _osVersion = DeviceInfo.getSoftwareVersion();
+    static String _osVersion = getOSVersion();
     
     static 
     {
@@ -429,8 +429,10 @@ public class Ipoki  extends UiApplication implements IpokiResource
     {
         Bitmap bitmap = Bitmap.getBitmapResource("ipokito.png");
         Dialog about = new Dialog(Dialog.D_OK, _resources.getString(APP_TITLE), 0, bitmap, 0);
-        LabelField text1 = new LabelField(_resources.getString(APP_COMPANY));
+        LabelField text1 = new LabelField("OS Version: " + _osVersion);
+        LabelField text2 = new LabelField(_resources.getString(APP_COMPANY));
         about.add(text1);
+        about.add(text2);
         pushScreen(about);
     }
     
