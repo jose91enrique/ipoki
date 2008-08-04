@@ -23,11 +23,11 @@ public class ListenThread extends Thread
     private volatile boolean _running = false;
     private volatile boolean _isPaused = false;
 
-    IpokiPlugin _app;
+    Ipoki _app;
 
     public ListenThread()
     {
-        _app = (IpokiPlugin)UiApplication.getUiApplication();
+        _app = (Ipoki)UiApplication.getUiApplication();
     }
     // Resume execution after pause
     public void go()
@@ -98,11 +98,11 @@ public class ListenThread extends Thread
                     }
                     break;
                 }
-                _app._connectionThread.ear(IpokiPlugin._idUser, _app._lblLatitude.getText(), _app._lblLongitude.getText(), "");
+                _app._connectionThread.ear(Ipoki._idUser, _app._lblLatitude.getText(), _app._lblLongitude.getText(), "");
 
                 try 
                 {
-                    int freqMilsec = IpokiPlugin._freq * 1000;
+                    int freqMilsec = Ipoki._freq * 1000;
                     this.sleep(freqMilsec); //wait for a bit
                 } catch (InterruptedException e) {
                     System.err.println(e.toString());

@@ -8,13 +8,12 @@
 package com.ipoki.plugin.blackberry;
 
 import com.ipoki.plugin.blackberry.resource.*;
-import java.lang.*;
 import javax.microedition.io.*;
 import net.rim.device.api.i18n.*;
 import net.rim.device.api.ui.*;
 import net.rim.device.api.ui.component.Dialog;
 
-public class ConnectionThread extends Thread implements IpokiPluginResource
+public class ConnectionThread extends Thread implements IpokiResource
 {
     private static ResourceBundle _resources = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
     private static final int TIMEOUT = 500;
@@ -34,11 +33,11 @@ public class ConnectionThread extends Thread implements IpokiPluginResource
     private volatile boolean _start = false;
     private volatile boolean _stop = false;
     
-    IpokiPlugin _app;
+    Ipoki _app;
     
     public ConnectionThread()
     {
-        _app = (IpokiPlugin)UiApplication.getUiApplication();
+        _app = (Ipoki)UiApplication.getUiApplication();
     }
         
     public synchronized String getUrl()
@@ -64,7 +63,7 @@ public class ConnectionThread extends Thread implements IpokiPluginResource
                 {
                     public void run()
                     {
-                        _app._lblStatus.setText(IpokiPlugin._resources.getString(LBL_CONNECTING));                
+                        _app._lblStatus.setText(Ipoki._resources.getString(LBL_CONNECTING));                
                     }
                 });    
                 _start = true;
@@ -168,7 +167,7 @@ public class ConnectionThread extends Thread implements IpokiPluginResource
                     System.err.println("open conn");
                     s = (StreamConnection)Connector.open(getUrl(), Connector.READ, true);
                     HttpConnection httpConn = (HttpConnection)s;
-                    httpConn.setRequestProperty("User-Agent", "IpokiPlugin/BlackBerry/0.1");
+                    httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
                     
                     int status = httpConn.getResponseCode();
                     if (status == HttpConnection.HTTP_OK)
@@ -224,21 +223,21 @@ public class ConnectionThread extends Thread implements IpokiPluginResource
                 {
                     public void run()
                     {
-                        Dialog.alert(IpokiPlugin._resources.getString(LBL_LOGIN_ERROR));
+                        Dialog.alert(Ipoki._resources.getString(LBL_LOGIN_ERROR));
                     }
                 });    
                 return;
             }
                 
-            IpokiPlugin._idUser = (String)messages.elementAt(1);
+            Ipoki._idUser = (String)messages.elementAt(1);
             _app._listenThread.go();
 
             _app.invokeLater(new Runnable() 
             {
                 public void run()
                 {
-                    IpokiPlugin._isConnected = true;
-                    _app._lblStatus.setText(IpokiPlugin._resources.getString(LBL_CONNECTED));                
+                    Ipoki._isConnected = true;
+                    _app._lblStatus.setText(Ipoki._resources.getString(LBL_CONNECTED));                
                 }
             });    
         }
@@ -263,8 +262,8 @@ public class ConnectionThread extends Thread implements IpokiPluginResource
             {
                 public void run()
                 {
-                    IpokiPlugin._isConnected = false;
-                    _app._lblStatus.setText(IpokiPlugin._resources.getString(LBL_DISCONNECTED));
+                    Ipoki._isConnected = false;
+                    _app._lblStatus.setText(Ipoki._resources.getString(LBL_DISCONNECTED));
                     //_app.popScreen(_app._gaugeScreen);
                 }
             });    

@@ -13,20 +13,20 @@ import net.rim.device.api.ui.container.*;
 import net.rim.device.api.i18n.*;
 import com.ipoki.plugin.blackberry.resource.*;
 
-final class IpokiMainScreen extends MainScreen implements IpokiPluginResource
+final class IpokiMainScreen extends MainScreen implements IpokiResource
 {
     static ResourceBundle _resources = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
     
-    IpokiPlugin _app;
+    Ipoki _app;
     
 
     public IpokiMainScreen()
     {
         super(DEFAULT_MENU | DEFAULT_CLOSE);
         setTitle(_resources.getString(APP_TITLE));
-        _app = (IpokiPlugin)UiApplication.getUiApplication();
+        _app = (Ipoki)UiApplication.getUiApplication();
         
-        _app._lblUser = new LabelField(IpokiPlugin._user);
+        _app._lblUser = new LabelField(Ipoki._user);
         Font font = _app._lblUser.getFont();
         Font newFont = font.derive(Font.BOLD);
         _app._lblUser.setFont(newFont);
@@ -150,7 +150,7 @@ final class IpokiMainScreen extends MainScreen implements IpokiPluginResource
     {
         public void run()
         {
-            if (IpokiPlugin._isConnected)
+            if (Ipoki._isConnected)
                 _app.showMap();
         }        
     };    
