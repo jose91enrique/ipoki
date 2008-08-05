@@ -31,7 +31,7 @@ public class ConnectionThread extends Thread implements IpokiResource
     private static final int MYFRIENDS_S = 4;
     private int _urlType = 0;
     private volatile boolean _start = false;
-    private volatile boolean _stop = false;
+    private volatile boolean _stop = false; 
     
     Ipoki _app;
     

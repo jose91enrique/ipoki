@@ -1,7 +1,7 @@
 ## RIM Java Development Environment
 # RIM Project file
 AddOn=0
-AlwaysBuild=0
+AlwaysBuild=1
 [AlxImports
 ]
 AutoRestart=0
@@ -30,13 +30,14 @@ HaveAlxImports=0
 HaveDefs=0
 HaveImports=0
 [Icons
+src\com\ipoki\plugin\blackberry\ipokito.png
 ]
 [ImplicitRules
 ]
 [Imports
 ]
 Listing=0
-Options=-quiet
+Options=-quiet -deprecation
 OutputFileName=Ipoki
 [PackageProtection
 ]
@@ -45,4 +46,10 @@ RunOnStartup=0
 StartupTier=7
 SystemModule=0
 Title=Ipoki4.2
+TitleResourceBundle=com.ipoki.plugin.blackberry.resource.Ipoki
+TitleResourceBundleKey=APP_TITLE
+TitleResourceBundleName=Ipoki
+TitleResourceBundlePath=src\com\ipoki\plugin\blackberry\resource\Ipoki.rrh
 Type=0
+Vendor=Ipoki Technologies S.L.
+Version=4.2.1
