@@ -7,7 +7,6 @@
 
 package com.ipoki.plugin.blackberry;
 
-import java.lang.*;
 import net.rim.device.api.ui.*;
 
 /*
@@ -103,7 +102,7 @@ public class ListenThread extends Thread
                 try 
                 {
                     int freqMilsec = Ipoki._freq * 1000;
-                    this.sleep(freqMilsec); //wait for a bit
+                    Thread.sleep(freqMilsec); //wait for a bit
                 } catch (InterruptedException e) {
                     System.err.println(e.toString());
                 }

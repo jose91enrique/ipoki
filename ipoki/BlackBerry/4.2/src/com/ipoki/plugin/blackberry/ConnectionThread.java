@@ -33,7 +33,7 @@ public class ConnectionThread extends Thread implements IpokiResource
     private volatile boolean _start = false;
     private volatile boolean _stop = false; 
     
-    Ipoki _app;
+    private Ipoki _app;
     
     public ConnectionThread()
     {

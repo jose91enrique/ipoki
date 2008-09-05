@@ -1,6 +1,6 @@
 /*
  * Created by Javier Cancela
- * Copyright (C) 2007 hipoqih.com, All Rights Reserved.
+ * Copyright (C) 2007 ipoki.com, All Rights Reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -47,11 +47,15 @@ public class Ipoki  extends UiApplication implements IpokiResource
     String _lastMessageSent = "";
     String _messageToSend = "";
 
+    ConnectionThread _connectionThread = new ConnectionThread();
+    ListenThread _listenThread = new ListenThread();
 
     LabelField _lblStatus;
     LabelField _lblUser;
     LabelField _lblLongitude;
     LabelField _lblLatitude;
+    LabelField _lblAltitude;
+    LabelField _lblSpeed;
     LabelField _lblCommentSent;
     
     static int _interval = 1; //seconds - this is the period of position query
@@ -68,6 +72,7 @@ public class Ipoki  extends UiApplication implements IpokiResource
     static String _osVersion = getOSVersion();
     static String _ipokiVersion = ApplicationDescriptor.currentApplicationDescriptor().getVersion();
     
+    // Restore user preferences
     static 
     {
         _userStore = PersistentStore.getPersistentObject(0x57faa02a62ef6e45L);
@@ -88,39 +93,285 @@ public class Ipoki  extends UiApplication implements IpokiResource
         }
     }
     
+    // App entry point, create Ipoki instance and enters event dispatcher
+    public static void main(String[] args)
+    {
+        Ipoki app = new Ipoki();
+        app.enterEventDispatcher();
+    }
+   
+    // Launch connection and listen threads here.
+    // Ask for user data if not in persistent store 
+    public Ipoki()
+    {
+        _mainScreen = new IpokiMainScreen();
+        _label = new LabelField("");
+        _mainScreen.add(_label);
+        _gaugeScreen = new PopupScreen(new VerticalFieldManager());
+        _gauge = new GaugeField("", 0, 9, 0, GaugeField.LABEL_AS_PROGRESS);
+        _gaugeScreen.add(_gauge);
+
+        
+        //start the helper threads
+        _connectionThread.start();
+        _listenThread.start();
+        
+        // Show main screen
+        pushScreen(_mainScreen);
+
+        // If persistent store is empty, show setup screen
+        if (_user == "")
+        {
+            SetupScreen setupScreen = new SetupScreen();
+            pushScreen(setupScreen);
+        }
+        
+        // Start retrieving location data
+        startLocationUpdate();
+    }
+    
+    // Looks for a location provider. Exits app if no provider is found.
+    private void startLocationUpdate()
+    {
+        try 
+        {
+            _locationProvider = LocationProvider.getInstance(null);
+            
+            if ( _locationProvider == null ) 
+            {
+                // We would like to display a dialog box indicating that GPS isn't supported, but because
+                // the event-dispatcher thread hasn't been started yet, modal screens cannot be pushed onto
+                // the display stack.  So delay this operation until the event-dispatcher thread is running
+                // by asking it to invoke the following Runnable object as soon as it can.
+                Runnable showGpsUnsupportedDialog = new Runnable() 
+                {
+                    public void run() 
+                    {
+                        Dialog.alert("GPS is not supported on this platform, exiting...");
+                        System.exit( 1 );
+                    }
+                };
+                invokeLater( showGpsUnsupportedDialog );  // ask event-dispatcher thread to display dialog ASAP
+            } 
+            else 
+            {
+                // only a single listener can be associated with a provider, and unsetting it involves the same
+                // call but with null, therefore, no need to cache the listener instance
+                _locationProvider.setLocationListener(new LocationListenerImpl(), _interval, 1, 1);
+            }
+        } catch (LocationException le) {
+            System.err.println("Failed to instantiate the LocationProvider object, exiting...");
+            System.err.println(le); 
+            System.exit(0);
+        }        
+    }
+
+    // This class is called from the location provider
+    private class LocationListenerImpl implements LocationListener
+    {
+    	// New location sent
+        public void locationUpdated(LocationProvider provider, Location location)
+        {
+        	// If valid, we get the data
+            if(location.isValid())
+            {
+                UpdateLocation(location);
+            }
+        }
+  
+        // We discard provider state changes
+        public void providerStateChanged(LocationProvider provider, int newState)
+        {
+        }        
+    }
+    
+    /* 
+     * We update the interface with the new location 
+     * in a different thread, to return this method as soon
+     * as possible
+     */ 
+    private void UpdateLocation(final Location location)
+    {
+        invokeLater(new Runnable() 
+        {
+            public void run()
+            {
+                double longitude = location.getQualifiedCoordinates().getLongitude();
+                double latitude = location.getQualifiedCoordinates().getLatitude();
+                float altitude = location.getQualifiedCoordinates().getAltitude();
+                float speed = location.getSpeed();                
+                _lblLongitude.setText(String.valueOf(longitude));
+                _lblLatitude.setText(String.valueOf(latitude));
+                _lblAltitude.setText(String.valueOf(altitude));
+                _lblSpeed.setText(String.valueOf(speed));
+            }
+        });    
+    }
+    
+    /*
+     * Screen to set user preferences. Shown the first time the user launches
+     * the app, and when selecting the options menu at the main screen
+     */
+    private class SetupScreen extends MainScreen
+    {
+        private LabelField _userLabel;
+        private EditField _userEdit;
+        private LabelField _passLabel;
+        private PasswordEditField _passEdit;
+        private LabelField _freqLabel;
+        private EditField _freqEdit;
+        
+        /*
+         * We load the previous settings.
+         * By now the only settings are user, password and server connection frequency
+         */
+        public SetupScreen() 
+        {    
+            _userLabel = new LabelField(Ipoki._resources.getString(LBL_USER), DrawStyle.ELLIPSIS);
+            add(_userLabel);
+            _userEdit = new EditField("", Ipoki._user, 20, Field.EDITABLE);
+            add(_userEdit);
+            _passLabel = new LabelField(Ipoki._resources.getString(LBL_PASSWORD), DrawStyle.ELLIPSIS);
+            add(_passLabel);
+            _passEdit = new PasswordEditField("", Ipoki._pass, 20, Field.EDITABLE);
+            add(_passEdit);
+            _freqLabel = new LabelField(Ipoki._resources.getString(LBL_FREQ), DrawStyle.ELLIPSIS);
+            add(_freqLabel);
+            _freqEdit = new EditField("", String.valueOf(Ipoki._freq), 20, Field.EDITABLE | EditField.FILTER_INTEGER);
+            add(_freqEdit);
+        }
+        
+        private MenuItem _cancel = new MenuItem(Ipoki._resources, MNU_CANCEL,  300000, 10) {
+            public void run()
+            {
+                 SetupScreen.this.close();
+            }
+        };  
+        
+        private MenuItem _save = new MenuItem(Ipoki._resources, MNU_SAVE, 200000, 10) {
+            public void run()
+            {   
+            	// As always, update ui from a different thread
+                invokeLater(new Runnable() 
+                {
+                    public void run()
+                    {
+                        _lblUser.setText(_userEdit.getText());
+                    }
+                });    
+                
+                // Save at persistent store
+                saveOptions(_userEdit.getText(), _passEdit.getText(), _freqEdit.getText());
+                popScreen(SetupScreen.this);
+            }
+        };
+         
+        protected void makeMenu( Menu menu, int instance )
+        {
+            menu.add(_save);
+            menu.add(_cancel);
+            
+            super.makeMenu(menu, instance);
+        }
+    }
+
+    /*
+     * We write the preferences in the persistent store
+     */
+    public void saveOptions(String user, String pass, String freq)
+    {
+        _userStore.setContents(user);
+        _userStore.commit();
+        _user = user;
+
+        _passStore.setContents(pass);
+        _passStore.commit();
+        _pass = pass;
+        
+        _freqStore.setContents(freq);
+        _freqStore.commit();
+        _freq = Integer.parseInt(freq);
+    }
+    
+    /*
+     * Called from IpokiMainScreen to change user preferences
+     */
     public void viewOptions()
     {
         SetupScreen setupScreen = new SetupScreen();
         pushScreen(setupScreen);
     }
     
+    /*
+     * Screen to send a message to the server. 
+     */
+    private class MessageScreen extends MainScreen
+    {
+        private LabelField _messageLabel;
+        private EditField _messageEdit;
+        private LabelField _lastLabel;
+        private LabelField _lastMessageLabel;
+        
+        public MessageScreen(String last) 
+        {    
+            _messageLabel = new LabelField(Ipoki._resources.getString(LBL_MESSAGE), DrawStyle.ELLIPSIS);
+            Font font = _messageLabel.getFont();
+            Font newFont = font.derive(Font.BOLD);
+            _messageLabel.setFont(newFont);
+            add(_messageLabel);
+            _messageEdit = new EditField("", "", 144, Field.EDITABLE);
+            add(_messageEdit);
+            _lastLabel = new LabelField(Ipoki._resources.getString(LBL_LAST_MESSAGE), DrawStyle.ELLIPSIS);
+            font = _lastLabel.getFont();
+            newFont = font.derive(Font.BOLD);
+            _lastLabel.setFont(newFont);
+            add(_lastLabel);
+            _lastMessageLabel = new LabelField(last, DrawStyle.ELLIPSIS);
+            add(_lastMessageLabel);
+        }
+        
+        private MenuItem _cancel = new MenuItem(Ipoki._resources, MNU_CANCEL,  300000, 10) {
+            public void run()
+            {
+                 MessageScreen.this.close();
+            }
+        };  
+        
+        private MenuItem _send = new MenuItem(Ipoki._resources, MNU_SEND, 200000, 10) {
+            public void run()
+            {   
+            	/* 
+            	 * The connection thread reads _messageToSend when sending the location
+            	 * to the server. If not empty, it sends the message with the location,
+            	 * and them empties _messageToSend. So we need to synchronize the writing
+            	 */
+            	synchronized(Ipoki.this)
+            	{
+            		_messageToSend = _messageEdit.getText();
+            	}
+                MessageScreen.this.close();
+            }
+        };
+        
+        protected void makeMenu( Menu menu, int instance )
+        {
+            menu.add(_send);
+            menu.add(_cancel);
+            
+            super.makeMenu(menu, instance);
+        }
+    }
+
+    /*
+     * Called from IpokiMainScreen to send a message
+     */
     public void sendMessage()
     {
         MessageScreen messageScreen = new MessageScreen(_lastMessageSent);
         pushScreen(messageScreen);
     }
     
-    static void saveOptions(String user, String pass, String freq)
-    {
-        synchronized(_userStore)
-        {
-            _userStore.setContents(user);
-            _userStore.commit();
-            _user = user;
-        }
-        synchronized(_passStore)
-        {
-            _passStore.setContents(pass);
-            _passStore.commit();
-            _pass = pass;
-        }
-        synchronized(_freqStore)
-        {
-            _freqStore.setContents(freq);
-            _freqStore.commit();
-            _freq = Integer.parseInt(freq);
-        }
-    }
+
     
     private class MapScreen extends MainScreen
     {
@@ -274,150 +525,6 @@ public class Ipoki  extends UiApplication implements IpokiResource
 
     }
     
-    private class MessageScreen extends MainScreen
-    {
-        private LabelField _messageLabel;
-        private EditField _messageEdit;
-        private LabelField _lastLabel;
-        private LabelField _lastMessageLabel;
-        
-        public MessageScreen(String last) 
-        {    
-            _messageLabel = new LabelField(Ipoki._resources.getString(LBL_MESSAGE), DrawStyle.ELLIPSIS);
-            Font font = _messageLabel.getFont();
-            Font newFont = font.derive(Font.BOLD);
-            _messageLabel.setFont(newFont);
-            add(_messageLabel);
-            _messageEdit = new EditField("", "", 144, Field.EDITABLE);
-            add(_messageEdit);
-            _lastLabel = new LabelField(Ipoki._resources.getString(LBL_LAST_MESSAGE), DrawStyle.ELLIPSIS);
-            font = _lastLabel.getFont();
-            newFont = font.derive(Font.BOLD);
-            _lastLabel.setFont(newFont);
-            add(_lastLabel);
-            _lastMessageLabel = new LabelField(last, DrawStyle.ELLIPSIS);
-            add(_lastMessageLabel);
-        }
-        
-        private MenuItem _cancel = new MenuItem(Ipoki._resources, MNU_CANCEL,  300000, 10) {
-            public void run()
-            {
-                 MessageScreen.this.close();
-            }
-        };  
-        
-        private MenuItem _send = new MenuItem(Ipoki._resources, MNU_SEND, 200000, 10) {
-            public void run()
-            {   
-                _messageToSend = _messageEdit.getText();
-                MessageScreen.this.close();
-            }
-        };
-        
-        protected void makeMenu( Menu menu, int instance )
-        {
-            menu.add(_send);
-            menu.add(_cancel);
-            
-            super.makeMenu(menu, instance);
-        }
-
-    }
-
-    private class SetupScreen extends MainScreen
-    {
-        private LabelField _userLabel;
-        private EditField _userEdit;
-        private LabelField _passLabel;
-        private PasswordEditField _passEdit;
-        private LabelField _freqLabel;
-        private EditField _freqEdit;
-        
-        public SetupScreen() 
-        {    
-            _userLabel = new LabelField(Ipoki._resources.getString(LBL_USER), DrawStyle.ELLIPSIS);
-            add(_userLabel);
-            _userEdit = new EditField("", Ipoki._user, 20, Field.EDITABLE);
-            add(_userEdit);
-            _passLabel = new LabelField(Ipoki._resources.getString(LBL_PASSWORD), DrawStyle.ELLIPSIS);
-            add(_passLabel);
-            _passEdit = new PasswordEditField("", Ipoki._pass, 20, Field.EDITABLE);
-            add(_passEdit);
-            _freqLabel = new LabelField(Ipoki._resources.getString(LBL_FREQ), DrawStyle.ELLIPSIS);
-            add(_freqLabel);
-            _freqEdit = new EditField("", String.valueOf(Ipoki._freq), 20, Field.EDITABLE | EditField.FILTER_INTEGER);
-            add(_freqEdit);
-        }
-        
-        private MenuItem _cancel = new MenuItem(Ipoki._resources, MNU_CANCEL,  300000, 10) {
-            public void run()
-            {
-                 SetupScreen.this.close();
-            }
-        };  
-        
-        private MenuItem _save = new MenuItem(Ipoki._resources, MNU_SAVE, 200000, 10) {
-            public void run()
-            {   
-                invokeLater(new Runnable() 
-                {
-                    public void run()
-                    {
-                        _lblUser.setText(_userEdit.getText());
-                    }
-                });    
-                Ipoki.saveOptions(_userEdit.getText(), _passEdit.getText(), _freqEdit.getText());
-                Ipoki.this.popScreen(SetupScreen.this);
-            }
-        };
-        
-         
-        protected void makeMenu( Menu menu, int instance )
-        {
-            menu.add(_save);
-            menu.add(_cancel);
-            
-            super.makeMenu(menu, instance);
-        }
-    }
-
-    ConnectionThread _connectionThread = new ConnectionThread();
-    ListenThread _listenThread = new ListenThread();
-    
-    // App entry point
-    public static void main(String[] args)
-    {
-        Ipoki app = new Ipoki();
-        app.enterEventDispatcher();
-    }
-    
-    public Ipoki()
-    {
-        _mainScreen = new IpokiMainScreen();
-        _label = new LabelField("");
-        _mainScreen.add(_label);
-        _gaugeScreen = new PopupScreen(new VerticalFieldManager());
-        _gauge = new GaugeField("", 0, 9, 0, GaugeField.LABEL_AS_PROGRESS);
-        _gaugeScreen.add(_gauge);
-
-        
-        //start the helper threads
-        _connectionThread.start();
-        _listenThread.start();
-        
-        pushScreen(_mainScreen);
-
-        if (_user == "")
-        {
-            SetupScreen setupScreen = new SetupScreen();
-            pushScreen(setupScreen);
-        }
-        
-        if (startLocationUpdate())
-        {
-        }
-    }
-    
     public void showMap()
     {
     	_listenThread.pause();
@@ -439,98 +546,15 @@ public class Ipoki  extends UiApplication implements IpokiResource
         pushScreen(about); 
     }
     
-    private boolean startLocationUpdate()
-    {
-        boolean retval = false;
-        
-        try 
-        {
-            _locationProvider = LocationProvider.getInstance(null);
-            
-            if ( _locationProvider == null ) 
-            {
-                // We would like to display a dialog box indicating that GPS isn't supported, but because
-                // the event-dispatcher thread hasn't been started yet, modal screens cannot be pushed onto
-                // the display stack.  So delay this operation until the event-dispatcher thread is running
-                // by asking it to invoke the following Runnable object as soon as it can.
-                Runnable showGpsUnsupportedDialog = new Runnable() 
-                {
-                    public void run() 
-                    {
-                        Dialog.alert("GPS is not supported on this platform, exiting...");
-                        System.exit( 1 );
-                    }
-                };
-                invokeLater( showGpsUnsupportedDialog );  // ask event-dispatcher thread to display dialog ASAP
-            } 
-            else 
-            {
-                // only a single listener can be associated with a provider, and unsetting it involves the same
-                // call but with null, therefore, no need to cache the listener instance
-                // request an update every second
-                _locationProvider.setLocationListener(new LocationListenerImpl(), _interval, 1, 1);
-                retval = true;
-            }
-        } catch (LocationException le) {
-            System.err.println("Failed to instantiate the LocationProvider object, exiting...");
-            System.err.println(le); 
-            System.exit(0);
-        }        
-        return retval;
-    }
-    
-    private class LocationListenerImpl implements LocationListener
-    {
-        //members --------------------------------------------------------------
-        private int captureCount;
-        private int sendCount;
-        
-        //methods --------------------------------------------------------------
-        public void locationUpdated(LocationProvider provider, Location location)
-        {
-            if(location.isValid())
-            {
-                double longitude = location.getQualifiedCoordinates().getLongitude();
-                double latitude = location.getQualifiedCoordinates().getLatitude();
-                float altitude = location.getQualifiedCoordinates().getAltitude();
-                float speed = location.getSpeed();                
-                
-                UpdateLocation(String.valueOf(longitude), String.valueOf(latitude));
-            }
-        }
-  
-        public void providerStateChanged(LocationProvider provider, int newState)
-        {
-        }        
-    }
-    
-    private void UpdateLocation(final String longitude, final String latitude)
-    {
-        invokeLater(new Runnable() 
-        {
-            public void run()
-            {
-                _lblLongitude.setText(longitude);
-                _lblLatitude.setText(latitude);
-            }
-        });    
-    }
-    
     public void connect()
     {
-        //_gauge.setValue(0);
         _connectionThread.signIn(_user, _pass);
-        //_statusThread.go();
-        //pushScreen(_gaugeScreen);
     }
     
     public void disconnect()
     {
         if (!_idUser.equals(""))
         {
-            //_gauge.setValue(0);
-            //_statusThread.go();
-            //pushScreen(_gaugeScreen);
             pauseListenThread();
             _connectionThread.signout(_idUser);
         }
@@ -554,16 +578,6 @@ public class Ipoki  extends UiApplication implements IpokiResource
         {
             System.err.println(e.toString());
         }
-    }
-    
-    public void updateGauge(final int i)
-    {
-        UiApplication.getUiApplication().invokeLater(new Runnable() {
-            public void run()
-            {
-                _gauge.setValue(i);
-            }
-        });
     }
     
     private static String getOSVersion()

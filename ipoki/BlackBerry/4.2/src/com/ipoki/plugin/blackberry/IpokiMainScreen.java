@@ -17,7 +17,7 @@ final class IpokiMainScreen extends MainScreen implements IpokiResource
 {
     static ResourceBundle _resources = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
     
-    Ipoki _app;
+    Ipoki _app; 
     
 
     public IpokiMainScreen()
