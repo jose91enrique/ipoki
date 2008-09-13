@@ -16,7 +16,6 @@ import net.rim.device.api.ui.*;
 public class ListenThread extends Thread
 {
     private static final int THREAD_TIMEOUT = 500;
-    private static final int TIMEOUT = 500; //ms
 
     private volatile boolean _stop = false;
     private volatile boolean _running = false;

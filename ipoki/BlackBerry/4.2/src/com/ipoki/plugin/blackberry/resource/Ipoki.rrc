@@ -1,6 +1,7 @@
 APP_COMPANY#0x0="Ipoki Technologies S.L.";
 APP_TITLE#0x0="Ipoki for BlackBerry";
 LBL_ALERT_REQUESTINPROGRESS#0x0="Uncompleted request pending!";
+LBL_ALTSPEED#0x0="Altitude - Speed";
 LBL_CONNECTED#0x0="CONNECTED";
 LBL_CONNECTING#0x0="CONNECTING...";
 LBL_DISCONNECTED#0x0="DISCONNECTED";
@@ -11,6 +12,7 @@ LBL_LOGIN_ERROR#0x0="Login Error";
 LBL_LONGITUDE#0x0="Longitude:";
 LBL_MESSAGE#0x0="Message to send:";
 LBL_MESSAGE_RECEIVED#0x0="Last message received:";
+LBL_NODATA#0x0="No data";
 LBL_NOLOC#0x0="No location";
 LBL_PASSWORD#0x0="Password";
 LBL_USER#0x0="User";
