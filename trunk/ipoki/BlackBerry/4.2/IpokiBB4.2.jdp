@@ -22,7 +22,9 @@ src\com\ipoki\plugin\blackberry\Ipoki.java
 src\com\ipoki\plugin\blackberry\IpokiMainScreen.java
 src\com\ipoki\plugin\blackberry\ipokito.png
 src\com\ipoki\plugin\blackberry\ListenThread.java
+src\com\ipoki\plugin\blackberry\MapConnectionThread.java
 src\com\ipoki\plugin\blackberry\mapimage.png
+src\com\ipoki\plugin\blackberry\MapScreen.java
 src\com\ipoki\plugin\blackberry\resource\Ipoki.rrc
 src\com\ipoki\plugin\blackberry\resource\Ipoki.rrh
 ]
@@ -52,4 +54,4 @@ TitleResourceBundleName=Ipoki
 TitleResourceBundlePath=src\com\ipoki\plugin\blackberry\resource\Ipoki.rrh
 Type=0
 Vendor=Ipoki Technologies S.L.
-Version=4.2.1
+Version=4.2.2
