@@ -1,6 +1,6 @@
 /*
  * Created by Javier Cancela
- * Copyright (C) 2007 hipoqih.com, All Rights Reserved.
+ * Copyright (C) 2007 ipoki.com, All Rights Reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,18 +21,13 @@
 // 0x90b4a6286eb92c20L
 package com.ipoki.plugin.blackberry;
 
-import org.xml.sax.*;
-import org.w3c.dom.*;
-import java.io.*;
-import javax.microedition.io.*;
 import javax.microedition.location.*;
 import net.rim.device.api.ui.*;
 import net.rim.device.api.system.*;
 import net.rim.device.api.ui.container.*;
 import net.rim.device.api.ui.component.*;
 import net.rim.device.api.i18n.*;
-import net.rim.device.api.xml.parsers.*;
-import net.rim.device.api.util.*;
+import net.rim.device.api.system.CodeModuleManager;
 import com.ipoki.plugin.blackberry.resource.*;
 
 public class Ipoki  extends UiApplication implements IpokiResource
@@ -46,11 +41,14 @@ public class Ipoki  extends UiApplication implements IpokiResource
     String _lastMessageSent = "";
     String _messageToSend = "";
 
+    ConnectionThread _connectionThread = new ConnectionThread();
+    ListenThread _listenThread = new ListenThread();
 
     LabelField _lblStatus;
     LabelField _lblUser;
     LabelField _lblLongitude;
     LabelField _lblLatitude;
+    LabelField _lblAltSpeed;
     LabelField _lblCommentSent;
     
     static int _interval = 1; //seconds - this is the period of position query
@@ -64,7 +62,11 @@ public class Ipoki  extends UiApplication implements IpokiResource
     static String _pass;
     static int _freq;
     static boolean _isConnected = false;
+    static String _osVersion = getOSVersion();
+    static String _ipokiVersion = ApplicationDescriptor.currentApplicationDescriptor().getVersion();
+    static String _ipokiUserAgent = "Ipoki/BlackBerry/" + _ipokiVersion;
     
+    // Restore user preferences
     static 
     {
         _userStore = PersistentStore.getPersistentObject(0x57faa02a62ef6e45L);
@@ -85,457 +87,218 @@ public class Ipoki  extends UiApplication implements IpokiResource
         }
     }
     
-    public void Test1()
+    // App entry point, create Ipoki instance and enters event dispatcher
+    public static void main(String[] args)
     {
-    	_listenThread.pause();
-        Test1Screen sc = new Test1Screen(this._lblLatitude.getText(), this._lblLongitude.getText());
-        pushScreen(sc);
-    	_listenThread.go();
+        Ipoki app = new Ipoki();
+        app.enterEventDispatcher();
+    }
+   
+    // Launch connection and listen threads here.
+    // Ask for user data if not in persistent store 
+    public Ipoki()
+    {
+        _mainScreen = new IpokiMainScreen();
+        _label = new LabelField("");
+        _mainScreen.add(_label);
+        _gaugeScreen = new PopupScreen(new VerticalFieldManager());
+        _gauge = new GaugeField("", 0, 9, 0, GaugeField.LABEL_AS_PROGRESS);
+        _gaugeScreen.add(_gauge);
+
+        
+        //start the helper threads
+        _connectionThread.start();
+        _listenThread.start();
+        
+        // Show main screen
+        pushScreen(_mainScreen);
+
+        // If persistent store is empty, show setup screen
+        if (_user == "")
+        {
+            SetupScreen setupScreen = new SetupScreen();
+            pushScreen(setupScreen);
+        }
+        
+        // Start retrieving location data
+        startLocationUpdate();
     }
     
-    public void Test2()
+    // Looks for a location provider. Exits app if no provider is found.
+    private void startLocationUpdate()
     {
-        Test2Screen sc = new Test2Screen();
-        pushScreen(sc);
+        try 
+        {
+            _locationProvider = LocationProvider.getInstance(null);
+            
+            if ( _locationProvider == null ) 
+            {
+                // We would like to display a dialog box indicating that GPS isn't supported, but because
+                // the event-dispatcher thread hasn't been started yet, modal screens cannot be pushed onto
+                // the display stack.  So delay this operation until the event-dispatcher thread is running
+                // by asking it to invoke the following Runnable object as soon as it can.
+                Runnable showGpsUnsupportedDialog = new Runnable() 
+                {
+                    public void run() 
+                    {
+                        Dialog.alert("GPS is not supported on this platform, exiting...");
+                        System.exit( 1 );
+                    }
+                };
+                invokeLater( showGpsUnsupportedDialog );  // ask event-dispatcher thread to display dialog ASAP
+            } 
+            else 
+            {
+                // only a single listener can be associated with a provider, and unsetting it involves the same
+                // call but with null, therefore, no need to cache the listener instance
+                _locationProvider.setLocationListener(new LocationListenerImpl(), _interval, 1, 1);
+            }
+        } catch (LocationException le) {
+            System.err.println("Failed to instantiate the LocationProvider object, exiting...");
+            System.err.println(le); 
+            System.exit(0);
+        }        
     }
 
-    public void Test3()
+    // This class is called from the location provider
+    private class LocationListenerImpl implements LocationListener
     {
-        Test3Screen sc = new Test3Screen();
-        pushScreen(sc);
+    	// New location sent
+        public void locationUpdated(LocationProvider provider, Location location)
+        {
+        	// If valid, we get the data
+            if(location.isValid())
+            {
+                UpdateLocation(location);
+            }
+        }
+  
+        // We discard provider state changes
+        public void providerStateChanged(LocationProvider provider, int newState)
+        {
+        }        
+    }
+    
+    /* 
+     * We update the interface with the new location 
+     * in a different thread, to return this method as soon
+     * as possible
+     */ 
+    private void UpdateLocation(final Location location)
+    {
+        invokeLater(new Runnable() 
+        {
+            public void run()
+            {
+                double longitude = location.getQualifiedCoordinates().getLongitude();
+                double latitude = location.getQualifiedCoordinates().getLatitude();
+                float altitude = location.getQualifiedCoordinates().getAltitude();
+                float speed = location.getSpeed();  
+                String altSpeed = String.valueOf(altitude) + " - " + String.valueOf(speed);
+                _lblLongitude.setText(String.valueOf(longitude));
+                _lblLatitude.setText(String.valueOf(latitude));
+                _lblAltSpeed.setText(altSpeed);
+            }
+        });    
+    }
+    
+    /*
+     * Screen to set user preferences. Shown the first time the user launches
+     * the app, and when selecting the options menu at the main screen
+     */
+    private class SetupScreen extends MainScreen
+    {
+        private LabelField _userLabel;
+        private EditField _userEdit;
+        private LabelField _passLabel;
+        private PasswordEditField _passEdit;
+        private LabelField _freqLabel;
+        private EditField _freqEdit;
+        
+        /*
+         * We load the previous settings.
+         * By now the only settings are user, password and server connection frequency
+         */
+        public SetupScreen() 
+        {    
+            _userLabel = new LabelField(Ipoki._resources.getString(LBL_USER), DrawStyle.ELLIPSIS);
+            add(_userLabel);
+            _userEdit = new EditField("", Ipoki._user, 20, Field.EDITABLE);
+            add(_userEdit);
+            _passLabel = new LabelField(Ipoki._resources.getString(LBL_PASSWORD), DrawStyle.ELLIPSIS);
+            add(_passLabel);
+            _passEdit = new PasswordEditField("", Ipoki._pass, 20, Field.EDITABLE);
+            add(_passEdit);
+            _freqLabel = new LabelField(Ipoki._resources.getString(LBL_FREQ), DrawStyle.ELLIPSIS);
+            add(_freqLabel);
+            _freqEdit = new EditField("", String.valueOf(Ipoki._freq), 20, Field.EDITABLE | EditField.FILTER_INTEGER);
+            add(_freqEdit);
+        }
+        
+        private MenuItem _cancel = new MenuItem(Ipoki._resources, MNU_CANCEL,  300000, 10) {
+            public void run()
+            {
+                 SetupScreen.this.close();
+            }
+        };  
+        
+        private MenuItem _save = new MenuItem(Ipoki._resources, MNU_SAVE, 200000, 10) {
+            public void run()
+            {   
+            	// As always, update ui from a different thread
+                invokeLater(new Runnable() 
+                {
+                    public void run()
+                    {
+                        _lblUser.setText(_userEdit.getText());
+                    }
+                });    
+                
+                // Save at persistent store
+                saveOptions(_userEdit.getText(), _passEdit.getText(), _freqEdit.getText());
+                popScreen(SetupScreen.this);
+            }
+        };
+         
+        protected void makeMenu( Menu menu, int instance )
+        {
+            menu.add(_save);
+            menu.add(_cancel);
+            
+            super.makeMenu(menu, instance);
+        }
     }
 
+    /*
+     * We write the preferences in the persistent store
+     */
+    public void saveOptions(String user, String pass, String freq)
+    {
+        _userStore.setContents(user);
+        _userStore.commit();
+        _user = user;
+
+        _passStore.setContents(pass);
+        _passStore.commit();
+        _pass = pass;
+        
+        _freqStore.setContents(freq);
+        _freqStore.commit();
+        _freq = Integer.parseInt(freq);
+    }
+    
+    /*
+     * Called from IpokiMainScreen to change user preferences
+     */
     public void viewOptions()
     {
         SetupScreen setupScreen = new SetupScreen();
         pushScreen(setupScreen);
     }
     
-    public void sendMessage()
-    {
-        MessageScreen messageScreen = new MessageScreen(_lastMessageSent);
-        pushScreen(messageScreen);
-    }
-    
-    static void saveOptions(String user, String pass, String freq)
-    {
-        synchronized(_userStore)
-        {
-            _userStore.setContents(user);
-            _userStore.commit();
-            _user = user;
-        }
-        synchronized(_passStore)
-        {
-            _passStore.setContents(pass);
-            _passStore.commit();
-            _pass = pass;
-        }
-        synchronized(_freqStore)
-        {
-            _freqStore.setContents(freq);
-            _freqStore.commit();
-            _freq = Integer.parseInt(freq);
-        }
-    }
-    
-    private class Test1Screen extends MainScreen
-    {
-        private int _zoom = 3;
-        private String _latitude;
-        private String _longitude;
-        private String _width;
-        private String _height;
-        private EditField _urlLabel;
-        
-        public Test1Screen(String latitude, String longitude) 
-        {
-            _latitude = latitude.substring(0, 6);
-            _longitude = longitude.substring(0, 6);
-            
-            _width = Integer.toString(Graphics.getScreenWidth());
-            _height = Integer.toString(Graphics.getScreenHeight());
-            _urlLabel = new EditField();
-            add(_urlLabel);
-
-            invokeLater(new Runnable() 
-            {
-                public void run()
-                {
-                    showMap();
-                }
-            });
-        }
-        
-        private void showMap()
-        {
-            StreamConnection s = null;
-            try
-            {
-                String url = getUrl(_latitude, _longitude, _width, _height, Integer.toString(_zoom));
-                s = (StreamConnection)Connector.open(url);
-                HttpConnection httpConn = (HttpConnection)s;
-                httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
-                
-                int status = httpConn.getResponseCode();
-                if (status == HttpConnection.HTTP_OK)
-                {
-                    try
-                    {
-                        DocumentBuilder doc = DocumentBuilderFactory.newInstance().newDocumentBuilder(); 
-                        DataInputStream dis = s.openDataInputStream();
-                        Document d = doc.parse(dis);
-                        Element el = d.getDocumentElement();
-                        url = el.getFirstChild().getNodeValue() + ";deviceside=true";
-                        dis.close();
-                    }
-                    catch(SAXException e)
-                    {
-                        System.err.println(e.toString());
-                    }
-                    catch(ParserConfigurationException e)
-                    {
-                        System.err.println(e.toString());
-                    }
-                }
-                
-                _urlLabel.setText(url);
-                
-                s.close();                
-            }
-            catch (java.io.IOException e) 
-            {
-                System.err.println(e.toString());
-            }
-            catch(Exception e)
-            {
-                System.err.println(e.toString());
-            }
-        }
-        
-        private String getUrl(String latitude, String longitude, String width, String height, String zoom)
-        {
-            String url = "http://local.yahooapis.com/MapsService/V1/mapImage?appid=08REOqLV34HybSt1yvZRY7DcL5hbUGyaFpRP.hsVJve.01qb6KWXP78TmIPi_w--" + 
-                    "&latitude=" + latitude + 
-                    "&longitude=" + longitude + 
-                    "&image_height=" + 32 + 
-                    "&image_width=" + 32 + 
-                    "&zoom=" + zoom;
-            return url + ";deviceside=true";
-        }
-        
-
-        protected void makeMenu( Menu menu, int instance )
-        {
-            super.makeMenu(menu, instance);
-        }
-    }
-    
-    
-    private class Test2Screen extends MainScreen
-    {
-        private BitmapField _mapField;
-        
-        public Test2Screen() 
-        {
-            _mapField = new BitmapField();
-            add(_mapField);
-
-            invokeLater(new Runnable() 
-            {
-                public void run()
-                {
-                    showMap();
-                }
-            });
-        }
-        
-        private void showMap()
-        {
-        	InputStream input = null;
-        	byte[] data = new byte[3771];
-        	try
-        	{
-                _mapField.setBitmap(Bitmap.getBitmapResource("mapimage.png"));
-                this.invalidate();
-        	}
-        	catch(IllegalArgumentException e)
-        	{
-        		System.err.println(e.toString());
-        	}
-        	
-        	/*StreamConnection s = null;
-            try
-            {
-               String url = "http://gws.maps.yahoo.com/mapimage?MAPDATA=EPR93.d6wXUKRCCveKnn9tCtml6zw_1C8IoE9yD6z027KI6tiuJBU8wLpcmsQTngCg2Egz1hFeyISUfINW1xFY8h6gz3KNJh_w0zDzR3o7RUqJNwLJEdLqWVPNd9NTM2PPSrFE1nidB9L1B5pw--&mvt=m?cltype=onnetwork&.intl=us;deviceside=true";
-                
-                s = (StreamConnection)Connector.open(url);
-                HttpConnection httpConn = (HttpConnection)s;
-                httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
-                
-                int status = httpConn.getResponseCode();
-                if (status == HttpConnection.HTTP_OK)
-                {
-                    java.io.InputStream input = s.openInputStream();
-                    byte[] data = new byte[1];
-                    ByteVector bv = new ByteVector();
-                    while ( -1 != input.read(data) )
-                    {
-                        bv.addElement(data[0]);
-                    }                    
-                    try
-                    {
-                        _mapField.setBitmap(Bitmap.createBitmapFromPNG(bv.getArray(), 0, -1));
-                        this.invalidate();
-                    }
-                    catch(Exception e)
-                    {
-                        System.err.println(e.toString());
-                    }
-                    input.close();
-                }
-                s.close();                
-            }
-            catch (java.io.IOException e) 
-            {
-                System.err.println(e.toString());
-            }
-            catch(Exception e)
-            {
-                System.err.println(e.toString());
-            }*/
-        }
-        
-        protected void makeMenu( Menu menu, int instance )
-        {
-            super.makeMenu(menu, instance);
-        }
-
-    }
-    
-    private class Test3Screen extends MainScreen
-    {
-        private BitmapField _mapField;
-        
-        public Test3Screen() 
-        {
-            _mapField = new BitmapField();
-            add(_mapField);
-
-            invokeLater(new Runnable() 
-            {
-                public void run()
-                {
-                    showMap();
-                }
-            });
-        }
-        
-        private void showMap()
-        {
-            StreamConnection s = null;
-            try
-            {
-                String url = "http://gws.maps.yahoo.com/mapimage?MAPDATA=EPR93.d6wXUKRCCveKnn9tCtml6zw_1C8IoE9yD6z027KI6tiuJBU8wLpcmsQTngCg2Egz1hFeyISUfINW1xFY8h6gz3KNJh_w0zDzR3o7RUqJNwLJEdLqWVPNd9NTM2PPSrFE1nidB9L1B5pw--&mvt=m?cltype=onnetwork&.intl=us;deviceside=true";
-                
-                s = (StreamConnection)Connector.open(url);
-                HttpConnection httpConn = (HttpConnection)s;
-                httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
-                
-                int status = httpConn.getResponseCode();
-                if (status == HttpConnection.HTTP_OK)
-                {
-                    java.io.InputStream input = s.openInputStream();
-                    byte[] data = new byte[5000];
-                    //ByteVector bv = new ByteVector();
-                    while ( -1 != input.read(data) )
-                    {
-                        //bv.addElement(data[0]);
-                        
-                    }
-                    try
-                    {
-                        //_mapField.setBitmap(Bitmap.createBitmapFromPNG(bv.getArray(), 0, -1));
-                        _mapField.setBitmap(Bitmap.createBitmapFromPNG(data, 0, -1));
-                        this.invalidate();
-                    }
-                    catch(Exception e)
-                    {
-                        System.err.println(e.toString());
-                    }
-                    input.close();
-                }
-                s.close();                
-            }
-            catch (java.io.IOException e) 
-            {
-                System.err.println(e.toString());
-            }
-            catch(Exception e)
-            {
-                System.err.println(e.toString());
-            }
-        }
-        
-        protected void makeMenu( Menu menu, int instance )
-        {
-            super.makeMenu(menu, instance);
-        }
-
-    }
-    
-    private class MapScreen extends MainScreen
-    {
-        private int _zoom = 3;
-        private String _latitude;
-        private String _longitude;
-        private String _width;
-        private String _height;
-        private BitmapField _mapField;
-        
-        public MapScreen(String latitude, String longitude) 
-        {
-            _latitude = latitude.substring(0, 6);
-            _longitude = longitude.substring(0, 6);
-            
-            _width = Integer.toString(Graphics.getScreenWidth());
-            _height = Integer.toString(Graphics.getScreenHeight());
-            _mapField = new BitmapField();
-            add(_mapField);
-
-            invokeLater(new Runnable() 
-            {
-                public void run()
-                {
-                    showMap();
-                }
-            });
-        }
-        
-        private void showMap()
-        {
-            StreamConnection s = null;
-            try
-            {
-                String url = getUrl(_latitude, _longitude, _width, _height, Integer.toString(_zoom));
-                s = (StreamConnection)Connector.open(url);
-                HttpConnection httpConn = (HttpConnection)s;
-                httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
-                
-                int status = httpConn.getResponseCode();
-                if (status == HttpConnection.HTTP_OK)
-                {
-                    try
-                    {
-                        DocumentBuilder doc = DocumentBuilderFactory.newInstance().newDocumentBuilder(); 
-                        DataInputStream dis = s.openDataInputStream();
-                        Document d = doc.parse(dis);
-                        Element el = d.getDocumentElement();
-                        url = el.getFirstChild().getNodeValue() + ";deviceside=true";
-                        dis.close();
-                    }
-                    catch(SAXException e)
-                    {
-                        System.err.println(e.toString());
-                    }
-                    catch(ParserConfigurationException e)
-                    {
-                        System.err.println(e.toString());
-                    }
-                }
-                
-                s = (StreamConnection)Connector.open(url);
-                httpConn = (HttpConnection)s;
-                httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
-                
-                status = httpConn.getResponseCode();
-                if (status == HttpConnection.HTTP_OK)
-                {
-                    java.io.InputStream input = s.openInputStream();
-                    byte[] data = new byte[1];
-                    ByteVector bv = new ByteVector();
-                    while ( -1 != input.read(data) )
-                    {
-                        bv.addElement(data[0]);
-                    }
-                    try
-                    {
-                        _mapField.setBitmap(Bitmap.createBitmapFromPNG(bv.getArray(), 0, -1));
-                        this.invalidate();
-                    }
-                    catch(Exception e)
-                    {
-                        System.err.println(e.toString());
-                    }
-                    input.close();
-                }
-                s.close();                
-            }
-            catch (java.io.IOException e) 
-            {
-                System.err.println(e.toString());
-            }
-            catch(Exception e)
-            {
-                System.err.println(e.toString());
-            }
-        }
-        
-        private String getUrl(String latitude, String longitude, String width, String height, String zoom)
-        {
-            String url = "http://local.yahooapis.com/MapsService/V1/mapImage?appid=08REOqLV34HybSt1yvZRY7DcL5hbUGyaFpRP.hsVJve.01qb6KWXP78TmIPi_w--" + 
-                    "&latitude=" + latitude + 
-                    "&longitude=" + longitude + 
-                    "&image_height=" + 32 + 
-                    "&image_width=" + 32 + 
-                    "&zoom=" + zoom;
-            return url + ";deviceside=true";
-        }
-        
-        private MenuItem _zoomIn = new MenuItem(Ipoki._resources, MNU_ZOOMIN, 200000, 10) {
-            public void run()
-            {   
-                if (_zoom > 1)
-                {
-                    _zoom --;
-                    invokeLater(new Runnable() 
-                    {
-                        public void run()
-                        {
-                            showMap();
-                        }
-                    });
-                }
-            }
-        };
-        
-        private MenuItem _zoomOut = new MenuItem(Ipoki._resources, MNU_ZOOMOUT, 200000, 10) {
-            public void run()
-            {
-                if (_zoom < 12)
-                {
-                    _zoom ++;
-                    invokeLater(new Runnable() 
-                    {
-                        public void run()
-                        {
-                            showMap();
-                        }
-                    });
-                }   
-            }
-        };
-        
-        protected void makeMenu( Menu menu, int instance )
-        {
-            menu.add(_zoomIn);
-            menu.add(_zoomOut);
-            
-            super.makeMenu(menu, instance);
-        }
-
-    }
-    
+    /*
+     * Screen to send a message to the server. 
+     */
     private class MessageScreen extends MainScreen
     {
         private LabelField _messageLabel;
@@ -571,7 +334,15 @@ public class Ipoki  extends UiApplication implements IpokiResource
         private MenuItem _send = new MenuItem(Ipoki._resources, MNU_SEND, 200000, 10) {
             public void run()
             {   
-                _messageToSend = _messageEdit.getText();
+            	/* 
+            	 * The connection thread reads _messageToSend when sending the location
+            	 * to the server. If not empty, it sends the message with the location,
+            	 * and them empties _messageToSend. So we need to synchronize the writing
+            	 */
+            	synchronized(Ipoki.this)
+            	{
+            		_messageToSend = _messageEdit.getText();
+            	}
                 MessageScreen.this.close();
             }
         };
@@ -583,102 +354,20 @@ public class Ipoki  extends UiApplication implements IpokiResource
             
             super.makeMenu(menu, instance);
         }
-
     }
 
-    private class SetupScreen extends MainScreen
+    /*
+     * Called from IpokiMainScreen to send a message
+     */
+    public void sendMessage()
     {
-        private LabelField _userLabel;
-        private EditField _userEdit;
-        private LabelField _passLabel;
-        private PasswordEditField _passEdit;
-        private LabelField _freqLabel;
-        private EditField _freqEdit;
-        
-        public SetupScreen() 
-        {    
-            _userLabel = new LabelField(Ipoki._resources.getString(LBL_USER), DrawStyle.ELLIPSIS);
-            add(_userLabel);
-            _userEdit = new EditField("", Ipoki._user, 20, Field.EDITABLE);
-            add(_userEdit);
-            _passLabel = new LabelField(Ipoki._resources.getString(LBL_PASSWORD), DrawStyle.ELLIPSIS);
-            add(_passLabel);
-            _passEdit = new PasswordEditField("", Ipoki._pass, 20, Field.EDITABLE);
-            add(_passEdit);
-            _freqLabel = new LabelField(Ipoki._resources.getString(LBL_FREQ), DrawStyle.ELLIPSIS);
-            add(_freqLabel);
-            _freqEdit = new EditField("", String.valueOf(Ipoki._freq), 20, Field.EDITABLE | EditField.FILTER_INTEGER);
-            add(_freqEdit);
-        }
-        
-        private MenuItem _cancel = new MenuItem(Ipoki._resources, MNU_CANCEL,  300000, 10) {
-            public void run()
-            {
-                 SetupScreen.this.close();
-            }
-        };  
-        
-        private MenuItem _save = new MenuItem(Ipoki._resources, MNU_SAVE, 200000, 10) {
-            public void run()
-            {   
-                invokeLater(new Runnable() 
-                {
-                    public void run()
-                    {
-                        _lblUser.setText(_userEdit.getText());
-                    }
-                });    
-                Ipoki.saveOptions(_userEdit.getText(), _passEdit.getText(), _freqEdit.getText());
-                Ipoki.this.popScreen(SetupScreen.this);
-            }
-        };
-        
-         
-        protected void makeMenu( Menu menu, int instance )
-        {
-            menu.add(_save);
-            menu.add(_cancel);
-            
-            super.makeMenu(menu, instance);
-        }
-    }
-
-    ConnectionThread _connectionThread = new ConnectionThread();
-    ListenThread _listenThread = new ListenThread();
-    
-    // App entry point
-    public static void main(String[] args)
-    {
-        Ipoki app = new Ipoki();
-        app.enterEventDispatcher();
+        MessageScreen messageScreen = new MessageScreen(_lastMessageSent);
+        pushScreen(messageScreen);
     }
     
-    public Ipoki()
-    {
-        _mainScreen = new IpokiMainScreen();
-        _label = new LabelField("");
-        _mainScreen.add(_label);
-        _gaugeScreen = new PopupScreen(new VerticalFieldManager());
-        _gauge = new GaugeField("", 0, 9, 0, GaugeField.LABEL_AS_PROGRESS);
-        _gaugeScreen.add(_gauge);
 
-        
-        //start the helper threads
-        _connectionThread.start();
-        _listenThread.start();
-        
-        pushScreen(_mainScreen);
+    
 
-        if (_user == "")
-        {
-            SetupScreen setupScreen = new SetupScreen();
-            pushScreen(setupScreen);
-        }
-        
-        if (startLocationUpdate())
-        {
-        }
-    }
     
     public void showMap()
     {
@@ -691,104 +380,25 @@ public class Ipoki  extends UiApplication implements IpokiResource
     public void showAbout()
     {
         Bitmap bitmap = Bitmap.getBitmapResource("ipokito.png");
-        Dialog about = new Dialog(Dialog.D_OK, "Ipoki Plugin for BlackBerry", 0, bitmap, 0);
-        LabelField text1 = new LabelField("Ipoki Technologies S.L.");
+        Dialog about = new Dialog(Dialog.D_OK, _resources.getString(APP_TITLE), 0, bitmap, 0);
+        LabelField text0 = new LabelField("Version: " + _ipokiVersion);
+        LabelField text1 = new LabelField("OS Version: " + _osVersion);
+        LabelField text2 = new LabelField(_resources.getString(APP_COMPANY));
+        about.add(text0);
         about.add(text1);
-        pushScreen(about);
-    }
-    
-    private boolean startLocationUpdate()
-    {
-        boolean retval = false;
-        
-        try 
-        {
-            _locationProvider = LocationProvider.getInstance(null);
-            
-            if ( _locationProvider == null ) 
-            {
-                // We would like to display a dialog box indicating that GPS isn't supported, but because
-                // the event-dispatcher thread hasn't been started yet, modal screens cannot be pushed onto
-                // the display stack.  So delay this operation until the event-dispatcher thread is running
-                // by asking it to invoke the following Runnable object as soon as it can.
-                Runnable showGpsUnsupportedDialog = new Runnable() 
-                {
-                    public void run() 
-                    {
-                        Dialog.alert("GPS is not supported on this platform, exiting...");
-                        System.exit( 1 );
-                    }
-                };
-                invokeLater( showGpsUnsupportedDialog );  // ask event-dispatcher thread to display dialog ASAP
-            } 
-            else 
-            {
-                // only a single listener can be associated with a provider, and unsetting it involves the same
-                // call but with null, therefore, no need to cache the listener instance
-                // request an update every second
-                _locationProvider.setLocationListener(new LocationListenerImpl(), _interval, 1, 1);
-                retval = true;
-            }
-        } catch (LocationException le) {
-            System.err.println("Failed to instantiate the LocationProvider object, exiting...");
-            System.err.println(le); 
-            System.exit(0);
-        }        
-        return retval;
-    }
-    
-    private class LocationListenerImpl implements LocationListener
-    {
-        //members --------------------------------------------------------------
-        private int captureCount;
-        private int sendCount;
-        
-        //methods --------------------------------------------------------------
-        public void locationUpdated(LocationProvider provider, Location location)
-        {
-            if(location.isValid())
-            {
-                double longitude = location.getQualifiedCoordinates().getLongitude();
-                double latitude = location.getQualifiedCoordinates().getLatitude();
-                float altitude = location.getQualifiedCoordinates().getAltitude();
-                float speed = location.getSpeed();                
-                
-                UpdateLocation(String.valueOf(longitude), String.valueOf(latitude));
-            }
-        }
-  
-        public void providerStateChanged(LocationProvider provider, int newState)
-        {
-        }        
-    }
-    
-    private void UpdateLocation(final String longitude, final String latitude)
-    {
-        invokeLater(new Runnable() 
-        {
-            public void run()
-            {
-                _lblLongitude.setText(longitude);
-                _lblLatitude.setText(latitude);
-            }
-        });    
+        about.add(text2);
+        pushScreen(about); 
     }
     
     public void connect()
     {
-        //_gauge.setValue(0);
         _connectionThread.signIn(_user, _pass);
-        //_statusThread.go();
-        //pushScreen(_gaugeScreen);
     }
     
     public void disconnect()
     {
         if (!_idUser.equals(""))
         {
-            //_gauge.setValue(0);
-            //_statusThread.go();
-            //pushScreen(_gaugeScreen);
             pauseListenThread();
             _connectionThread.signout(_idUser);
         }
@@ -814,14 +424,9 @@ public class Ipoki  extends UiApplication implements IpokiResource
         }
     }
     
-    public void updateGauge(final int i)
+    private static String getOSVersion()
     {
-        UiApplication.getUiApplication().invokeLater(new Runnable() {
-            public void run()
-            {
-                _gauge.setValue(i);
-            }
-        });
+    	return DeviceInfo.getSoftwareVersion();
     }
 } 
 

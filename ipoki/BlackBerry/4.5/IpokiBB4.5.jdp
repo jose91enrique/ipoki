@@ -22,7 +22,8 @@ src\com\ipoki\plugin\blackberry\Ipoki.java
 src\com\ipoki\plugin\blackberry\IpokiMainScreen.java
 src\com\ipoki\plugin\blackberry\ipokito.png
 src\com\ipoki\plugin\blackberry\ListenThread.java
-src\com\ipoki\plugin\blackberry\mapimage.png
+src\com\ipoki\plugin\blackberry\MapConnectionThread.java
+src\com\ipoki\plugin\blackberry\MapScreen.java
 src\com\ipoki\plugin\blackberry\resource\Ipoki.rrc
 src\com\ipoki\plugin\blackberry\resource\Ipoki.rrh
 ]
@@ -44,5 +45,12 @@ RibbonPosition=0
 RunOnStartup=0
 StartupTier=7
 SystemModule=0
-Title=Ipoki4.5
+Title=Ipoki for BlackBerry
+TitleResourceBundle=com.ipoki.plugin.blackberry.resource.Ipoki
+TitleResourceBundleDescription=APP_TITLE
+TitleResourceBundleKey=APP_TITLE
+TitleResourceBundleName=Ipoki
+TitleResourceBundlePath=src\com\ipoki\plugin\blackberry\resource\Ipoki.rrh
 Type=0
+Vendor=Ipoki Technologies, S.L.
+Version=4.5.2

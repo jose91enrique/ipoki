@@ -17,7 +17,7 @@ final class IpokiMainScreen extends MainScreen implements IpokiResource
 {
     static ResourceBundle _resources = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
     
-    Ipoki _app;
+    Ipoki _app; 
     
 
     public IpokiMainScreen()
@@ -26,7 +26,9 @@ final class IpokiMainScreen extends MainScreen implements IpokiResource
         setTitle(_resources.getString(APP_TITLE));
         _app = (Ipoki)UiApplication.getUiApplication();
         
+        
         _app._lblUser = new LabelField(Ipoki._user);
+        int fontSize = _app._lblUser.getFont().getHeight() * 3 / 4;
         Font font = _app._lblUser.getFont();
         Font newFont = font.derive(Font.BOLD);
         _app._lblUser.setFont(newFont);
@@ -40,37 +42,49 @@ final class IpokiMainScreen extends MainScreen implements IpokiResource
         
         LabelField lblTextLongitude = new LabelField(_resources.getString(LBL_LONGITUDE));
         font = lblTextLongitude.getFont();
-        newFont = font.derive(Font.ITALIC);
+        newFont = font.derive(Font.ITALIC, fontSize);
         lblTextLongitude.setFont(newFont);
         add(lblTextLongitude);
         
         _app._lblLongitude = new LabelField(_resources.getString(LBL_NOLOC));
         font = _app._lblLongitude.getFont();
-        newFont = font.derive(Font.BOLD);
+        newFont = font.derive(Font.BOLD, fontSize);
         _app._lblLongitude.setFont(newFont);
         add(_app._lblLongitude);
 
         LabelField lblTextLatitude = new LabelField(_resources.getString(LBL_LATITUDE));
         font = lblTextLatitude.getFont();
-        newFont = font.derive(Font.ITALIC);
+        newFont = font.derive(Font.ITALIC, fontSize);
         lblTextLatitude.setFont(newFont);
         add(lblTextLatitude);
         
         _app._lblLatitude = new LabelField(_resources.getString(LBL_NOLOC));
         font = _app._lblLatitude.getFont();
-        newFont = font.derive(Font.BOLD);
+        newFont = font.derive(Font.BOLD, fontSize);
         _app._lblLatitude.setFont(newFont);
         add(_app._lblLatitude);
 
+        LabelField lblTextAltSpeed = new LabelField(_resources.getString(LBL_ALTSPEED));
+        font = lblTextAltSpeed.getFont();
+        newFont = font.derive(Font.ITALIC, fontSize);
+        lblTextAltSpeed.setFont(newFont);
+        add(lblTextAltSpeed);
+        
+        _app._lblAltSpeed = new LabelField(_resources.getString(LBL_NODATA));
+        font = _app._lblAltSpeed.getFont();
+        newFont = font.derive(Font.BOLD, fontSize);
+        _app._lblAltSpeed.setFont(newFont);
+        add(_app._lblAltSpeed);
+
         LabelField lblTextCommentSent = new LabelField(_resources.getString(LBL_MESSAGE_RECEIVED));
         font = lblTextCommentSent.getFont();
-        newFont = font.derive(Font.ITALIC);
+        newFont = font.derive(Font.ITALIC, fontSize);
         lblTextCommentSent.setFont(newFont);
         add(lblTextCommentSent);
         
         _app._lblCommentSent = new LabelField("");
         font = _app._lblCommentSent.getFont();
-        newFont = font.derive(Font.BOLD);
+        newFont = font.derive(Font.BOLD, fontSize);
         _app._lblCommentSent.setFont(newFont);
         add(_app._lblCommentSent);
         
@@ -85,9 +99,6 @@ final class IpokiMainScreen extends MainScreen implements IpokiResource
         menu.addSeparator();
         menu.add(invokeSendMessage);
         menu.add(invokeMap);
-        menu.add(test1);
-        menu.add(test2);
-        menu.add(test3);
         //menu.add(invokeFriends);
         //menu.addSeparator();
         //menu.add(invokePositionLog);
@@ -96,30 +107,6 @@ final class IpokiMainScreen extends MainScreen implements IpokiResource
         menu.addSeparator();
         menu.add(invokeClose);
     }
-    
-    MenuItem test1 = new MenuItem("Test1",0,0)
-    {
-        public void run()
-        {
-        	_app.Test1();
-        }        
-    };
-    
-    MenuItem test2 = new MenuItem("Test2",0,0)
-    {
-        public void run()
-        {
-        	_app.Test2();
-        }        
-    };
-    
-    MenuItem test3 = new MenuItem("Test3",0,0)
-    {
-        public void run()
-        {
-        	_app.Test3();
-        }        
-    };
     
     MenuItem invokeConnect  = new MenuItem(_resources.getString(MNU_CONNECT),0,0)
     {
@@ -189,6 +176,8 @@ final class IpokiMainScreen extends MainScreen implements IpokiResource
     {
         public void run()
         {
+        	_app._connectionThread.stop();
+        	_app._listenThread.stop();
             onClose();
         }        
     };    
