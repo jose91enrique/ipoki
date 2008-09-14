@@ -31,9 +31,10 @@ public class ConnectionThread extends Thread implements IpokiResource
     private static final int MYFRIENDS_S = 4;
     private int _urlType = 0;
     private volatile boolean _start = false;
-    private volatile boolean _stop = false;
+    private volatile boolean _stop = false; 
+    private final String ipokiUserAgent = Ipoki._ipokiUserAgent;
     
-    Ipoki _app;
+    private Ipoki _app;
     
     public ConnectionThread()
     {
@@ -164,10 +165,9 @@ public class ConnectionThread extends Thread implements IpokiResource
                 StreamConnection s = null;
                 try
                 {
-                    System.err.println("open conn");
                     s = (StreamConnection)Connector.open(getUrl(), Connector.READ, true);
                     HttpConnection httpConn = (HttpConnection)s;
-                    httpConn.setRequestProperty("User-Agent", "Ipoki/BlackBerry/0.1");
+                    httpConn.setRequestProperty("User-Agent", ipokiUserAgent);
                     
                     int status = httpConn.getResponseCode();
                     if (status == HttpConnection.HTTP_OK)
@@ -207,15 +207,6 @@ public class ConnectionThread extends Thread implements IpokiResource
         String typeMessage = (String)messages.elementAt(0);
         if (typeMessage.equals("CODIGO"))
         {
-            //_app._statusThread.pause();
-            /*_app.invokeLater(new Runnable() 
-            {
-                public void run()
-                {
-                    _app.popScreen(_app._gaugeScreen);
-                }
-            });    */
-
             String message = (String)messages.elementAt(1);
             if (message.equals("ERROR") )
             {
