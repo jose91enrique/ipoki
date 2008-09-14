@@ -27,7 +27,7 @@ final class IpokiMainScreen extends MainScreen implements IpokiResource
         _app = (Ipoki)UiApplication.getUiApplication();
         
         
-        _app._lblUser = new LabelField(Ipoki._user);
+        _app._lblUser = new LabelField(_resources.getString(LBL_USER) + ": " + Ipoki._user);
         int fontSize = _app._lblUser.getFont().getHeight() * 3 / 4;
         Font font = _app._lblUser.getFont();
         Font newFont = font.derive(Font.BOLD);
