@@ -57,12 +57,7 @@ public class ARCompass extends Activity {
         
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
     
-        List<Sensor> listSensors = mSensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
-        if (listSensors.size() > 0)
-        {
-        	mSensorManager.registerListener(compassRenderer, listSensors.get(0), SensorManager.SENSOR_DELAY_UI);
-        }
-        listSensors = mSensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
+        List<Sensor> listSensors = mSensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
         if (listSensors.size() > 0)
         {
         	mSensorManager.registerListener(compassRenderer, listSensors.get(0), SensorManager.SENSOR_DELAY_UI);
@@ -151,16 +146,15 @@ class CameraView extends SurfaceView implements SurfaceHolder.Callback {
 }
 
 /**
- * Render a pair of tumbling cubes.
+ * Render a compass.
  */
 
 class CompassRenderer implements GLSurfaceView.Renderer, SensorEventListener {
     	private float   mOrientationValues[] = new float[3];
         private float   mAccelerometerValues[] = new float[3];
         private float   mMagneticValues[] = new float[3];
-        private float R[] = new float[16];
-        private float I[] = new float[16];
-        private float RR[] = new float[16];
+        private float rotationMatrix[] = new float[16];
+        private float remappedRotationMatrix[] = new float[16];
 
 	    private boolean mTranslucentBackground;
 	    private Compass mCompass;
@@ -177,8 +171,8 @@ class CompassRenderer implements GLSurfaceView.Renderer, SensorEventListener {
          * the screen. The most efficient way of doing this is to use
          * glClear().
          */
-        SensorManager.getRotationMatrix(R, I, mAccelerometerValues, mMagneticValues);
-        SensorManager.remapCoordinateSystem(R, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, RR);
+        SensorManager.getRotationMatrix(rotationMatrix, null, mAccelerometerValues, mMagneticValues);
+        SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, remappedRotationMatrix);
 
         gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
@@ -187,7 +181,7 @@ class CompassRenderer implements GLSurfaceView.Renderer, SensorEventListener {
          */
         gl.glMatrixMode(GL10.GL_MODELVIEW);
         gl.glLoadIdentity();
-        gl.glLoadMatrixf(RR, 0);
+        gl.glLoadMatrixf(remappedRotationMatrix, 0);
         gl.glTranslatef(0, 0, 0);
         
         gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
@@ -268,7 +262,7 @@ class CompassRenderer implements GLSurfaceView.Renderer, SensorEventListener {
 }
 
 /**
- * A vertex shaded cube.
+ * Definition of the cube.
  */
 class Compass
 {
