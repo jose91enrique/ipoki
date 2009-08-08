@@ -46,7 +46,7 @@ public class ARCompass extends Activity {
 
         mGLSurfaceView = new GLSurfaceView(this);
         mGLSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-        CompassRenderer compassRenderer = new CompassRenderer(true); 
+        CompassRenderer compassRenderer = new CompassRenderer(); 
         mGLSurfaceView.setRenderer(compassRenderer);
         mGLSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         
@@ -150,18 +150,15 @@ class CameraView extends SurfaceView implements SurfaceHolder.Callback {
  */
 
 class CompassRenderer implements GLSurfaceView.Renderer, SensorEventListener {
-    	private float   mOrientationValues[] = new float[3];
         private float   mAccelerometerValues[] = new float[3];
         private float   mMagneticValues[] = new float[3];
         private float rotationMatrix[] = new float[16];
         private float remappedRotationMatrix[] = new float[16];
 
-	    private boolean mTranslucentBackground;
 	    private Compass mCompass;
 	    private float mAngle;
 
-    public CompassRenderer(boolean useTranslucentBackground) {
-        mTranslucentBackground = useTranslucentBackground;
+    public CompassRenderer() {
         mCompass = new Compass();
     }
 
@@ -221,11 +218,7 @@ class CompassRenderer implements GLSurfaceView.Renderer, SensorEventListener {
          gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT,
                  GL10.GL_FASTEST);
 
-         if (mTranslucentBackground) {
-             gl.glClearColor(0,0,0,0);
-         } else {
-             gl.glClearColor(1,1,1,1);
-         }
+         gl.glClearColor(0,0,0,0);
          gl.glEnable(GL10.GL_CULL_FACE);
          gl.glShadeModel(GL10.GL_SMOOTH);
          gl.glEnable(GL10.GL_DEPTH_TEST);
@@ -239,11 +232,6 @@ class CompassRenderer implements GLSurfaceView.Renderer, SensorEventListener {
 	public void onSensorChanged(SensorEvent event) {
 	       synchronized (this) {
 	        	switch(event.sensor.getType()) {
-	        	case Sensor.TYPE_ORIENTATION:
-		            for (int i=0 ; i<3 ; i++) {
-		                mOrientationValues[i] = event.values[i];
-		            }
-		            break;
 	        	case Sensor.TYPE_ACCELEROMETER:
 		            for (int i=0 ; i<3 ; i++) {
 		                mAccelerometerValues[i] = event.values[i];
