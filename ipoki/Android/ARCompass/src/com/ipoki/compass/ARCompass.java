@@ -443,7 +443,6 @@ class Compass
 
     public void draw(GL10 gl)
     {
-        gl.glFrontFace(GL10.GL_CW);
         gl.glVertexPointer(3, GL10.GL_FLOAT, 0, mVertexBuffer);
         gl.glColorPointer(4, GL10.GL_FIXED, 0, mColorBuffer);
         gl.glDrawElements(GL10.GL_LINES, 32 + 6 + 10 + 8 + 8, GL10.GL_UNSIGNED_BYTE, mIndexBuffer);
