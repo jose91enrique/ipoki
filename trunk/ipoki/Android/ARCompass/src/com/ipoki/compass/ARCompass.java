@@ -156,7 +156,6 @@ class CompassRenderer implements GLSurfaceView.Renderer, SensorEventListener {
         private float remappedRotationMatrix[] = new float[16];
 
 	    private Compass mCompass;
-	    private float mAngle;
 
     public CompassRenderer() {
         mCompass = new Compass();
@@ -185,8 +184,6 @@ class CompassRenderer implements GLSurfaceView.Renderer, SensorEventListener {
         gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
 
         mCompass.draw(gl);
-
-        mAngle += 1.2f;
     }
 
     public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -233,14 +230,10 @@ class CompassRenderer implements GLSurfaceView.Renderer, SensorEventListener {
 	       synchronized (this) {
 	        	switch(event.sensor.getType()) {
 	        	case Sensor.TYPE_ACCELEROMETER:
-		            for (int i=0 ; i<3 ; i++) {
-		                mAccelerometerValues[i] = event.values[i];
-		            }
+	        		mAccelerometerValues = event.values.clone();
 		            break;
 	        	case Sensor.TYPE_MAGNETIC_FIELD:
-		            for (int i=0 ; i<3 ; i++) {
-		                mMagneticValues[i] = event.values[i];
-		            }
+	        		mMagneticValues = event.values.clone();
 		            break;
 		        default:
 		        	break;
