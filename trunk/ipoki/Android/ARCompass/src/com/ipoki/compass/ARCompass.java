@@ -162,23 +162,18 @@ class CompassRenderer implements GLSurfaceView.Renderer, SensorEventListener {
     }
 
     public void onDrawFrame(GL10 gl) {
-        /*
-         * Usually, the first thing one might want to do is to clear
-         * the screen. The most efficient way of doing this is to use
-         * glClear().
-         */
+    	// Get rotation matrix from the sensor
         SensorManager.getRotationMatrix(rotationMatrix, null, mAccelerometerValues, mMagneticValues);
+        // As the documentation says, we are using the device as a compass in landscape mode
         SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, remappedRotationMatrix);
 
-        gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
+        // Clear color buffer
+        gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
-        /*
-         * Now we're ready to draw some 3D objects
-         */
+        // Load remapped matrix
         gl.glMatrixMode(GL10.GL_MODELVIEW);
         gl.glLoadIdentity();
         gl.glLoadMatrixf(remappedRotationMatrix, 0);
-        gl.glTranslatef(0, 0, 0);
         
         gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
         gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
@@ -216,9 +211,6 @@ class CompassRenderer implements GLSurfaceView.Renderer, SensorEventListener {
                  GL10.GL_FASTEST);
 
          gl.glClearColor(0,0,0,0);
-         gl.glEnable(GL10.GL_CULL_FACE);
-         gl.glShadeModel(GL10.GL_SMOOTH);
-         gl.glEnable(GL10.GL_DEPTH_TEST);
     }
 
 	@Override
