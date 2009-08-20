@@ -56,11 +56,13 @@ class FriendsUpdateThread extends Thread {
 	
     public void run() {
         while (mRun) {
-        	for (Friend f: Ipoki.mFriends) {
-       			f.updateDistanceBearing(Ipoki.mLongitude, Ipoki.mLatitude);
+        	if (Ipoki.mFriends != null) {
+	        	for (Friend f: Ipoki.mFriends) {
+	       			f.updateDistanceBearing(Ipoki.mLongitude, Ipoki.mLatitude);
+	        	}
         	}
         	try {
-				FriendsUpdateThread.sleep(5000);
+				FriendsUpdateThread.sleep(1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

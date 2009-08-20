@@ -67,8 +67,8 @@ public class Ipoki extends Activity {
         
 		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		mLocationListener = new MyLocationListener();
-		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);
-		mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
+		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 100, mLocationListener);
+		mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 100, mLocationListener);
 		
 		getFriends();
 		
@@ -83,6 +83,11 @@ public class Ipoki extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+    }
+    
+    @Override
+    protected void onDestroy() {
+    	super.onDestroy();
     }
     
     @Override
