@@ -9,7 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import android.app.Activity;
+import android.app.TabActivity;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -21,9 +21,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.TabHost;
 
-public class Ipoki extends Activity {
-
+public class Ipoki extends TabActivity {
+	private TabHost mTabHost;
     private SensorManager mSensorManager;
 	private CameraView mCameraView;
 	private ARView mARView;
@@ -44,12 +45,27 @@ public class Ipoki extends Activity {
         // Hide the window title.
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
+        setContentView(R.layout.main_layout);
+
+        mTabHost = getTabHost();
+        
+        mTabHost.addTab(mTabHost.newTabSpec("tab_settings")
+        		.setIndicator(getString(R.string.tab_settings), getResources().getDrawable(R.drawable.ic_tab_settings))
+        		.setContent(R.id.textview1));
+        mTabHost.addTab(mTabHost.newTabSpec("tab_friends")
+        		.setIndicator(getString(R.string.tab_friends), getResources().getDrawable(R.drawable.ic_tab_friends))
+        		.setContent(R.id.textview1));
+        mTabHost.addTab(mTabHost.newTabSpec("tab_map")
+        		.setIndicator(getString(R.string.tab_map), getResources().getDrawable(R.drawable.ic_tab_mapmode))
+        		.setContent(R.id.textview1));
+        
+        mTabHost.setCurrentTab(0);
 
         mCameraView = new CameraView(this);
-        setContentView(mCameraView);
+        //setContentView(mCameraView);
         
         mARView = new ARView(this);
-        addContentView(mARView, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+        //addContentView(mARView, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
     
