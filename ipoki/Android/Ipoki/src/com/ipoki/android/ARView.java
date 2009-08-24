@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -14,55 +15,54 @@ public class ARView extends View implements SensorEventListener {
     private float   mAccelerometerValues[] = new float[3];
     private float   mMagneticValues[] = new float[3];
     private float rotationMatrix[] = new float[16];
-    private float remappedRotationMatrix[] = new float[16];
+    //private float remappedRotationMatrix[] = new float[16];
     private float mOrientationValues[] = new float[3];
     final double m2PiDiv3 = 2 * Math.PI / 3;
     final double m5PiDiv6 = 5 * Math.PI / 6;
     final double mPiDiv4 = Math.PI / 4;
+    final double mPiDiv2 = Math.PI / 2;
+    private final Drawable mIpokito;
+    private int mIpokitoSemiHeight;
+    private int mIpokitoSemiWidth;
+
 
     public ARView(Context context) {
 		super(context);
+        mIpokito = context.getResources().getDrawable(R.drawable.ipokito2);
+        mIpokitoSemiHeight = mIpokito.getIntrinsicHeight() / 2;
+        mIpokitoSemiWidth = mIpokito.getIntrinsicWidth() / 2;
 	}
     
     protected void onDraw(Canvas canvas) {
     	super.onDraw(canvas);
     	
         SensorManager.getRotationMatrix(rotationMatrix, null, mAccelerometerValues, mMagneticValues);
-        SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, remappedRotationMatrix);
-        SensorManager.getOrientation(remappedRotationMatrix, mOrientationValues);
+        // With remapping, precision gets worse
+        //SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, remappedRotationMatrix);
+        //SensorManager.getOrientation(remappedRotationMatrix, mOrientationValues);
+        SensorManager.getOrientation(rotationMatrix, mOrientationValues);
 
     	Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.YELLOW);
         paint.setTextSize(20);
 
-        float x;
-        float y = 20;
+        int x;
+        int y = 20;
         int canvasHeight = canvas.getHeight();
         int canvasWidth = canvas.getWidth();
-/*        if (Ipoki.mFriends != null) {
+        if (Ipoki.mFriends != null) {
 	        for(Friend f: Ipoki.mFriends) {
 	        	double d[] = f.getDistanceBearing();
-	            canvas.drawText("bearing " + String.valueOf(d[1]), 160, y, paint);
-	            y += 20;
+	        	//double angDiff = getAngleDiff(mOrientationValues[0], d[1]);
+	        	double angDiff = getAngleDiff(mOrientationValues[0] + mPiDiv2, d[1]);
+	        	x = (int) ((0.5 - 2 * angDiff / 3) * canvasWidth);
+	            //y = (int) (-1 * (mOrientationValues[1] / m2PiDiv3  + 0.25) * canvasHeight);
+	            y = (int) (-1 * (mOrientationValues[2] / m2PiDiv3  + 0.25) * canvasHeight);
+	            mIpokito.setBounds(x - mIpokitoSemiWidth, y - mIpokitoSemiHeight, x + mIpokitoSemiWidth, y + mIpokitoSemiHeight);
+	            mIpokito.draw(canvas);
 	        }
-    	}    */
-        if (Ipoki.mFriends != null) {
-        	Friend f = Ipoki.mFriends[0];
-        	double d[] = f.getDistanceBearing();
-        	double sinDiffAng = Math.sin(mOrientationValues[0] - d[1]);
-        	x = (float) ((0.5 - 2 * sinDiffAng / 3) * canvasWidth);
-        	//x = (float) ((mOrientationValues[0] + d[1]) / mPiDiv4 * canvasWidth / 2 + (canvasWidth / 2));
-        	canvas.drawText("or2: " + String.valueOf(mOrientationValues[2]), 160, 20, paint);
-        	canvas.drawText("or0: " + String.valueOf(mOrientationValues[0]), 160, 40, paint);
-        	canvas.drawText("or1: " + String.valueOf(mOrientationValues[1]), 160, 60, paint);
-        	canvas.drawText("diffAng: " + String.valueOf(mOrientationValues[0] - d[1]), 160, 80, paint);
-        	canvas.drawText("sinDiffAng: " + String.valueOf(sinDiffAng), 160, 100, paint);
-        	canvas.drawText("x: " + String.valueOf(x), 160, 120, paint);
-            y = (float) (-1 * (mOrientationValues[1] / m2PiDiv3  + 0.25) * canvasHeight);
-        	canvas.drawText("y: " + String.valueOf(y), 160, 140, paint);
-            canvas.drawLine(x - 10, y, x + 10, y, paint);
-        }
+    	}    
         //canvas.drawText("y: " + String.valueOf(y), 160, 80, paint);
     }
 
@@ -91,4 +91,14 @@ public class ARView extends View implements SensorEventListener {
 	       invalidate();
 	}
 
+	private double getAngleDiff(double ang1, double ang2) {
+		double result = ang1 - ang2;
+		if (result >=  Math.PI)
+			result -= 2 * Math.PI;
+		else if (result <=  -Math.PI)
+			result += 2 * Math.PI;
+		
+		return result;
+	}
+	
 }
