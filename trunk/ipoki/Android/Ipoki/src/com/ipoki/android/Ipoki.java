@@ -50,13 +50,13 @@ public class Ipoki extends TabActivity {
         mTabHost = getTabHost();
         
         mTabHost.addTab(mTabHost.newTabSpec("tab_settings")
-        		.setIndicator(getString(R.string.tab_settings), getResources().getDrawable(R.drawable.ic_tab_settings))
+        		.setIndicator(getString(R.string.tab_settings), getResources().getDrawable(R.drawable.tab_settings_selector))
         		.setContent(R.id.textview1));
         mTabHost.addTab(mTabHost.newTabSpec("tab_friends")
-        		.setIndicator(getString(R.string.tab_friends), getResources().getDrawable(R.drawable.ic_tab_friends))
+        		.setIndicator(getString(R.string.tab_friends), getResources().getDrawable(R.drawable.tab_friends_selector))
         		.setContent(R.id.textview1));
         mTabHost.addTab(mTabHost.newTabSpec("tab_map")
-        		.setIndicator(getString(R.string.tab_map), getResources().getDrawable(R.drawable.ic_tab_mapmode))
+        		.setIndicator(getString(R.string.tab_map), getResources().getDrawable(R.drawable.tab_mapmode_selector))
         		.setContent(R.id.textview1));
         
         mTabHost.setCurrentTab(0);
