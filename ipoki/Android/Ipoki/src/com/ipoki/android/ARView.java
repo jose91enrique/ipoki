@@ -54,16 +54,17 @@ public class ARView extends View implements SensorEventListener {
         if (Ipoki.mFriends != null) {
 	        for(Friend f: Ipoki.mFriends) {
 	        	double d[] = f.getDistanceBearing();
-	        	//double angDiff = getAngleDiff(mOrientationValues[0], d[1]);
+
+	        	/* With remapping, precision gets worse. Instead of remapping, we change axis by hand to take into account landscape mode
+	        	 * We add 90º to azimuth (when the camera points to the north, the top of the phone points to the west) */
 	        	double angDiff = getAngleDiff(mOrientationValues[0] + mPiDiv2, d[1]);
 	        	x = (int) ((0.5 - 2 * angDiff / 3) * canvasWidth);
-	            //y = (int) (-1 * (mOrientationValues[1] / m2PiDiv3  + 0.25) * canvasHeight);
+	        	// We take roll instead of pitch, since the phone is rotated
 	            y = (int) (-1 * (mOrientationValues[2] / m2PiDiv3  + 0.25) * canvasHeight);
 	            mIpokito.setBounds(x - mIpokitoSemiWidth, y - mIpokitoSemiHeight, x + mIpokitoSemiWidth, y + mIpokitoSemiHeight);
 	            mIpokito.draw(canvas);
 	        }
     	}    
-        //canvas.drawText("y: " + String.valueOf(y), 160, 80, paint);
     }
 
 	@Override
