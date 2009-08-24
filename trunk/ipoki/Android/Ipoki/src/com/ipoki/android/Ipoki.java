@@ -56,13 +56,13 @@ public class Ipoki extends Activity {
         List<Sensor> listSensors = mSensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
         if (listSensors.size() > 0)
         {
-        	mSensorManager.registerListener(mARView, listSensors.get(0), SensorManager.SENSOR_DELAY_UI);
+        	mSensorManager.registerListener(mARView, listSensors.get(0), SensorManager.SENSOR_DELAY_NORMAL);
         }
 
         listSensors = mSensorManager.getSensorList(Sensor.TYPE_MAGNETIC_FIELD);
         if (listSensors.size() > 0)
         {
-        	mSensorManager.registerListener(mARView, listSensors.get(0), SensorManager.SENSOR_DELAY_UI);
+        	mSensorManager.registerListener(mARView, listSensors.get(0), SensorManager.SENSOR_DELAY_NORMAL);
         }
         
 		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
