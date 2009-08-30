@@ -24,9 +24,11 @@ public class ARView extends View implements SensorEventListener {
     final double mPiDiv4 = Math.PI / 4;
     final double mPiDiv2 = Math.PI / 2;
     private final Drawable mIpokito;
+    private final Drawable mSelectedIpokito;
     private final int mIpokitoSemiHeight;
     private final int mIpokitoSemiWidth;
-    private final Paint mPaint;
+    private final Paint mPaintRect;
+    private final Paint mPaintText;
     private Friend mSelectedFriend = null;
 
 
@@ -35,17 +37,20 @@ public class ARView extends View implements SensorEventListener {
 		
 		// Ipokito bitmap.
         mIpokito = context.getResources().getDrawable(R.drawable.ipokito2);
+        mSelectedIpokito = context.getResources().getDrawable(R.drawable.selected_ipokito);
         mIpokitoSemiHeight = mIpokito.getIntrinsicHeight() / 2;
         mIpokitoSemiWidth = mIpokito.getIntrinsicWidth() / 2;
         
         // Rectangle features
-        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPaint.setAntiAlias(true);
-        mPaint.setTextSize(16);
-        mPaint.setTextAlign(Paint.Align.CENTER);
-        mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setColor(Color.YELLOW);
-        mPaint.setAlpha(0x80);
+        mPaintRect = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaintRect.setAntiAlias(true);
+        mPaintRect.setStyle(Paint.Style.FILL);
+        mPaintRect.setColor(Color.YELLOW);
+        mPaintRect.setAlpha(0x80);
+        mPaintText = new Paint();
+        mPaintText.setTextSize(16);
+        mPaintText.setTextAlign(Paint.Align.CENTER);
+        mPaintText.setColor(Color.BLUE);
 	}
     
     protected void onDraw(Canvas canvas) {
@@ -66,9 +71,16 @@ public class ARView extends View implements SensorEventListener {
         int y = 20;
         int canvasHeight = canvas.getHeight();
         int canvasWidth = canvas.getWidth();
+        Drawable icon;
         if (Ipoki.mFriends != null) {
 	        for(Friend f: Ipoki.mFriends) {
 	        	double d[] = f.getDistanceBearing();
+	        	if (f.isSelected) {
+	        		icon = mSelectedIpokito;
+	        	}
+	        	else {
+	        		icon = mIpokito;
+	        	}
 
 	        	/* With remapping, precision gets worse. Instead of remapping, we change axis by hand to take into account landscape mode
 	        	 * We add 90º to azimuth (when the camera points to the north, the top of the phone points to the west) */
@@ -76,19 +88,20 @@ public class ARView extends View implements SensorEventListener {
 	        	x = (int) ((0.5 - 2 * angDiff / 3) * canvasWidth);
 	        	// We take roll instead of pitch, since the phone is rotated
 	            y = (int) (-1 * (mOrientationValues[2] / m2PiDiv3  + 0.25) * canvasHeight);
-	            mIpokito.setBounds(x - mIpokitoSemiWidth, y - mIpokitoSemiHeight, x + mIpokitoSemiWidth, y + mIpokitoSemiHeight);
-	            mIpokito.draw(canvas);
+	            icon.setBounds(x - mIpokitoSemiWidth, y - mIpokitoSemiHeight, x + mIpokitoSemiWidth, y + mIpokitoSemiHeight);
+	            icon.draw(canvas);
 	            f.setScreenPos(x, y);
 	        }
     	}    
         
-        canvas.drawRect(0, 0, 100, canvasHeight, mPaint);
+        canvas.drawRect(0, 0, 100, canvasHeight, mPaintRect);
         if (mSelectedFriend != null) {
         	Drawable d = mSelectedFriend.mPicture;
         	if (d != null) {
 	        	d.setBounds(10, 10, 90, 90);
 	        	d.draw(canvas);
         	}
+        	canvas.drawText(mSelectedFriend.mName, 10, 100, paint);
         }
     }
 
@@ -126,6 +139,10 @@ public class ARView extends View implements SensorEventListener {
 			if (friendDis < distance) {
 				distance = friendDis;
 				mSelectedFriend = f;
+				f.isSelected = true;
+			}
+			else {
+				f.isSelected = false;
 			}
 		}
 		return true;
