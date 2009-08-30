@@ -9,8 +9,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import android.app.TabActivity;
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.location.Location;
@@ -20,11 +21,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.TabHost;
 
-public class Ipoki extends TabActivity {
-	private TabHost mTabHost;
+public class Ipoki extends Activity {
     private SensorManager mSensorManager;
 	private CameraView mCameraView;
 	private ARView mARView;
@@ -32,9 +32,10 @@ public class Ipoki extends TabActivity {
 	private LocationListener mLocationListener=null;
 	static double mLatitude;
 	static double mLongitude;
-	static final String mUserKey = "utXHANIfJeLGgDmfvEjgreRLS";
+	static final String mUserKey = "fgQSnMKxegGnfKfDXqQfnIVJR";
 	static Friend[] mFriends = null;
 	static FriendsUpdateThread mFriendsUpdateThread = null;
+	public static final String PREFS_NAME = "PreferencesFile";
 
 	
     /** Called when the activity is first created. */
@@ -42,30 +43,22 @@ public class Ipoki extends TabActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+/*        if (!checkUser()) {
+        	Intent i = new Intent().setClass(this, Settings.class);
+        	startActivity(i);
+        }*/
+       
         // Hide the window title.
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        setContentView(R.layout.main_layout);
-
-        mTabHost = getTabHost();
-        
-        mTabHost.addTab(mTabHost.newTabSpec("tab_settings")
-        		.setIndicator(getString(R.string.tab_settings), getResources().getDrawable(R.drawable.tab_settings_selector))
-        		.setContent(R.id.textview1));
-        mTabHost.addTab(mTabHost.newTabSpec("tab_friends")
-        		.setIndicator(getString(R.string.tab_friends), getResources().getDrawable(R.drawable.tab_friends_selector))
-        		.setContent(R.id.textview1));
-        mTabHost.addTab(mTabHost.newTabSpec("tab_map")
-        		.setIndicator(getString(R.string.tab_map), getResources().getDrawable(R.drawable.tab_mapmode_selector))
-        		.setContent(R.id.textview1));
-        
-        mTabHost.setCurrentTab(0);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
+                WindowManager.LayoutParams.FLAG_FULLSCREEN); 
 
         mCameraView = new CameraView(this);
-        //setContentView(mCameraView);
+        setContentView(mCameraView);
         
         mARView = new ARView(this);
-        //addContentView(mARView, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+        addContentView(mARView, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
     
@@ -120,6 +113,17 @@ public class Ipoki extends TabActivity {
     protected void onStop()
     {
         super.onStop();
+    }
+    
+    private boolean checkUser() {
+    	boolean hasUser = false;
+    	
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String userName = settings.getString("UserName", null);
+        if (userName != null)
+        	hasUser = true;
+
+    	return hasUser;
     }
     
     private class MyLocationListener implements LocationListener {
@@ -185,16 +189,16 @@ public class Ipoki extends TabActivity {
 	    	if (friendsData.length % 4 != 0)
 	    		Log.w("Ipoki", "Malformed data from server");
 
-	    	int friendsNum = friendsData.length / 4;
+	    	int friendsNum = friendsData.length / 6;
 	    	Friend[] friends = new Friend[friendsNum];
 	    	for (int i = 0; i < friendsNum; i++) {
-	    		friends[i] = new Friend(friendsData[4 * i], 
-	    								friendsData[4 * i + 1], 
-	    								friendsData[4 * i + 2], 
-	    								friendsData[4 * i + 3]);
+	    		friends[i] = new Friend(friendsData[6 * i], 
+	    								friendsData[6 * i + 1], 
+	    								friendsData[6 * i + 2], 
+	    								friendsData[6 * i + 3], 
+	    								friendsData[6 * i + 4], 
+	    								friendsData[6 * i + 5]);
 	    		friends[i].updateDistanceBearing(mLongitude, mLatitude);
-	    		double[] d = friends[i].getDistanceBearing();
-	    		Log.i("Ipoki", friends[i].mName + " : " + Double.toString(d[0]) + " - " + Double.toString(d[1]));
 	    	}
 	    	
 	    	return friends;

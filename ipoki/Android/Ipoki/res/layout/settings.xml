@@ -1,12 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="fill_parent" 
-              android:layout_height="fill_parent" 
-              android:orientation="vertical" >
-	<TextView android:background="@color/settings_separator_background"
-				android:textColor="@color/settings_separator_text" 
-				android:id="@+id/TextView01" 
-				android:layout_width="fill_parent" android:layout_height="wrap_content" android:textStyle="bold" android:text="@string/settings_account"/>
-<TextView android:id="@+id/TextView02" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/settings_user"></TextView>
-<EditText android:layout_height="wrap_content" android:id="@+id/EditTextPass" android:inputType="textPersonName" android:maxLength="20" android:layout_marginLeft="10" android:layout_marginRight="10"></EditText>
-</LinearLayout>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+   android:layout_width="fill_parent"
+   android:layout_height="fill_parent"
+   android:stretchColumns="1">
+
+   <TableRow>
+       <TextView
+           android:text="@string/settings_user"
+           android:textStyle="bold"
+           android:gravity="right"
+           android:padding="5dip" />
+
+       <EditText android:id="@+id/username1"
+           android:padding="5dip"
+           android:scrollHorizontally="true" />
+   </TableRow>
+
+   <TableRow>
+       <TextView
+           android:text="@string/settings_password"
+           android:textStyle="bold"
+           android:gravity="right"
+           android:padding="5dip" />
+
+       <EditText android:id="@+id/password"
+           android:password="true"
+           android:padding="5dip"
+           android:scrollHorizontally="true" />
+   </TableRow>
+</TableLayout>
