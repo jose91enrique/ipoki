@@ -20,6 +20,7 @@ class Friend {
 	final String mSessionKey;
 	Date mLocationDate;
 	Drawable mPicture;
+	boolean isSelected = false;
 	private double mDistance;
 	private double mBearing;
 	private int mX = -1;
