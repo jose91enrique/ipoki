@@ -4,11 +4,13 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.view.MotionEvent;
 import android.view.View;
 
 public class ARView extends View implements SensorEventListener {
@@ -22,15 +24,28 @@ public class ARView extends View implements SensorEventListener {
     final double mPiDiv4 = Math.PI / 4;
     final double mPiDiv2 = Math.PI / 2;
     private final Drawable mIpokito;
-    private int mIpokitoSemiHeight;
-    private int mIpokitoSemiWidth;
+    private final int mIpokitoSemiHeight;
+    private final int mIpokitoSemiWidth;
+    private final Paint mPaint;
+    private Friend mSelectedFriend = null;
 
 
     public ARView(Context context) {
 		super(context);
+		
+		// Ipokito bitmap.
         mIpokito = context.getResources().getDrawable(R.drawable.ipokito2);
         mIpokitoSemiHeight = mIpokito.getIntrinsicHeight() / 2;
         mIpokitoSemiWidth = mIpokito.getIntrinsicWidth() / 2;
+        
+        // Rectangle features
+        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaint.setAntiAlias(true);
+        mPaint.setTextSize(16);
+        mPaint.setTextAlign(Paint.Align.CENTER);
+        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setColor(Color.YELLOW);
+        mPaint.setAlpha(0x80);
 	}
     
     protected void onDraw(Canvas canvas) {
@@ -63,8 +78,18 @@ public class ARView extends View implements SensorEventListener {
 	            y = (int) (-1 * (mOrientationValues[2] / m2PiDiv3  + 0.25) * canvasHeight);
 	            mIpokito.setBounds(x - mIpokitoSemiWidth, y - mIpokitoSemiHeight, x + mIpokitoSemiWidth, y + mIpokitoSemiHeight);
 	            mIpokito.draw(canvas);
+	            f.setScreenPos(x, y);
 	        }
     	}    
+        
+        canvas.drawRect(0, 0, 100, canvasHeight, mPaint);
+        if (mSelectedFriend != null) {
+        	Drawable d = mSelectedFriend.mPicture;
+        	if (d != null) {
+	        	d.setBounds(10, 10, 90, 90);
+	        	d.draw(canvas);
+        	}
+        }
     }
 
 	@Override
@@ -92,7 +117,21 @@ public class ARView extends View implements SensorEventListener {
 	       invalidate();
 	}
 
-	private double getAngleDiff(double ang1, double ang2) {
+	@Override
+    public boolean onTouchEvent(MotionEvent event) {
+		mSelectedFriend = null;
+		int distance = 20;
+		for (Friend f: Ipoki.mFriends) {
+			int friendDis = f.getDistanceFromScreenPoint(event.getX(), event.getY());
+			if (friendDis < distance) {
+				distance = friendDis;
+				mSelectedFriend = f;
+			}
+		}
+		return true;
+	}
+
+   private double getAngleDiff(double ang1, double ang2) {
 		double result = ang1 - ang2;
 		if (result >=  Math.PI)
 			result -= 2 * Math.PI;
