@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AbsoluteLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+	android:orientation="horizontal"
+    android:layout_width="fill_parent" 
+    android:layout_height="fill_parent">
+       
+   	<ImageView
+			android:id="@+id/fphoto"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/icon"			
+			android:visibility="invisible"
+			android:layout_x="0px"
+			android:layout_y="0px">
+	</ImageView>
+
+     <TextView  
+        android:id="@+id/fname"
+        android:layout_width="300px" 
+        android:layout_height="40px"
+		android:gravity="center"
+		android:textSize="30sp"		
+		android:layout_x="5px"
+		android:layout_y="5px"/>
+
+    <TextView  
+        android:id="@+id/fgeoname"
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content"
+		android:textSize="16sp"		
+		android:layout_x="130px"
+		android:layout_y="50px"/>
+
+    <TextView  
+        android:id="@+id/ffecha"
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content"
+		android:textSize="16sp"		
+		android:layout_x="130px"
+		android:layout_y="100px"/>
+
+	<FrameLayout  
+		android:layout_x="10px"
+		android:layout_y="120px"
+		android:layout_width="300px" 
+        android:layout_height="300px"
+   		android:padding="10dip">
+   		
+	<FrameLayout 
+			android:id="@+id/framefriendshow"
+			android:layout_width="fill_parent" 
+		    android:layout_height="fill_parent"/> 
+	</FrameLayout> 
+
+</AbsoluteLayout>
+
