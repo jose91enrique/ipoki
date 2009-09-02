@@ -1,4 +1,4 @@
-package ipoki.plugin;
+package com.ipoki.android;
  
 import android.os.Bundle;
 import android.view.View;

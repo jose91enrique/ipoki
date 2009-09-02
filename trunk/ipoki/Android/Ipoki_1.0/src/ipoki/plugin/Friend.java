@@ -1,4 +1,4 @@
-package ipoki.plugin;
+package com.ipoki.android;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
