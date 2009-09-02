@@ -21,9 +21,11 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -36,9 +38,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class IpokiMain extends Activity {
+	// Static members
+	static String mUserKey = null;
 	static Friend[] mFriends = null;
 	static FriendsUpdateThread mFriendsUpdateThread = null;
 
+	private ProgressDialog processDialog = null;
 	private LocationManager mLocationManager=null;
 	private LocationListener mLocationListener=null;
 	static double mLatitude;
@@ -47,35 +52,30 @@ public class IpokiMain extends Activity {
 	static double mHigh;
 	static double mTo;
 	
-//	private ProgressDialog pd;
-	
 	public TextView outlat;
 	public TextView outlon;
 	public TextView outspeed;
 	public TextView outhigh;
 	
 	public boolean mOn = false;
-	static String mUserKey = null;
-	private String mServer = "http://www.ipoki.com";
+	private final String mServer = "http://www.ipoki.com";
 	private String mVer = "AND-1.0";
 	
 	private double oldLatitude = 0;
 	private double oldLongitude = 0;
-	private long lastTime = 0;
-	
 	private String mUser = null;
 	private String mPass = null;
 	private String mIntervalo = null;
-	
 	private String wprivate = "0";
 	private String wrec = "0";
+	private long lastTime = 0;
+
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
         setContentView(R.layout.main);
-		// pd = ProgressDialog.show(this, "Ipoki for Android", "Waiting GPS signal");
 		
 	    // los textbox
         outlat = (TextView) findViewById(R.id.txtlat);
@@ -132,12 +132,8 @@ public class IpokiMain extends Activity {
 	}
 
 	 public void ShowLoc() {    	 
-/*    	 // oculta el mensaje inicial,
-		 if (pd.isShowing()) pd.hide();
-
       	 // pintar la posicion, velocidad y altura
-    	 String work = new String();
-    	 work = String.valueOf(mLongitude);
+    	 String work = String.valueOf(mLongitude);
     	 outlon.setText(work.substring(0,9));
     	 work = String.valueOf(mLatitude);
     	 outlat.setText(work.substring(0,9));
@@ -161,7 +157,7 @@ public class IpokiMain extends Activity {
         	 	SendLoc();
         	 	lastTime = System.currentTimeMillis();
     		}
-    	 }*/
+    	 }
      }
 
      public void SendLoc() {
@@ -178,38 +174,95 @@ public class IpokiMain extends Activity {
 	 	oldLongitude = mLongitude;
      }
     
-     private void PowerOn(){
-    	String work = new String();
-    	String[] resultData = null;
-
-		// leer preferencias 
+     private void logIn(){
 		PreferenceManager.setDefaultValues(this, R.xml.setup, false);
 		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
 		mUser = p.getString("user", "value_default_98732");
     	mPass = p.getString("pass", "value_default");
     	mIntervalo = p.getString("intervalo", "3");
-
-    	// hace la llamada a la web
-	 	work = Comunica(mServer + "/signin.php?user=" + mUser + "&pass=" + mPass + "&ver=" + mVer);
-	 	if (work.substring(0,14).equals("CODIGO$$$ERROR")) {
-	 		// Log.w("Ipoki", "Error: " + work);
-	 	    AlertDialog.Builder builder = new AlertDialog.Builder(IpokiMain.this);
-	 	    builder.setTitle("Ipoki Connection");
-	 	    builder.setIcon(R.drawable.alert_dialog_icon);
-	 	    builder.setMessage("The user or password is not ok, modify the configuration");
-	        builder.show();
-	 	} else {
-	    	resultData = work.substring(3).split("\\${3}");
-	    	if (resultData.length != 0) {
-		 		mUserKey = resultData[1];
-		 		mServer = resultData[2];
-		 		wrec = resultData[4];
-		 		wprivate = resultData[5];
-	    		//Log.w("Ipoki", work + " <---> " + mUserKey + mServer + " WR:" + wrec + " WP:" + wprivate);
-		 		mOn = true;
-	    	}
-	 	}
+    	String userUrl = mServer + "/signin.php?user=" + mUser + "&pass=" + mPass + "&ver=" + mVer;
+		try {
+			URL url = new URL(userUrl);
+			new LoginUser().execute(url);
+     		processDialog = ProgressDialog.show(IpokiMain.this, "Ipoki", "Logging in user");
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} 
      }
+     
+     private class LoginUser extends AsyncTask<URL, Integer, String> {
+
+     	@Override
+ 		protected String doInBackground(URL... params) {
+ 	    	return IpokiMain.this.getFromServer(params[0]);
+ 		}
+     	
+ 	    protected void onPostExecute(String result) {
+     		processDialog.dismiss();
+
+ 		 	if (result.equals("CODIGO$$$ERROR$$$")) {
+ 		 	    AlertDialog.Builder builder = new AlertDialog.Builder(IpokiMain.this);
+ 		 	    builder.setTitle("Login error");
+ 		 	    builder.setIcon(R.drawable.alert_dialog_icon);
+ 		 	    builder.setMessage("Wrong user or password");
+ 		        builder.show();
+ 		 	} else {
+ 		    	String[] resultData = result.substring(3).split("\\${3}");
+ 		    	if (resultData.length == 0) {
+ 			 		mUserKey = resultData[1];
+ 			 		wrec = resultData[4];
+ 			 		wprivate = resultData[5];
+ 			 		mOn = true;
+ 			 		
+ 			    	String userUrl = mServer + "http://www.ipoki.com/myfriends2.php?iduser=" + mUserKey;
+ 					try {
+ 						URL url = new URL(userUrl);
+ 						new DownloadFriends().execute(url);
+ 					} catch (MalformedURLException e) {
+ 						e.printStackTrace();
+ 					} 
+
+ 		    	}
+ 		 	}
+ 	    }
+     }
+     
+     private class DownloadFriends extends AsyncTask<URL, Integer, Friend[]> {
+
+     	@Override
+ 		protected Friend[] doInBackground(URL... params) {
+     		String result = IpokiMain.this.getFromServer(params[0]);
+ 	    	return processFriends(result);
+ 		}
+     	
+     	private Friend[] processFriends(String result)
+     	{
+ 	    	String[] friendsData = null;
+ 	    	friendsData = result.substring(3).split("\\${3}");
+ 	    	
+ 	    	if (friendsData.length % 4 != 0)
+ 	    		Log.w("Ipoki", "Malformed data from server");
+
+ 	    	int friendsNum = friendsData.length / 6;
+ 	    	Friend[] friends = new Friend[friendsNum];
+ 	    	for (int i = 0; i < friendsNum; i++) {
+ 	    		friends[i] = new Friend(friendsData[6 * i], 
+ 	    								friendsData[6 * i + 1], 
+ 	    								friendsData[6 * i + 2], 
+ 	    								friendsData[6 * i + 3], 
+ 	    								friendsData[6 * i + 4], 
+ 	    								friendsData[6 * i + 5]);
+ 	    		friends[i].updateDistanceBearing(mLongitude, mLatitude);
+ 	    	}
+ 	    	
+ 	    	return friends;
+     	}
+ 		
+ 	    protected void onPostExecute(Friend[] friends) {
+ 	    	mFriends = friends;
+ 	    }
+     }
+
 
      private void PowerOff(){
     	// hace la llamada a la web
@@ -413,13 +466,8 @@ public class IpokiMain extends Activity {
     	
 		@Override
 		public void onClick(View arg0) {
-			// mensaje      
-			Toast.makeText(getBaseContext(), 
-					   "Connecting to server", 
-					   Toast.LENGTH_LONG).show();
-
 			// llamar a PowerOn
-		    PowerOn();
+		    logIn();
 		    PonerBotones();
 		}
     };
@@ -593,6 +641,25 @@ public class IpokiMain extends Activity {
 		} 
 		return resultado;
     }
+    
+    String getFromServer(URL url) {
+			String result = "";
+ 	    	try {
+ 	    		HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
+ 	    		int responseCode = urlConnection.getResponseCode();
+
+ 	    		if (responseCode == HttpURLConnection.HTTP_OK) {
+ 	    			InputStream is = urlConnection.getInputStream();
+ 	    			BufferedReader br = new BufferedReader(new InputStreamReader(is));
+ 	    			result = br.readLine();
+ 	    		}
+ 	    	} catch (IOException e) {
+ 				e.printStackTrace();
+ 			}
+ 	    	
+ 	    	return result;
+    }
+    
 
     @Override
     protected void onDestroy() {
