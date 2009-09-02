@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+     xmlns:android="http://schemas.android.com/apk/res/android" android:key="prefer" android:title="Setup Application">
+ 
+    <PreferenceCategory>
+
+        <EditTextPreference
+                android:key="user"
+                android:title="Ipoki user"
+                android:summary="For use the program you need a Ipoki account." 
+                android:dialogTitle="Your Ipoki Login"/>
+
+        <EditTextPreference
+                android:key="pass"
+                android:title="Password" 
+                android:dialogTitle="Write your password in Ipoki"/>
+
+        <EditTextPreference
+                android:key="intervalo"
+                android:title="Latency" 
+                android:summary="Latency time for send position to server." 
+                android:dialogTitle="Value in seconds, minimum 3 sec."/>
+
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

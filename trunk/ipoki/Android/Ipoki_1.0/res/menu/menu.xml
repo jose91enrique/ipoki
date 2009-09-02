@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/mymap"
+        android:title="My map"
+        android:icon="@drawable/map" />
+ 
+    <item android:id="@+id/myfriends"
+        android:title="My friends"
+        android:icon="@drawable/ic_tab_friends_sel" />
+
+    <item android:id="@+id/setup"
+        android:title="Settings"
+        android:icon="@drawable/settings" />
+
+    <item android:id="@+id/exit"
+        android:title="Exit"
+        android:icon="@drawable/exit" />
+
+</menu>

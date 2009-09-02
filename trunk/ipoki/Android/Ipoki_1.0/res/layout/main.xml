@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AbsoluteLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:id="@+id/LinearLayout01" 
+	android:orientation="horizontal"
+    android:layout_width="fill_parent" 
+    android:layout_height="fill_parent"
+    style="@style/Background">
+    
+     <TextView  
+        android:id="@+id/labtit"
+        android:layout_width="280px" 
+        android:layout_height="150px"
+		android:text="press 'power on' button to start"
+		android:gravity="center"
+		android:textSize="28sp"		
+		android:layout_x="28px"
+		android:layout_y="15px"/>
+
+    <TextView  
+        android:id="@+id/lab1"
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+		android:text="public"
+		android:textSize="16sp"		
+		android:layout_x="40px"
+		android:layout_y="15px"/>
+     
+     <TextView  
+        android:id="@+id/lab2"
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+		android:text="private"
+		android:textSize="16sp"		
+		android:layout_x="115px"
+		android:layout_y="15px"/>
+		
+	<TextView
+		android:id="@+id/lab3"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:visibility="invisible"
+		android:text="REC"
+		android:textSize="24sp"		
+		android:textStyle="bold"		
+		android:textColor="@color/red"
+		android:layout_x="190px"
+		android:layout_y="32px"/>
+
+    <TextView  
+        android:id="@+id/lab4"        
+        android:layout_height="wrap_content"
+        android:layout_width="100px"        
+		android:text="Latitude"
+		android:gravity="right"
+		android:textSize="16sp"		
+		android:layout_x="20px"
+		android:layout_y="175px"/>
+     
+     <TextView  
+        android:id="@+id/lab5"        
+        android:layout_height="wrap_content"
+        android:layout_width="100px"        
+		android:text="Longitude"
+		android:gravity="right"		
+		android:textSize="16sp"		
+		android:layout_x="20px"
+		android:layout_y="205px"/>
+
+    <TextView  
+        android:id="@+id/txtlat"        
+        android:layout_height="wrap_content"
+        android:layout_width="120px"        
+		android:text="0.0"
+		android:textStyle="bold"		
+		android:textSize="22sp"		
+		android:layout_x="130px"
+		android:layout_y="170px"/>
+     
+     <TextView  
+        android:id="@+id/txtlon"        
+        android:layout_height="wrap_content"
+        android:layout_width="120px"        
+		android:text="0.0"
+		android:textStyle="bold"		
+		android:textSize="22sp"		
+		android:layout_x="130px"
+		android:layout_y="200px"/>
+
+    <TextView  
+        android:id="@+id/txtspeed"        
+        android:layout_height="wrap_content"
+        android:layout_width="100px"        
+		android:text="0"
+		android:textStyle="bold"	
+		android:gravity="right"	
+		android:textSize="26sp"		
+		android:layout_x="50px"
+		android:layout_y="250px"/>
+     
+     <TextView  
+        android:id="@+id/txth"        
+        android:layout_height="wrap_content"
+        android:layout_width="100px"        
+		android:text="0"
+		android:textStyle="bold"		
+		android:gravity="right"
+		android:textSize="26sp"		
+		android:layout_x="50px"
+		android:layout_y="290px"/>
+
+	<TextView
+		android:id="@+id/lab6"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="Km/h."
+		android:textSize="16sp"		
+		android:layout_x="160px"
+		android:layout_y="258px"/>
+
+	<TextView
+		android:id="@+id/lab7"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="m."
+		android:textSize="16sp"		
+		android:layout_x="160px"
+		android:layout_y="295px"/>
+
+	<TextView
+		android:id="@+id/widget30"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="share your"
+		android:textColor="@color/orange"
+		android:layout_x="200px"
+		android:layout_y="375px"/>
+		
+	<TextView
+		android:id="@+id/widget31"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="location ;-)"
+		android:textColor="@color/orange"
+		android:layout_x="200px"
+		android:layout_y="395px"/>
+
+		<ImageView
+			android:id="@+id/img00"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/btna"			
+			android:visibility="invisible"
+			android:layout_x="55px"
+			android:layout_y="40px">
+		</ImageView>
+		
+		<ImageView
+			android:id="@+id/img01"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/btnb"
+			android:visibility="invisible"			
+			android:layout_x="55px"
+			android:layout_y="40px">
+		</ImageView>
+		
+		<ImageView
+			android:id="@+id/img10"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/redligthoff"
+			android:visibility="invisible"			
+			android:layout_x="240px"
+			android:layout_y="20px">
+		</ImageView>
+		
+		<ImageView
+			android:id="@+id/img11"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/redligthon"
+			android:visibility="invisible"
+			android:layout_x="240px"
+			android:layout_y="20px">
+		</ImageView>
+
+		<ImageView
+			android:id="@+id/img20"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/redbtnoff"
+			android:visibility="invisible"			
+			android:layout_x="180px"
+			android:layout_y="70px">
+		</ImageView>
+		
+		<ImageView
+			android:id="@+id/img21"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/redbtnon"
+			android:visibility="invisible"
+			android:layout_x="180px"
+			android:layout_y="70px">
+		</ImageView>
+
+		<ImageView
+			android:id="@+id/img30"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/poweroff"			
+			android:layout_x="240px"
+			android:layout_y="170px">
+		</ImageView>
+		
+		<ImageView
+			android:id="@+id/img31"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/poweron"
+			android:visibility="invisible"
+			android:layout_x="240px"
+			android:layout_y="170px">
+		</ImageView>
+
+</AbsoluteLayout>
+
