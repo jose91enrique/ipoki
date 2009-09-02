@@ -42,7 +42,7 @@ public class Main extends Activity {
 	static double mHigh;
 	static double mTo;
 	
-	private ProgressDialog pd;
+//	private ProgressDialog pd;
 	
 	public TextView outlat;
 	public TextView outlon;
@@ -72,7 +72,7 @@ public class Main extends Activity {
         super.onCreate(savedInstanceState);
         
         setContentView(R.layout.main);
-		pd = ProgressDialog.show(this, "Ipoki for Android", "Waiting GPS signal");
+		// pd = ProgressDialog.show(this, "Ipoki for Android", "Waiting GPS signal");
 		
 	    // los textbox
         outlat = (TextView) findViewById(R.id.txtlat);
