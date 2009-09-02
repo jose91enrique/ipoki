@@ -13,6 +13,10 @@
         android:title="Settings"
         android:icon="@drawable/settings" />
 
+    <item android:id="@+id/ar_view"
+        android:title="Camera mode"
+        android:icon="@android:drawable/ic_menu_camera" />
+
     <item android:id="@+id/exit"
         android:title="Exit"
         android:icon="@drawable/exit" />
