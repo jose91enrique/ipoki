@@ -1,4 +1,4 @@
-package ipoki.plugin;
+package com.ipoki.android;
  
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -155,7 +155,7 @@ public class FriendsView extends ListActivity {
     private void getFriends(){
     	URL url;
     	// TODO falta meter Main.mServer para que este bien...
-		String userUrl = getString(R.string.friends_url) + Main.mUserKey;
+		String userUrl = getString(R.string.friends_url) + IpokiMain.mUserKey;
 
 		try {
 			url = new URL(userUrl);
@@ -202,7 +202,7 @@ public class FriendsView extends ListActivity {
 	    								friendsData[6 * i + 3],
 	    								friendsData[6 * i + 4],
 	    								friendsData[6 * i + 5]);
-	    		friends[i].updateDistanceBearing(Main.mLongitude, Main.mLatitude);
+	    		friends[i].updateDistanceBearing(IpokiMain.mLongitude, IpokiMain.mLatitude);
 //   		double[] d = friends[i].getDistanceBearing();
 //   		Log.i("Ipoki", friends[i].mName + " : " + Double.toString(d[0]) + " - " + Double.toString(d[1]));
 	    	}	    	

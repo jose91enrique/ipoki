@@ -1,4 +1,4 @@
-package ipoki.plugin;
+package com.ipoki.android;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -136,7 +136,7 @@ public class IpokiAR extends Activity {
     private void getFriends(){
     	URL url;
     	// TODO falta meter Main.mServer para que este bien...
-		String userUrl = getString(R.string.friends_url) + Main.mUserKey;
+		String userUrl = getString(R.string.friends_url) + IpokiMain.mUserKey;
 
 		try {
 			url = new URL(userUrl);

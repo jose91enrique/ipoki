@@ -1,4 +1,4 @@
-package ipoki.plugin;
+package com.ipoki.android;
  
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
