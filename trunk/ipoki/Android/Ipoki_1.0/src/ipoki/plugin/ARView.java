@@ -1,9 +1,10 @@
-package ipoki.plugin;
+package com.ipoki.android;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -30,16 +31,15 @@ public class ARView extends View implements SensorEventListener {
     private final Paint mPaintText;
     private Friend mSelectedFriend = null;
 
+
     public ARView(Context context) {
 		super(context);
-
+		
 		// Ipokito bitmap.
         mIpokito = context.getResources().getDrawable(R.drawable.ipokito2);
         mSelectedIpokito = context.getResources().getDrawable(R.drawable.selected_ipokito);
-  //      mIpokitoSemiHeight = mIpokito.getIntrinsicHeight() / 2;
-//        mIpokitoSemiWidth = mIpokito.getIntrinsicWidth() / 2;
-        mIpokitoSemiHeight = mIpokito.getIntrinsicHeight() ;
-        mIpokitoSemiWidth = mIpokito.getIntrinsicWidth() ;
+        mIpokitoSemiHeight = mIpokito.getIntrinsicHeight() / 2;
+        mIpokitoSemiWidth = mIpokito.getIntrinsicWidth() / 2;
         
         // Rectangle features
         mPaintRect = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -72,82 +72,36 @@ public class ARView extends View implements SensorEventListener {
         int canvasHeight = canvas.getHeight();
         int canvasWidth = canvas.getWidth();
         Drawable icon;
-        if (IpokiAR.mFriends != null) {
-	        for(Friend f: IpokiAR.mFriends) {
-	        	if ((f.mLatitude==0) & (f.mLongitude==0)) {
-	        		// nada, si no esta posicionado 
-	        	} else {
-		        	double d[] = f.getDistanceBearing();
-		        	if (f.isSelected) {
-		        		icon = mSelectedIpokito;
-		        	}
-		        	else {
-		        		icon = mIpokito;
-		        	}
-	
-		        	/* With remapping, precision gets worse. Instead of remapping, we change axis by hand to take into account landscape mode
-		        	 * We add 90º to azimuth (when the camera points to the north, the top of the phone points to the west) */
-		        	double angDiff = getAngleDiff(mOrientationValues[0] + mPiDiv2, d[1]);
-		        	x = (int) ((0.5 - 2 * angDiff / 3) * canvasWidth);
-		        	// We take roll instead of pitch, since the phone is rotated
-		            y = (int) (-1 * (mOrientationValues[2] / m2PiDiv3  + 0.25) * canvasHeight);
-		            int ajuste = 0;
-		            Double work = new Double("0");
-		            int i1 = Double.compare(d[0],25);
-		            if(i1 > 0){
-		            	// lejos
-		            	work = d[0];
-		            	int xx = work.intValue();
-		            	if (xx < 50) {
-			            	ajuste = 20 + (xx/10);
-			            	y = y - 60 + (xx/5);
-		            	} else if (xx < 100) {
-			            	ajuste = 25 + (xx/10);
-			            	y = y - 75 + (xx/15);
-		            	} else if (xx < 1000) {
-			            	ajuste = 30;
-			            	y = y - 90 + (xx/90);
-		            	} else {
-			            	ajuste = 35;
-			            	y = y - 100;
-		            	}
-		            } else {
-		            	i1 = Double.compare(d[0],2);
-		            	if(i1 > 0){
-			            	// medio
-			            	work = d[0];
-			            	ajuste = work.intValue();
-			            	y = y - (work.intValue()*2);
-			            } else {
-			            	// cerca
-			            	work = (10*d[0])/2;
-			            	ajuste = -20 + work.intValue();
-			            	y = y + 20 - work.intValue();
-			            }
-		            }
-		            icon.setBounds(x - mIpokitoSemiWidth, y - mIpokitoSemiHeight, x + mIpokitoSemiWidth - ajuste, y + mIpokitoSemiHeight - ajuste);
-		            icon.draw(canvas);
-		            f.setScreenPos(x, y);
+        if (IpokiMain.mFriends != null) {
+	        for(Friend f: IpokiMain.mFriends) {
+	        	double d[] = f.getDistanceBearing();
+	        	if (f.isSelected) {
+	        		icon = mSelectedIpokito;
 	        	}
+	        	else {
+	        		icon = mIpokito;
+	        	}
+
+	        	/* With remapping, precision gets worse. Instead of remapping, we change axis by hand to take into account landscape mode
+	        	 * We add 90º to azimuth (when the camera points to the north, the top of the phone points to the west) */
+	        	double angDiff = getAngleDiff(mOrientationValues[0] + mPiDiv2, d[1]);
+	        	x = (int) ((0.5 - 2 * angDiff / 3) * canvasWidth);
+	        	// We take roll instead of pitch, since the phone is rotated
+	            y = (int) (-1 * (mOrientationValues[2] / m2PiDiv3  + 0.25) * canvasHeight);
+	            icon.setBounds(x - mIpokitoSemiWidth, y - mIpokitoSemiHeight, x + mIpokitoSemiWidth, y + mIpokitoSemiHeight);
+	            icon.draw(canvas);
+	            f.setScreenPos(x, y);
 	        }
     	}    
         
         canvas.drawRect(0, 0, 100, canvasHeight, mPaintRect);
         if (mSelectedFriend != null) {
-        	// la foto ¿?
-        	//Drawable d = mSelectedFriend.mPicture;
-        	//if (d != null) {
-//	        	d.setBounds(10, 10, 90, 90);
-//	        	d.draw(canvas);
-//        	}
-
-        	// pintar los datos del user
-        	double d[] = mSelectedFriend.getDistanceBearing();
-        	canvas.drawText(mSelectedFriend.mName, 10, 20, paint);
-        	canvas.drawText("Lat: " + String.format("%.6f", mSelectedFriend.mLatitude), 10, 40, paint);
-        	canvas.drawText("Lon: " + String.format("%.6f", mSelectedFriend.mLongitude), 10, 60, paint);
-        	canvas.drawText("Distance: " + String.format("%.2f",d[0]) + " Km.", 10, 80, paint);
-        	canvas.drawText("Date: " + mSelectedFriend.mLocationDate, 10, 100, paint);
+        	Drawable d = mSelectedFriend.mPicture;
+        	if (d != null) {
+	        	d.setBounds(10, 10, 90, 90);
+	        	d.draw(canvas);
+        	}
+        	canvas.drawText(mSelectedFriend.mName, 10, 100, paint);
         }
     }
 
@@ -180,7 +134,7 @@ public class ARView extends View implements SensorEventListener {
     public boolean onTouchEvent(MotionEvent event) {
 		mSelectedFriend = null;
 		int distance = 20;
-		for (Friend f: IpokiAR.mFriends) {
+		for (Friend f: IpokiMain.mFriends) {
 			int friendDis = f.getDistanceFromScreenPoint(event.getX(), event.getY());
 			if (friendDis < distance) {
 				distance = friendDis;
@@ -202,5 +156,6 @@ public class ARView extends View implements SensorEventListener {
 			result += 2 * Math.PI;
 		
 		return result;
-	}  
+	}
+	
 }
