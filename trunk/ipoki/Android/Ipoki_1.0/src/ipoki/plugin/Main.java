@@ -129,7 +129,7 @@ public class Main extends Activity {
 	}
 
 	 public void ShowLoc() {    	 
-    	 // oculta el mensaje inicial,
+/*    	 // oculta el mensaje inicial,
 		 if (pd.isShowing()) pd.hide();
 
       	 // pintar la posicion, velocidad y altura
@@ -158,7 +158,7 @@ public class Main extends Activity {
         	 	SendLoc();
         	 	lastTime = System.currentTimeMillis();
     		}
-    	 }
+    	 }*/
      }
 
      public void SendLoc() {
