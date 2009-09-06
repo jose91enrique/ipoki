@@ -50,13 +50,12 @@
             </intent-filter>
     </activity>
 
-    <activity android:name=".IpokiAR" android:label="Augmented Reality">
+    <activity android:name=".IpokiAR" android:label="Augmented reality"  android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
     </activity>
-
 </application>
 
     <uses-permission android:name="android.permission.INTERNET" />
