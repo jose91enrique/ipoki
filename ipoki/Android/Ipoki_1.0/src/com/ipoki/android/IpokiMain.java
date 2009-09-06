@@ -7,10 +7,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
+import java.util.Locale;
 
 import com.ipoki.android.Friend;
 import com.ipoki.android.FriendsUpdateThread;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -18,6 +19,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -60,7 +63,8 @@ public class IpokiMain extends Activity {
 	public boolean mOn = false;
 	private final String mServer = "http://www.ipoki.com";
 	private String mVer = "AND-1.0";
-	
+	Geocoder mGeocoder;
+
 	private double oldLatitude = 0;
 	private double oldLongitude = 0;
 	private String mUser = null;
@@ -69,7 +73,7 @@ public class IpokiMain extends Activity {
 	private String wprivate = "0";
 	private String wrec = "0";
 	private long lastTime = 0;
-
+	
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -77,7 +81,10 @@ public class IpokiMain extends Activity {
         
         setContentView(R.layout.main);
 		
-	    // los textbox
+		mFriendsUpdateThread = new FriendsUpdateThread();
+		mGeocoder = new Geocoder(this, Locale.getDefault());
+
+		// los textbox
         outlat = (TextView) findViewById(R.id.txtlat);
         outlon = (TextView) findViewById(R.id.txtlon);
         outspeed = (TextView) findViewById(R.id.txtspeed);
@@ -102,6 +109,7 @@ public class IpokiMain extends Activity {
 		mLocationListener = new MyLocationListener();
 		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 1, mLocationListener);
 		mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 3000, 100, mLocationListener);
+
 
 		// leer preferencias la primera vez
 		PreferenceManager.setDefaultValues(this, R.xml.setup, false);
@@ -133,14 +141,10 @@ public class IpokiMain extends Activity {
 
 	 public void ShowLoc() {    	 
       	 // pintar la posicion, velocidad y altura
-    	 String work = String.valueOf(mLongitude);
-    	 outlon.setText(work.substring(0,9));
-    	 work = String.valueOf(mLatitude);
-    	 outlat.setText(work.substring(0,9));
-    	 work = String.format("%.1f",mSpeed*3.6);
-    	 outspeed.setText(work);
-    	 work = String.format("%.1f",mHigh);
-    	 outhigh.setText(work);
+    	 outlon.setText(String.format("%.5f", mLongitude));
+    	 outlat.setText(String.format("%.5f", mLatitude));
+    	 outspeed.setText(String.format("%.1f",mSpeed*3.6));
+    	 outhigh.setText(String.format("%.1f",mHigh));
     	 
     	 if (mOn) {
     		// si esta conectado se manda la posicion 
@@ -207,14 +211,14 @@ public class IpokiMain extends Activity {
  		 	    builder.setMessage("Wrong user or password");
  		        builder.show();
  		 	} else {
- 		    	String[] resultData = result.substring(3).split("\\${3}");
- 		    	if (resultData.length == 0) {
+ 		    	String[] resultData = result.split("\\${3}");
+ 		    	if (resultData.length >= 6) {
  			 		mUserKey = resultData[1];
  			 		wrec = resultData[4];
  			 		wprivate = resultData[5];
  			 		mOn = true;
  			 		
- 			    	String userUrl = mServer + "http://www.ipoki.com/myfriends2.php?iduser=" + mUserKey;
+ 			    	String userUrl = "http://www.ipoki.com/myfriends2.php?iduser=" + mUserKey;
  					try {
  						URL url = new URL(userUrl);
  						new DownloadFriends().execute(url);
@@ -253,6 +257,7 @@ public class IpokiMain extends Activity {
  	    								friendsData[6 * i + 4], 
  	    								friendsData[6 * i + 5]);
  	    		friends[i].updateDistanceBearing(mLongitude, mLatitude);
+ 	    		friends[i].setAddress(mGeocoder);
  	    	}
  	    	
  	    	return friends;
@@ -565,8 +570,7 @@ public class IpokiMain extends Activity {
             	ShowSetup();
             	break;            
             case R.id.ar_view:
-                //settings
-            	//ShowSetup();
+            	startActivity(new Intent(this, IpokiAR.class));
             	break;            
             case R.id.exit:
                 //exit

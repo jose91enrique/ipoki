@@ -1,11 +1,14 @@
 package com.ipoki.android;
 
+import java.text.DateFormat;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -27,8 +30,12 @@ public class ARView extends View implements SensorEventListener {
     private final Drawable mSelectedIpokito;
     private final int mIpokitoSemiHeight;
     private final int mIpokitoSemiWidth;
-    private final Paint mPaintRect;
-    private final Paint mPaintText;
+    private final int mSelectedIpokitoSemiHeight;
+    private final int mSelectedIpokitoSemiWidth;
+    private final Paint mPaintTextUsername;
+    private final Paint mPaintTextLabels;
+    private final Paint mPaintTextData;
+    private final GradientDrawable mFriendsRect;
     private Friend mSelectedFriend = null;
 
 
@@ -36,22 +43,36 @@ public class ARView extends View implements SensorEventListener {
 		super(context);
 		
 		// Ipokito bitmap.
-        mIpokito = context.getResources().getDrawable(R.drawable.ipokito2);
-        mSelectedIpokito = context.getResources().getDrawable(R.drawable.selected_ipokito);
+        mIpokito = context.getResources().getDrawable(R.drawable.ipokito32x32orange);
+        mSelectedIpokito = context.getResources().getDrawable(R.drawable.ipokito48x48orange);
         mIpokitoSemiHeight = mIpokito.getIntrinsicHeight() / 2;
         mIpokitoSemiWidth = mIpokito.getIntrinsicWidth() / 2;
+        mSelectedIpokitoSemiHeight = mSelectedIpokito.getIntrinsicHeight() / 2;
+        mSelectedIpokitoSemiWidth = mSelectedIpokito.getIntrinsicWidth() / 2;
         
-        // Rectangle features
-        mPaintRect = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPaintRect.setAntiAlias(true);
-        mPaintRect.setStyle(Paint.Style.FILL);
-        mPaintRect.setColor(Color.YELLOW);
-        mPaintRect.setAlpha(0x80);
-        mPaintText = new Paint();
-        mPaintText.setTextSize(16);
-        mPaintText.setTextAlign(Paint.Align.CENTER);
-        mPaintText.setColor(Color.BLUE);
-	}
+        mFriendsRect = new GradientDrawable();
+        mFriendsRect.setShape(GradientDrawable.RECTANGLE);
+        mFriendsRect.setCornerRadius(24);
+        mFriendsRect.setAlpha(0x80);
+        
+        mPaintTextUsername = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaintTextUsername.setTextSize(24);
+        mPaintTextUsername.setTextAlign(Paint.Align.LEFT);
+        mPaintTextUsername.setColor(Color.LTGRAY);
+        mPaintTextUsername.setTypeface(Typeface.create((Typeface)null, Typeface.BOLD));
+
+        mPaintTextLabels = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaintTextLabels.setTextSize(10);
+        mPaintTextLabels.setTextAlign(Paint.Align.LEFT);
+        mPaintTextLabels.setColor(Color.LTGRAY);
+        mPaintTextLabels.setTypeface(Typeface.create((Typeface)null, Typeface.BOLD));
+
+        mPaintTextData = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaintTextData.setTextSize(10);
+        mPaintTextData.setTextAlign(Paint.Align.LEFT);
+        mPaintTextData.setColor(Color.LTGRAY);
+        //mPaintTextData.setTypeface(Typeface.create((Typeface)null, Typeface.BOLD));
+    }
     
     protected void onDraw(Canvas canvas) {
     	super.onDraw(canvas);
@@ -72,14 +93,21 @@ public class ARView extends View implements SensorEventListener {
         int canvasHeight = canvas.getHeight();
         int canvasWidth = canvas.getWidth();
         Drawable icon;
+        int ipokitoSemiWidth;
+        int ipokitoSemiHeight;
+        
         if (IpokiMain.mFriends != null) {
 	        for(Friend f: IpokiMain.mFriends) {
 	        	double d[] = f.getDistanceBearing();
 	        	if (f.isSelected) {
 	        		icon = mSelectedIpokito;
+	        		ipokitoSemiWidth = mSelectedIpokitoSemiWidth;
+	        		ipokitoSemiHeight = mSelectedIpokitoSemiHeight;
 	        	}
 	        	else {
 	        		icon = mIpokito;
+	        		ipokitoSemiWidth = mIpokitoSemiWidth;
+	        		ipokitoSemiHeight = mIpokitoSemiHeight;
 	        	}
 
 	        	/* With remapping, precision gets worse. Instead of remapping, we change axis by hand to take into account landscape mode
@@ -88,20 +116,32 @@ public class ARView extends View implements SensorEventListener {
 	        	x = (int) ((0.5 - 2 * angDiff / 3) * canvasWidth);
 	        	// We take roll instead of pitch, since the phone is rotated
 	            y = (int) (-1 * (mOrientationValues[2] / m2PiDiv3  + 0.25) * canvasHeight);
-	            icon.setBounds(x - mIpokitoSemiWidth, y - mIpokitoSemiHeight, x + mIpokitoSemiWidth, y + mIpokitoSemiHeight);
+	            icon.setBounds(x - ipokitoSemiWidth, y - ipokitoSemiHeight, x + mIpokitoSemiWidth, y + mIpokitoSemiHeight);
 	            icon.draw(canvas);
 	            f.setScreenPos(x, y);
 	        }
     	}    
         
-        canvas.drawRect(0, 0, 100, canvasHeight, mPaintRect);
+        //canvas.drawRect(0, 0, canvasWidth, 100, mPaintRect);
+        mFriendsRect.setBounds(5, canvasHeight - 115, canvasWidth - 5, canvasHeight - 5);
+        mFriendsRect.draw(canvas);
+        
         if (mSelectedFriend != null) {
         	Drawable d = mSelectedFriend.mPicture;
         	if (d != null) {
-	        	d.setBounds(10, 10, 90, 90);
+	        	d.setBounds(100, canvasHeight - 110, 200, canvasHeight - 10);
 	        	d.draw(canvas);
         	}
-        	canvas.drawText(mSelectedFriend.mName, 10, 100, paint);
+        	canvas.drawText(mSelectedFriend.mName, 210, canvasHeight - 90, mPaintTextUsername);
+        	canvas.drawText("Distance (km):", 210, canvasHeight - 72, mPaintTextLabels);
+        	canvas.drawText(String.format("%.1f", mSelectedFriend.mDistance), 280, canvasHeight - 72, mPaintTextData);
+        	canvas.drawText("Location date:", 210, canvasHeight - 56, mPaintTextLabels);
+        	DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
+        	canvas.drawText(df.format(mSelectedFriend.mLocationDate), 280, canvasHeight - 56, mPaintTextData);
+        	canvas.drawText("Location:", 210, canvasHeight - 44, mPaintTextLabels);
+        	canvas.drawText(mSelectedFriend.mAddress.getCountryName(), 280, canvasHeight - 44, mPaintTextData);
+        	canvas.drawText(mSelectedFriend.mAddress.getAddressLine(0), 210, canvasHeight - 30, mPaintTextData);
+        	canvas.drawText(mSelectedFriend.mAddress.getLocality(), 210, canvasHeight - 16, mPaintTextData);
         }
     }
 

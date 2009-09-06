@@ -56,7 +56,7 @@ public class FriendsView extends ListActivity {
 		pLat = mFriends[position].mLatitude;
 		pLon = mFriends[position].mLongitude;
 //		pFoto = mFriends[position].mRutafoto;
-		pFecha = mFriends[position].mLocationDate;
+		pFecha = mFriends[position].mLocationDate.toLocaleString();
 		if ((pLat==0) & (pLon==0)) {
 	 	    AlertDialog.Builder builder = new AlertDialog.Builder(this);
 	 	    builder.setTitle("Warning");
@@ -265,7 +265,7 @@ public class FriendsView extends ListActivity {
 				   "Loading Augmented Reality...", 
 				   Toast.LENGTH_LONG).show();
  		Intent intent = new Intent(); 
-  		intent.setClass(FriendsView.this, IpokiAR.class); 
+  		intent.setClass(FriendsView.this, IpokiMain.class); 
  		startActivity(intent);
      }
 

@@ -9,8 +9,12 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.AsyncTask;
 
 class Friend {
@@ -18,10 +22,11 @@ class Friend {
 	final double mLongitude;
 	final double mLatitude;
 	final String mSessionKey;
-	final String mLocationDate;
+	Date mLocationDate;
 	Drawable mPicture;
+	Address mAddress;
 	boolean isSelected = false;
-	private double mDistance;
+	public double mDistance;
 	private double mBearing;
 	private int mX = -1;
 	private int mY = -1;
@@ -33,22 +38,31 @@ class Friend {
 		mLongitude = Double.parseDouble(longitude);
 		mLatitude = Double.parseDouble(latitude);
 		mSessionKey = sessionKey;
-// TODO : no leer las fotos		
-//		SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-/*		try {
+		SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		try {
 			URL url = new URL(urlPicture);
 			new DownloadPicture().execute(url);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} 
-*/
-//		try {
-/// TODO: ;-) NO!!			mLocationDate = dateFormater.parse(dateTime);
-			mLocationDate = dateTime;
-//		} catch (ParseException e) {
-//			mLocationDate = null;			
-//			e.printStackTrace();
-//		}
+
+		try {
+			mLocationDate = dateFormater.parse(dateTime);
+		} catch (ParseException e) {
+			mLocationDate = null;			
+			e.printStackTrace();
+		}
+	}
+	
+	public void setAddress(Geocoder geocoder) {
+		try {
+			List<Address> addresses = geocoder.getFromLocation(mLatitude, mLongitude, 1);
+			if (!addresses.isEmpty()) {
+				mAddress = addresses.get(0);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void setScreenPos(int x, int y) {
@@ -125,9 +139,9 @@ class FriendsUpdateThread extends Thread {
 	
     public void run() {
         while (mRun) {
-        	if (IpokiAR.mFriends != null) {
-	        	for (Friend f: IpokiAR.mFriends) {
-	       			f.updateDistanceBearing(IpokiAR.mLongitude, IpokiAR.mLatitude);
+        	if (IpokiMain.mFriends != null) {
+	        	for (Friend f: IpokiMain.mFriends) {
+	       			f.updateDistanceBearing(IpokiMain.mLongitude, IpokiMain.mLatitude);
 	        	}
         	}
         	try {

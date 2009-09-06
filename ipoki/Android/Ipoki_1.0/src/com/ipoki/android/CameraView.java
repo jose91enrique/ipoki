@@ -29,8 +29,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         mCamera = Camera.open();
         try {
            mCamera.setPreviewDisplay(holder);
-           IpokiAR.mFriendsUpdateThread.setRunning(true);
-           IpokiAR.mFriendsUpdateThread.start();
+           IpokiMain.mFriendsUpdateThread.setRunning(true);
+           IpokiMain.mFriendsUpdateThread.start();
         } catch (IOException exception) {
             mCamera.release();
             mCamera = null;
@@ -47,10 +47,10 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         mCamera = null;
         
        boolean retry = true;
-        IpokiAR.mFriendsUpdateThread.setRunning(false);
+       IpokiMain.mFriendsUpdateThread.setRunning(false);
         while (retry) {
             try {
-            	IpokiAR.mFriendsUpdateThread.join();
+            	IpokiMain.mFriendsUpdateThread.join();
                 retry = false;
            } catch (InterruptedException e) {
             }
