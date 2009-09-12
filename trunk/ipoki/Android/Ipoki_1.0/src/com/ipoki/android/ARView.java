@@ -9,7 +9,6 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.PaintDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -22,10 +21,10 @@ public class ARView extends View implements SensorEventListener {
     private float   mAccelerometerValues[] = new float[3];
     private float   mMagneticValues[] = new float[3];
     private float rotationMatrix[] = new float[16];
-    //private float remappedRotationMatrix[] = new float[16];
     private float mOrientationValues[] = new float[3];
     final double m2PiDiv3 = 2 * Math.PI / 3;
     final double m5PiDiv6 = 5 * Math.PI / 6;
+    final double mPiDiv6 = Math.PI / 6;
     final double mPiDiv4 = Math.PI / 4;
     final double mPiDiv2 = Math.PI / 2;
     private final Drawable mIpokito;
@@ -39,6 +38,7 @@ public class ARView extends View implements SensorEventListener {
     private final Paint mPaintTextUsername;
     private final Paint mPaintTextLabels;
     private final Paint mPaintTextData;
+    private final Paint mPaintRadar;
     private final GradientDrawable mFriendsRect;
     private Friend mSelectedFriend = null;
     private int mTopLeftArrow;
@@ -84,17 +84,25 @@ public class ARView extends View implements SensorEventListener {
         mPaintTextData.setTextSize(10);
         mPaintTextData.setTextAlign(Paint.Align.LEFT);
         mPaintTextData.setColor(Color.LTGRAY);
+        
+        mPaintRadar = new Paint();
+        mPaintRadar.setStyle(Paint.Style.STROKE);
+        mPaintRadar.setColor(Color.LTGRAY);
+        mPaintRadar.setAlpha(255);
     }
     
     protected void onDraw(Canvas canvas) {
     	super.onDraw(canvas);
     	
         SensorManager.getRotationMatrix(rotationMatrix, null, mAccelerometerValues, mMagneticValues);
-        // With remapping, precision gets worse
-        //SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, remappedRotationMatrix);
-        //SensorManager.getOrientation(remappedRotationMatrix, mOrientationValues);
         SensorManager.getOrientation(rotationMatrix, mOrientationValues);
+        
+        double direction = mOrientationValues[0] + mPiDiv2;
 
+        canvas.drawCircle(50, 50, 45, mPaintRadar);
+        canvas.drawLine(50, 50, (float)(50 + 45 * Math.cos(direction + mPiDiv6)), (float)(50 + 45 * Math.sin(direction + mPiDiv6)), mPaintRadar);
+        canvas.drawLine(50, 50, (float)(50 + 45 * Math.cos(direction - mPiDiv6)), (float)(50 + 45 * Math.sin(direction - mPiDiv6)), mPaintRadar);
+        
     	Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.YELLOW);
@@ -124,7 +132,7 @@ public class ARView extends View implements SensorEventListener {
 
 	        	/* With remapping, precision gets worse. Instead of remapping, we change axis by hand to take into account landscape mode
 	        	 * We add 90º to azimuth (when the camera points to the north, the top of the phone points to the west) */
-	        	double angDiff = getAngleDiff(mOrientationValues[0] + mPiDiv2, d[1]);
+	        	double angDiff = getAngleDiff(direction, d[1]);
 	        	x = (int) ((0.5 - 2 * angDiff / 3) * canvasWidth);
 	        	// We take roll instead of pitch, since the phone is rotated
 	            y = (int) (-1 * (mOrientationValues[2] / m2PiDiv3  + 0.25) * canvasHeight);
@@ -139,7 +147,6 @@ public class ARView extends View implements SensorEventListener {
 	    mTopRightArrow = canvasHeight - 84;
 	    mLeftRightArrow = canvasWidth - 84;
 
-        //canvas.drawRect(0, 0, canvasWidth, 100, mPaintRect);
         mFriendsRect.setBounds(5, canvasHeight - 115, canvasWidth - 5, canvasHeight - 5);
         mFriendsRect.draw(canvas);
         
@@ -240,7 +247,7 @@ public class ARView extends View implements SensorEventListener {
 		return true;
 	}
 
-   private double getAngleDiff(double ang1, double ang2) {
+	private double getAngleDiff(double ang1, double ang2) {
 		double result = ang1 - ang2;
 		if (result >=  Math.PI)
 			result -= 2 * Math.PI;
