@@ -10,7 +10,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import android.graphics.drawable.Drawable;
 import android.location.Address;
@@ -27,9 +26,11 @@ class Friend {
 	Address mAddress;
 	boolean isSelected = false;
 	public double mDistance;
-	private double mBearing;
+	public double mBearing;
 	private int mX = -1;
 	private int mY = -1;
+	Friend mNext;
+	Friend mPrevious;
 	
 	static final int earthRatio = 6371;
 	
