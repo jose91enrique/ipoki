@@ -79,7 +79,10 @@ public class IpokiMain extends Activity {
         setContentView(R.layout.main);
 		
 		mFriendsUpdateThread = new FriendsUpdateThread();
-		mGeocoder = new Geocoder(this, Locale.getDefault());
+        IpokiMain.mFriendsUpdateThread.setRunning(true);
+        IpokiMain.mFriendsUpdateThread.start();
+
+        mGeocoder = new Geocoder(this, Locale.getDefault());
 
 		// los textbox
         outlat = (TextView) findViewById(R.id.txtlat);
@@ -669,5 +672,14 @@ public class IpokiMain extends Activity {
     protected void onDestroy() {
     	super.onDestroy();
 		mLocationManager.removeUpdates(mLocationListener);
+       boolean retry = true;
+       IpokiMain.mFriendsUpdateThread.setRunning(false);
+        while (retry) {
+            try {
+            	IpokiMain.mFriendsUpdateThread.join();
+                retry = false;
+           } catch (InterruptedException e) {
+            }
+        }
     }    
 }
