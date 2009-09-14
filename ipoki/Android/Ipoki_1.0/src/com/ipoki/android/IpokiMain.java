@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 import java.util.Locale;
 
 import com.ipoki.android.Friend;
@@ -19,7 +18,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
@@ -257,43 +255,6 @@ public class IpokiMain extends Activity {
  	    								friendsData[6 * i + 5]);
  	    		friends[i].updateDistanceBearing(mLongitude, mLatitude);
  	    		friends[i].setAddress(mGeocoder);
- 	    		if (i > 1) {
- 	 	    		Friend candidateFriend = friends[i - 1]; 
- 	 	    		Friend friend = friends[i]; 
- 	 	    		if (candidateFriend.mBearing > friend.mBearing) {
- 	 	    			while(candidateFriend.mBearing > friend.mBearing && candidateFriend.mBearing > candidateFriend.mPrevious.mBearing) {
- 	 	    				candidateFriend = candidateFriend.mPrevious;
- 	 	    			}
- 	 	    			if (candidateFriend.mBearing < candidateFriend.mPrevious.mBearing && candidateFriend.mBearing > friend.mBearing)
- 	 	    				candidateFriend = candidateFriend.mPrevious;
- 	 	    			friend.mPrevious = candidateFriend;
- 	 	    			friend.mNext = candidateFriend.mNext;
- 	 	    			friend.mNext.mPrevious = friend;
- 	 	    			candidateFriend.mNext = friend;
- 	 	    		}
- 	 	    		else {
-	 	    			while(candidateFriend.mBearing < friend.mBearing && candidateFriend.mBearing < candidateFriend.mNext.mBearing) {
-	 	    				candidateFriend = candidateFriend.mNext;
-	 	    			}
-	 	    			if (candidateFriend.mBearing > candidateFriend.mNext.mBearing && candidateFriend.mBearing < friend.mBearing)
-	 	    				candidateFriend = candidateFriend.mNext;
- 	 	    			friend.mPrevious = candidateFriend.mPrevious;
- 	 	    			friend.mNext = candidateFriend;
- 	 	    			friend.mPrevious.mNext = friend;
- 	 	    			candidateFriend.mPrevious = friend;
- 	 	    		}
- 	    		}
- 	    		else if (i == 0) {
- 	    			friends[0].mNext = friends[0];
-	    			friends[0].mPrevious = friends[0];
-	    			friends[0].isSelected = true;
- 	    		} 
- 	    		else if (i == 1) {
- 	    			friends[0].mNext = friends[1];
-	    			friends[0].mPrevious = friends[1];
- 	    			friends[1].mNext = friends[0];
-	    			friends[1].mPrevious = friends[0];
- 	    		}
  	    	}
  	    	
  	    	return friends;
@@ -301,6 +262,9 @@ public class IpokiMain extends Activity {
      	
  	    protected void onPostExecute(Friend[] friends) {
  	    	mFriends = friends;
+ 	    	Friend.mFriendsInDistance = Friend.getFriendsInDistance(mFriends);
+ 	    	if (Friend.mFriendsInDistance.length > 0)
+ 	    		ARView.mSelectedFriend = Friend.mFriendsInDistance[0];
  	    }
      }
 

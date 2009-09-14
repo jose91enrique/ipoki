@@ -39,8 +39,9 @@ public class ARView extends View implements SensorEventListener {
     private final Paint mPaintTextLabels;
     private final Paint mPaintTextData;
     private final Paint mPaintRadar;
+    private final Paint mPaintRadarDots;
     private final GradientDrawable mFriendsRect;
-    private Friend mSelectedFriend = null;
+    public static Friend mSelectedFriend = null;
     private int mTopLeftArrow;
     private int mLeftLeftArrow;
     private int mTopRightArrow;
@@ -50,8 +51,8 @@ public class ARView extends View implements SensorEventListener {
     public ARView(Context context) {
 		super(context);
 		
-		if (IpokiMain.mFriends != null && IpokiMain.mFriends.length > 0)
-			mSelectedFriend = IpokiMain.mFriends[0];
+		if (Friend.mFriendsInDistance != null && Friend.mFriendsInDistance.length > 0)
+			mSelectedFriend = Friend.mFriendsInDistance[0];
 	    // Ipokito bitmap.
         mIpokito = context.getResources().getDrawable(R.drawable.ipokito_friend);
         mSelectedIpokito = context.getResources().getDrawable(R.drawable.ipokito_selected);
@@ -89,6 +90,9 @@ public class ARView extends View implements SensorEventListener {
         mPaintRadar.setStyle(Paint.Style.STROKE);
         mPaintRadar.setColor(Color.LTGRAY);
         mPaintRadar.setAlpha(255);
+        
+        mPaintRadarDots = new Paint();
+        mPaintRadarDots.setColor(Color.YELLOW);
     }
     
     protected void onDraw(Canvas canvas) {
@@ -116,8 +120,8 @@ public class ARView extends View implements SensorEventListener {
         int ipokitoSemiWidth;
         int ipokitoSemiHeight;
         
-        if (IpokiMain.mFriends != null) {
-	        for(Friend f: IpokiMain.mFriends) {
+        if (Friend.mFriendsInDistance != null) {
+	        for(Friend f: Friend.mFriendsInDistance) {
 	        	double d[] = f.getDistanceBearing();
 	        	if (f.isSelected) {
 	        		icon = mSelectedIpokito;
@@ -139,6 +143,9 @@ public class ARView extends View implements SensorEventListener {
 	            icon.setBounds(x - ipokitoSemiWidth, y - ipokitoSemiHeight, x + mIpokitoSemiWidth, y + mIpokitoSemiHeight);
 	            icon.draw(canvas);
 	            f.setScreenPos(x, y);
+	            
+	            float coords[] = getRadarFriendCoords(d[0], d[1]);
+	            canvas.drawPoint(coords[0], coords[1], mPaintRadarDots);
 	        }
     	}    
         
@@ -167,7 +174,7 @@ public class ARView extends View implements SensorEventListener {
         	canvas.drawText("Distance (km):", 210, canvasHeight - 72, mPaintTextLabels);
         	canvas.drawText(String.format("%.1f", mSelectedFriend.mDistance), 280, canvasHeight - 72, mPaintTextData);
         	canvas.drawText("Location date:", 210, canvasHeight - 58, mPaintTextLabels);
-        	DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
+        	DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
         	canvas.drawText(df.format(mSelectedFriend.mLocationDate), 280, canvasHeight - 58, mPaintTextData);
         	canvas.drawText("Location:", 210, canvasHeight - 44, mPaintTextLabels);
         	canvas.drawText(mSelectedFriend.mAddress.getCountryName(), 280, canvasHeight - 44, mPaintTextData);
@@ -182,6 +189,15 @@ public class ARView extends View implements SensorEventListener {
         		Log.e("IPOKI", npx.toString());
         	}
         }
+    }
+    
+    private float[] getRadarFriendCoords(double distance, double bearing) {
+    	float coords[] = new float[2];
+    	
+    	coords[0] = (float) (50 + 45 * Math.cos(bearing) * distance / Friend.mFriendsDistance);
+    	coords[1] = (float) (50 + 45 * Math.sin(bearing) * distance / Friend.mFriendsDistance);
+    	
+    	return coords;
     }
 
 	@Override
@@ -217,24 +233,22 @@ public class ARView extends View implements SensorEventListener {
 			int distance = 20;
 			
 			if (Math.abs(mTopLeftArrow + 24 - y) < 20 && Math.abs(mLeftLeftArrow + 24 - x) < 20) {
-				Log.i("Ipoki", "LeftArrow pressed");
-				Log.i("Ipoki", "Friend: " + mSelectedFriend.mName + " - " + String.format("%f", mSelectedFriend.mBearing));
-				Log.i("Ipoki", "Next Friend: " + mSelectedFriend.mPrevious.mName + " - " + String.format("%f", mSelectedFriend.mPrevious.mBearing));
-				mSelectedFriend.isSelected = false;
-				mSelectedFriend = mSelectedFriend.mPrevious;
-				mSelectedFriend.isSelected = true;
+				if (mSelectedFriend != null) {
+					mSelectedFriend.isSelected = false;
+					mSelectedFriend = mSelectedFriend.mPrevious;
+					mSelectedFriend.isSelected = true;
+				}
 				return true;
 			}
 			else if (Math.abs(mTopRightArrow + 24 - y) < 20 && Math.abs(mLeftRightArrow + 24 - x) < 20){
-				Log.i("Ipoki", "RightArrow pressed");
-				Log.i("Ipoki", "Friend: " + mSelectedFriend.mName + " - " + String.format("%f", mSelectedFriend.mBearing));
-				Log.i("Ipoki", "Next Friend: " + mSelectedFriend.mNext.mName + " - " + String.format("%f", mSelectedFriend.mNext.mBearing));
-				mSelectedFriend.isSelected = false;
-				mSelectedFriend = mSelectedFriend.mNext;
-				mSelectedFriend.isSelected = true;
+				if (mSelectedFriend != null) {
+					mSelectedFriend.isSelected = false;
+					mSelectedFriend = mSelectedFriend.mNext;
+					mSelectedFriend.isSelected = true;
+				}
 				return true;
 			}
-			for (Friend f: IpokiMain.mFriends) {
+			for (Friend f: Friend.mFriendsInDistance) {
 				int friendDis = f.getDistanceFromScreenPoint(x, y);
 				if (friendDis < distance) {
 					distance = friendDis;
