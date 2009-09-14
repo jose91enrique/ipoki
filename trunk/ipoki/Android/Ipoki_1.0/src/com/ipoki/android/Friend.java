@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -31,6 +32,8 @@ class Friend {
 	private int mY = -1;
 	Friend mNext;
 	Friend mPrevious;
+	public static Friend[] mFriendsInDistance;
+	static double mFriendsDistance = 10; 
 	
 	static final int earthRatio = 6371;
 	
@@ -121,6 +124,55 @@ class Friend {
 	    protected void onPostExecute(Drawable picture) {
 	    	mPicture = picture;
 	    }
+    }
+    
+    public static void placeFriendInOrder(Friend existingFriend, Friend newFriend) {
+  		if (existingFriend.mBearing > newFriend.mBearing) {
+  			while(existingFriend.mBearing > newFriend.mBearing && existingFriend.mBearing > existingFriend.mPrevious.mBearing) {
+  				existingFriend = existingFriend.mPrevious;
+  			}
+  			if (existingFriend.mBearing < existingFriend.mPrevious.mBearing && existingFriend.mBearing > newFriend.mBearing)
+  				existingFriend = existingFriend.mPrevious;
+  			newFriend.mPrevious = existingFriend;
+  			newFriend.mNext = existingFriend.mNext;
+  			newFriend.mNext.mPrevious = newFriend;
+  			existingFriend.mNext = newFriend;
+  		}
+  		else {
+ 			while(existingFriend.mBearing < newFriend.mBearing && existingFriend.mBearing < existingFriend.mNext.mBearing) {
+ 				existingFriend = existingFriend.mNext;
+ 			}
+ 			if (existingFriend.mBearing > existingFriend.mNext.mBearing && existingFriend.mBearing < newFriend.mBearing)
+ 				existingFriend = existingFriend.mNext;
+  			newFriend.mPrevious = existingFriend.mPrevious;
+  			newFriend.mNext = existingFriend;
+  			newFriend.mPrevious.mNext = newFriend;
+  			existingFriend.mPrevious = newFriend;
+  		}
+    }
+    
+    public static Friend[] getFriendsInDistance(Friend[] allFriends) {
+    	ArrayList<Friend> friendsArray = new ArrayList<Friend>();
+    	
+    	int friendsInDistanceNum = 0;
+	    for (Friend f: allFriends) {
+	    	if (f.mDistance < Friend.mFriendsDistance) {
+	    		if (friendsInDistanceNum > 0) {
+	 	    		Friend existingFriend = friendsArray.get(friendsInDistanceNum - 1); 
+	 	    		Friend newFriend = f; 
+	 	    		Friend.placeFriendInOrder(existingFriend, newFriend);
+	    		}
+	    		else if (friendsInDistanceNum == 0) {
+	    			f.mNext = f;
+	    			f.mPrevious = f;
+	    			f.isSelected = true;
+	    		} 
+	    		friendsInDistanceNum++;
+	    		friendsArray.add(f);
+	    	}
+ 	    }
+	    Friend[] friendsInDistance = new Friend[friendsArray.size()];
+    	return friendsArray.toArray(friendsInDistance);
     }
 }
 
