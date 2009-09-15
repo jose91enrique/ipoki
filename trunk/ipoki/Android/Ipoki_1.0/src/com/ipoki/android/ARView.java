@@ -38,6 +38,7 @@ public class ARView extends View implements SensorEventListener {
     private final Paint mPaintTextUsername;
     private final Paint mPaintTextLabels;
     private final Paint mPaintTextData;
+    private final GradientDrawable mDrawableRadar;
     private final Paint mPaintRadar;
     private final Paint mPaintRadarDots;
     private final GradientDrawable mFriendsRect;
@@ -46,6 +47,7 @@ public class ARView extends View implements SensorEventListener {
     private int mLeftLeftArrow;
     private int mTopRightArrow;
     private int mLeftRightArrow;
+    private int mCanvasHeight;
 
 
     public ARView(Context context) {
@@ -63,11 +65,13 @@ public class ARView extends View implements SensorEventListener {
         mSelectedIpokitoSemiHeight = mSelectedIpokito.getIntrinsicHeight() / 2;
         mSelectedIpokitoSemiWidth = mSelectedIpokito.getIntrinsicWidth() / 2;
         
-        mFriendsRect = new GradientDrawable();
+        mFriendsRect = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[] { Color.LTGRAY, Color.DKGRAY });
+        mFriendsRect.setGradientType(GradientDrawable.LINEAR_GRADIENT);
         mFriendsRect.setShape(GradientDrawable.RECTANGLE);
         mFriendsRect.setStroke(3, Color.WHITE);
         mFriendsRect.setCornerRadius(48);
-        mFriendsRect.setAlpha(0x80);
+        mFriendsRect.setAlpha(0xC0);
         
         mPaintTextUsername = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaintTextUsername.setTextSize(24);
@@ -86,13 +90,22 @@ public class ARView extends View implements SensorEventListener {
         mPaintTextData.setTextAlign(Paint.Align.LEFT);
         mPaintTextData.setColor(Color.LTGRAY);
         
-        mPaintRadar = new Paint();
+        mPaintRadar = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaintRadar.setStyle(Paint.Style.STROKE);
         mPaintRadar.setColor(Color.LTGRAY);
-        mPaintRadar.setAlpha(255);
+        mPaintRadar.setTextSize(12);
+        mPaintRadar.setTextAlign(Paint.Align.CENTER);
+        mPaintRadar.setTypeface(Typeface.create((Typeface)null, Typeface.BOLD));
+        
+        mDrawableRadar = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
+                new int[] { Color.LTGRAY, Color.DKGRAY });
+        mDrawableRadar.setGradientRadius((float)(Math.sqrt(2) * 60));
+        mDrawableRadar.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+        mDrawableRadar.setShape(GradientDrawable.OVAL);
+        mDrawableRadar.setAlpha(0xC0);
         
         mPaintRadarDots = new Paint();
-        mPaintRadarDots.setColor(Color.YELLOW);
+        mPaintRadarDots.setColor(0xff6600ff);
     }
     
     protected void onDraw(Canvas canvas) {
@@ -103,9 +116,11 @@ public class ARView extends View implements SensorEventListener {
         
         double direction = mOrientationValues[0] + mPiDiv2;
 
-        canvas.drawCircle(50, 50, 45, mPaintRadar);
-        canvas.drawLine(50, 50, (float)(50 + 45 * Math.cos(direction + mPiDiv6)), (float)(50 + 45 * Math.sin(direction + mPiDiv6)), mPaintRadar);
-        canvas.drawLine(50, 50, (float)(50 + 45 * Math.cos(direction - mPiDiv6)), (float)(50 + 45 * Math.sin(direction - mPiDiv6)), mPaintRadar);
+        mDrawableRadar.setBounds(5, 15, 95, 105);
+        mDrawableRadar.draw(canvas);
+        canvas.drawLine(50, 60, (float)(50 + 45 * Math.cos(direction + mPiDiv6)), (float)(60 + 45 * Math.sin(direction + mPiDiv6)), mPaintRadar);
+        canvas.drawLine(50, 60, (float)(50 + 45 * Math.cos(direction - mPiDiv6)), (float)(60 + 45 * Math.sin(direction - mPiDiv6)), mPaintRadar);
+        canvas.drawText("N", 50, 13, mPaintRadar);
         
     	Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
@@ -113,12 +128,13 @@ public class ARView extends View implements SensorEventListener {
         paint.setTextSize(20);
 
         int x;
-        int y = 20;
-        int canvasHeight = canvas.getHeight();
+        
+        mCanvasHeight = canvas.getHeight();
         int canvasWidth = canvas.getWidth();
         Drawable icon;
         int ipokitoSemiWidth;
         int ipokitoSemiHeight;
+        Paint dotPaint;
         
         if (Friend.mFriendsInDistance != null) {
 	        for(Friend f: Friend.mFriendsInDistance) {
@@ -127,11 +143,13 @@ public class ARView extends View implements SensorEventListener {
 	        		icon = mSelectedIpokito;
 	        		ipokitoSemiWidth = mSelectedIpokitoSemiWidth;
 	        		ipokitoSemiHeight = mSelectedIpokitoSemiHeight;
+	        		dotPaint = mPaintRadarDots;
 	        	}
 	        	else {
 	        		icon = mIpokito;
 	        		ipokitoSemiWidth = mIpokitoSemiWidth;
 	        		ipokitoSemiHeight = mIpokitoSemiHeight;
+	        		dotPaint = mPaintRadar;
 	        	}
 
 	        	/* With remapping, precision gets worse. Instead of remapping, we change axis by hand to take into account landscape mode
@@ -139,51 +157,55 @@ public class ARView extends View implements SensorEventListener {
 	        	double angDiff = getAngleDiff(direction, d[1]);
 	        	x = (int) ((0.5 - 2 * angDiff / 3) * canvasWidth);
 	        	// We take roll instead of pitch, since the phone is rotated
-	            y = (int) (-1 * (mOrientationValues[2] / m2PiDiv3  + 0.25) * canvasHeight);
-	            icon.setBounds(x - ipokitoSemiWidth, y - ipokitoSemiHeight, x + mIpokitoSemiWidth, y + mIpokitoSemiHeight);
+	        	double unscaledY = -1 * (mOrientationValues[2] / m2PiDiv3  + 0.25) * mCanvasHeight;
+	            int scaledY = scaleYCoord(unscaledY, d[0]);
+	            double iconScale = scaleIcon(d[0]);
+	            int ipokitoX = (int)(ipokitoSemiWidth * iconScale);
+	            int ipokitoY = (int)(ipokitoSemiHeight * iconScale);
+	            icon.setBounds(x - ipokitoX, scaledY - ipokitoY, x + ipokitoX, scaledY + ipokitoY);
 	            icon.draw(canvas);
-	            f.setScreenPos(x, y);
+	            f.setScreenPos(x, scaledY);
 	            
 	            float coords[] = getRadarFriendCoords(d[0], d[1]);
-	            canvas.drawPoint(coords[0], coords[1], mPaintRadarDots);
+	            canvas.drawCircle(coords[0], coords[1], 2, dotPaint);
 	        }
     	}    
         
-	    mTopLeftArrow = canvasHeight - 84;
+	    mTopLeftArrow = mCanvasHeight - 84;
 	    mLeftLeftArrow = 36;
-	    mTopRightArrow = canvasHeight - 84;
+	    mTopRightArrow = mCanvasHeight - 84;
 	    mLeftRightArrow = canvasWidth - 84;
 
-        mFriendsRect.setBounds(5, canvasHeight - 115, canvasWidth - 5, canvasHeight - 5);
+        mFriendsRect.setBounds(5, mCanvasHeight - 115, canvasWidth - 5, mCanvasHeight - 5);
         mFriendsRect.draw(canvas);
         
-        mLeftArrow.setBounds(36, canvasHeight - 84, 84, canvasHeight - 36);
+        mLeftArrow.setBounds(36, mCanvasHeight - 84, 84, mCanvasHeight - 36);
         mLeftArrow.draw(canvas);
 
-        mRightArrow.setBounds(canvasWidth - 84, canvasHeight - 84, canvasWidth - 36, canvasHeight - 36);
+        mRightArrow.setBounds(canvasWidth - 84, mCanvasHeight - 84, canvasWidth - 36, mCanvasHeight - 36);
         mRightArrow.draw(canvas);
 
         if (mSelectedFriend != null) {
         	Drawable d = mSelectedFriend.mPicture;
         	if (d != null) {
-	        	d.setBounds(110, canvasHeight - 100, 190, canvasHeight - 20);
+	        	d.setBounds(110, mCanvasHeight - 100, 190, mCanvasHeight - 20);
 	        	d.draw(canvas);
         	}
         	try {
-        	canvas.drawText(mSelectedFriend.mName, 210, canvasHeight - 90, mPaintTextUsername);
-        	canvas.drawText("Distance (km):", 210, canvasHeight - 72, mPaintTextLabels);
-        	canvas.drawText(String.format("%.1f", mSelectedFriend.mDistance), 280, canvasHeight - 72, mPaintTextData);
-        	canvas.drawText("Location date:", 210, canvasHeight - 58, mPaintTextLabels);
+        	canvas.drawText(mSelectedFriend.mName, 210, mCanvasHeight - 90, mPaintTextUsername);
+        	canvas.drawText("Distance (km):", 210, mCanvasHeight - 72, mPaintTextLabels);
+        	canvas.drawText(String.format("%.1f", mSelectedFriend.mDistance), 280, mCanvasHeight - 72, mPaintTextData);
+        	canvas.drawText("Location date:", 210, mCanvasHeight - 58, mPaintTextLabels);
         	DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
-        	canvas.drawText(df.format(mSelectedFriend.mLocationDate), 280, canvasHeight - 58, mPaintTextData);
-        	canvas.drawText("Location:", 210, canvasHeight - 44, mPaintTextLabels);
-        	canvas.drawText(mSelectedFriend.mAddress.getCountryName(), 280, canvasHeight - 44, mPaintTextData);
+        	canvas.drawText(df.format(mSelectedFriend.mLocationDate), 280, mCanvasHeight - 58, mPaintTextData);
+        	canvas.drawText("Location:", 210, mCanvasHeight - 44, mPaintTextLabels);
+        	canvas.drawText(mSelectedFriend.mAddress.getCountryName(), 280, mCanvasHeight - 44, mPaintTextData);
         	String address = mSelectedFriend.mAddress.getAddressLine(0);
         	if (address != null)
-        		canvas.drawText(address, 210, canvasHeight - 30, mPaintTextData);
+        		canvas.drawText(address, 210, mCanvasHeight - 30, mPaintTextData);
         	String locality = mSelectedFriend.mAddress.getLocality();
         	if (locality != null)
-        		canvas.drawText(locality, 210, canvasHeight - 16, mPaintTextData);
+        		canvas.drawText(locality, 210, mCanvasHeight - 16, mPaintTextData);
         	}
         	catch(NullPointerException npx) {
         		Log.e("IPOKI", npx.toString());
@@ -191,11 +213,21 @@ public class ARView extends View implements SensorEventListener {
         }
     }
     
+    int scaleYCoord(double unscaledY, double friendDistance) {
+    	double distanceFactor = 1 - 2 * friendDistance / Friend.mFriendsDistance;
+    	double screenFactor = 0.30 * distanceFactor * mCanvasHeight;
+    	return (int) (unscaledY + screenFactor);
+    }
+    
+    double scaleIcon(double friendDistance) {
+    	return 1.4 - 0.8 * friendDistance / Friend.mFriendsDistance;
+    }
+    
     private float[] getRadarFriendCoords(double distance, double bearing) {
     	float coords[] = new float[2];
     	
     	coords[0] = (float) (50 + 45 * Math.cos(bearing) * distance / Friend.mFriendsDistance);
-    	coords[1] = (float) (50 + 45 * Math.sin(bearing) * distance / Friend.mFriendsDistance);
+    	coords[1] = (float) (60 + 45 * Math.sin(bearing) * distance / Friend.mFriendsDistance);
     	
     	return coords;
     }
