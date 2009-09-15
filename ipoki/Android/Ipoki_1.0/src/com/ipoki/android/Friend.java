@@ -33,7 +33,7 @@ class Friend {
 	Friend mNext;
 	Friend mPrevious;
 	public static Friend[] mFriendsInDistance;
-	static double mFriendsDistance = 100; 
+	static double mFriendsDistance = 10; 
 	
 	static final int earthRatio = 6371;
 	
