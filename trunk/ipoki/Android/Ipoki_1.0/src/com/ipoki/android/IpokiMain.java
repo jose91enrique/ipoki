@@ -265,7 +265,7 @@ public class IpokiMain extends Activity {
      	
  	    protected void onPostExecute(Friend[] friends) {
  	    	mFriends = friends;
- 	    	Friend.mFriendsInDistance = Friend.getFriendsInDistance(mFriends);
+ 	    	Friend.getFriendsInDistance();
  	    	if (Friend.mFriendsInDistance.length > 0)
  	    		ARView.mSelectedFriend = Friend.mFriendsInDistance[0];
  	    }

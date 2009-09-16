@@ -151,9 +151,9 @@ class Friend {
   		}
     }
     
-    public static Friend[] getFriendsInDistance(Friend[] allFriends) {
+    public static void getFriendsInDistance() {
     	ArrayList<Friend> friendsArray = new ArrayList<Friend>();
-    	
+    	Friend[] allFriends = IpokiMain.mFriends;
     	int friendsInDistanceNum = 0;
 	    for (Friend f: allFriends) {
 	    	if (f.mDistance < Friend.mFriendsDistance) {
@@ -171,8 +171,8 @@ class Friend {
 	    		friendsArray.add(f);
 	    	}
  	    }
-	    Friend[] friendsInDistance = new Friend[friendsArray.size()];
-    	return friendsArray.toArray(friendsInDistance);
+	    mFriendsInDistance = new Friend[friendsArray.size()];
+	    mFriendsInDistance = friendsArray.toArray(mFriendsInDistance);
     }
 }
 
