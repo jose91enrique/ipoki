@@ -43,6 +43,7 @@ public class IpokiMain extends Activity {
 	static String mUserKey = null;
 	static Friend[] mFriends = null;
 	static FriendsUpdateThread mFriendsUpdateThread = null;
+	public static boolean mFriendsDownloaded = false;
 
 	private ProgressDialog processDialog = null;
 	private LocationManager mLocationManager=null;
@@ -268,6 +269,7 @@ public class IpokiMain extends Activity {
  	    	Friend.getFriendsInDistance();
  	    	if (Friend.mFriendsInDistance.length > 0)
  	    		ARView.mSelectedFriend = Friend.mFriendsInDistance[0];
+ 	    	mFriendsDownloaded = true;
  	    }
      }
 

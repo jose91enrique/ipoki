@@ -61,17 +61,20 @@ public class IpokiAR extends Activity implements SeekBar.OnSeekBarChangeListener
 			Button button = (Button) dialog.findViewById(R.id.ButtonOK);
 			button.setOnClickListener(new View.OnClickListener() {
 	            public void onClick(View v) {
-	            	Friend.getFriendsInDistance();
-	     	    	if (Friend.mFriendsInDistance.length > 0)
-	     	    		ARView.mSelectedFriend = Friend.mFriendsInDistance[0];
-	     	    	else
-	     	    		ARView.mSelectedFriend = null;
+	            	if (IpokiMain.mFriendsDownloaded) {
+		            	Friend.getFriendsInDistance();
+		     	    	if (Friend.mFriendsInDistance.length > 0)
+		     	    		ARView.mSelectedFriend = Friend.mFriendsInDistance[0];
+		     	    	else
+		     	    		ARView.mSelectedFriend = null;
+	            	}
 	                dismissDialog(DIALOG_RANGE);
 	            }
 	        });            
 			SeekBar seekBar = (SeekBar)dialog.findViewById(R.id.FriendsRange);
 			seekBar.setOnSeekBarChangeListener(this);
 			mRangeText = (TextView) dialog.findViewById(R.id.RangeText);
+			mRangeText.setText(Friend.mFriendsDistance + " km");
 			break;
         default:
             dialog = null;
