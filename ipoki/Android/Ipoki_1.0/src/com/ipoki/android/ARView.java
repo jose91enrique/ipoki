@@ -109,7 +109,7 @@ public class ARView extends View implements SensorEventListener {
         mDrawableRadar.setAlpha(0xC0);
         
         mPaintRadarDots = new Paint();
-        mPaintRadarDots.setColor(0xff6600ff);
+        mPaintRadarDots.setColor(0xffff6600);
     }
     
     protected void onDraw(Canvas canvas) {
@@ -220,12 +220,12 @@ public class ARView extends View implements SensorEventListener {
     
     int scaleYCoord(double unscaledY, double friendDistance) {
     	double distanceFactor = 1 - 2 * friendDistance / Friend.mFriendsDistance;
-    	double screenFactor = 0.30 * distanceFactor * mCanvasHeight;
+    	double screenFactor = 0.35 * distanceFactor * mCanvasHeight;
     	return (int) (unscaledY + screenFactor);
     }
     
     double scaleIcon(double friendDistance) {
-    	return 1.4 - 0.8 * friendDistance / Friend.mFriendsDistance;
+    	return 1.8 - 1.6 * friendDistance / Friend.mFriendsDistance;
     }
     
     private float[] getRadarFriendCoords(double distance, double bearing) {
@@ -269,32 +269,35 @@ public class ARView extends View implements SensorEventListener {
 			float y = event.getY();
 			int distance = 20;
 			
-			if (Math.abs(mTopLeftArrow + 24 - y) < 20 && Math.abs(mLeftLeftArrow + 24 - x) < 20) {
-				if (mSelectedFriend != null) {
-					mSelectedFriend.isSelected = false;
-					mSelectedFriend = mSelectedFriend.mPrevious;
-					mSelectedFriend.isSelected = true;
-				}
-				return true;
-			}
-			else if (Math.abs(mTopRightArrow + 24 - y) < 20 && Math.abs(mLeftRightArrow + 24 - x) < 20){
-				if (mSelectedFriend != null) {
-					mSelectedFriend.isSelected = false;
-					mSelectedFriend = mSelectedFriend.mNext;
-					mSelectedFriend.isSelected = true;
-				}
-				return true;
-			}
-			else if (Math.abs(mRadarY - y) < mRadarR && Math.abs(mRadarX - x) < mRadarR) {
+			if (Math.abs(mRadarY - y) < mRadarR && Math.abs(mRadarX - x) < mRadarR) {
 				mIpokiAR.showDialog(IpokiAR.DIALOG_RANGE);
+				return true;
 			}
-			for (Friend f: Friend.mFriendsInDistance) {
-				int friendDis = f.getDistanceFromScreenPoint(x, y);
-				if (friendDis < distance) {
-					distance = friendDis;
-					mSelectedFriend.isSelected = false;
-					mSelectedFriend = f;
-					mSelectedFriend.isSelected = true;
+			if (IpokiMain.mFriendsDownloaded) {
+				if (Math.abs(mTopRightArrow + 24 - y) < 20 && Math.abs(mLeftRightArrow + 24 - x) < 20){
+					if (mSelectedFriend != null) {
+						mSelectedFriend.isSelected = false;
+						mSelectedFriend = mSelectedFriend.mNext;
+						mSelectedFriend.isSelected = true;
+					}
+					return true;
+				}
+				else if (Math.abs(mTopLeftArrow + 24 - y) < 20 && Math.abs(mLeftLeftArrow + 24 - x) < 20) {
+					if (mSelectedFriend != null) {
+						mSelectedFriend.isSelected = false;
+						mSelectedFriend = mSelectedFriend.mPrevious;
+						mSelectedFriend.isSelected = true;
+					}
+					return true;
+				}
+				for (Friend f: Friend.mFriendsInDistance) {
+					int friendDis = f.getDistanceFromScreenPoint(x, y);
+					if (friendDis < distance) {
+						distance = friendDis;
+						mSelectedFriend.isSelected = false;
+						mSelectedFriend = f;
+						mSelectedFriend.isSelected = true;
+					}
 				}
 			}
 		}

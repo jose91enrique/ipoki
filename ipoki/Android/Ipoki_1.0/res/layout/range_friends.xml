@@ -9,32 +9,31 @@
 		android:layout_height="wrap_content" 
 		android:clickable="false" 
 		android:max="500" 
-		android:layout_width="fill_parent"></SeekBar>
+		android:layout_width="fill_parent" android:padding="5dip"></SeekBar>
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
-	    <LinearLayout
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_gravity="left" >
-			<TextView 
-				android:text="1000 km"
-				android:id="@+id/RangeText" 
-				android:padding="10dp"
-				android:layout_width="wrap_content" 
-				android:layout_height="wrap_content" android:textSize="36dip"></TextView>
-		</LinearLayout>
-	    <LinearLayout
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_gravity="right" >
-	        <Button
-	        	android:id="@+id/ButtonOK" 
-	        	android:padding="10dp"
-	            android:layout_height="wrap_content"
-	            android:layout_marginLeft="10dip"
-	            android:text="OK" android:layout_width="100dip"/>
-	
-	    </LinearLayout>
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal" >
+		<TextView 
+			android:id="@+id/RangeText" 
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content" android:textSize="36dip" android:padding="10dip"></TextView>
+</LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right" >
+
+        
+
+        <Button
+        	android:id="@+id/ButtonOK" 
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dip"
+            android:text="OK" android:layout_width="100dip"/>
+
     </LinearLayout>
+	
 </LinearLayout>
