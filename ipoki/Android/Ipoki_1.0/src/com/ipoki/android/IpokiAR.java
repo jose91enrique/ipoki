@@ -1,19 +1,25 @@
 package com.ipoki.android;
 
 import java.util.List;
-
 import android.app.Activity;
+import android.app.Dialog;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
-public class IpokiAR extends Activity {
+public class IpokiAR extends Activity implements SeekBar.OnSeekBarChangeListener {
 	private CameraView mCameraView;
 	private ARView mARView;
     private SensorManager mSensorManager;
+    public static final int DIALOG_RANGE = 0;
+    private TextView mRangeText;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,4 +50,50 @@ public class IpokiAR extends Activity {
         	mSensorManager.registerListener(mARView, listSensors.get(0), SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
+    
+    protected Dialog onCreateDialog(int id) {
+        Dialog dialog;
+        switch(id) {
+        case DIALOG_RANGE:
+			dialog = new Dialog(this);
+			dialog.setTitle("Friends range");
+			dialog.setContentView(R.layout.range_friends);
+			Button button = (Button) dialog.findViewById(R.id.ButtonOK);
+			button.setOnClickListener(new View.OnClickListener() {
+	            public void onClick(View v) {
+	            	Friend.getFriendsInDistance();
+	     	    	if (Friend.mFriendsInDistance.length > 0)
+	     	    		ARView.mSelectedFriend = Friend.mFriendsInDistance[0];
+	     	    	else
+	     	    		ARView.mSelectedFriend = null;
+	                dismissDialog(DIALOG_RANGE);
+	            }
+	        });            
+			SeekBar seekBar = (SeekBar)dialog.findViewById(R.id.FriendsRange);
+			seekBar.setOnSeekBarChangeListener(this);
+			mRangeText = (TextView) dialog.findViewById(R.id.RangeText);
+			break;
+        default:
+            dialog = null;
+        }
+        return dialog;
+    }
+
+	@Override
+	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+		mRangeText.setText(progress + " km");
+		Friend.mFriendsDistance = progress;
+	}
+
+	@Override
+	public void onStartTrackingTouch(SeekBar seekBar) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onStopTrackingTouch(SeekBar seekBar) {
+		// TODO Auto-generated method stub
+		
+	}
 }

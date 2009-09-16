@@ -1,7 +1,6 @@
 package com.ipoki.android;
 
 import java.text.DateFormat;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -48,11 +47,16 @@ public class ARView extends View implements SensorEventListener {
     private int mTopRightArrow;
     private int mLeftRightArrow;
     private int mCanvasHeight;
+    private final int mRadarX = 50;
+    private final int mRadarY = 60;
+    private final int mRadarR = 45;
+    private final IpokiAR mIpokiAR;
 
 
     public ARView(Context context) {
 		super(context);
 		
+		mIpokiAR = (IpokiAR)context;
 		if (Friend.mFriendsInDistance != null && Friend.mFriendsInDistance.length > 0)
 			mSelectedFriend = Friend.mFriendsInDistance[0];
 	    // Ipokito bitmap.
@@ -118,9 +122,10 @@ public class ARView extends View implements SensorEventListener {
 
         mDrawableRadar.setBounds(5, 15, 95, 105);
         mDrawableRadar.draw(canvas);
-        canvas.drawLine(50, 60, (float)(50 + 45 * Math.cos(direction + mPiDiv6)), (float)(60 + 45 * Math.sin(direction + mPiDiv6)), mPaintRadar);
-        canvas.drawLine(50, 60, (float)(50 + 45 * Math.cos(direction - mPiDiv6)), (float)(60 + 45 * Math.sin(direction - mPiDiv6)), mPaintRadar);
-        canvas.drawText("N", 50, 13, mPaintRadar);
+        canvas.drawLine(mRadarX, mRadarY, (float)(mRadarX + mRadarR * Math.cos(direction + mPiDiv6)), (float)(mRadarY + mRadarR * Math.sin(direction + mPiDiv6)), mPaintRadar);
+        canvas.drawLine(mRadarX, mRadarY, (float)(mRadarX + mRadarR * Math.cos(direction - mPiDiv6)), (float)(mRadarY + mRadarR * Math.sin(direction - mPiDiv6)), mPaintRadar);
+        canvas.drawText("N", mRadarX, 13, mPaintRadar);
+        canvas.drawText(String.format("%d km", (int)Friend.mFriendsDistance), mRadarX, 120, mPaintRadar);
         
     	Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
@@ -279,6 +284,9 @@ public class ARView extends View implements SensorEventListener {
 					mSelectedFriend.isSelected = true;
 				}
 				return true;
+			}
+			else if (Math.abs(mRadarY - y) < mRadarR && Math.abs(mRadarX - x) < mRadarR) {
+				mIpokiAR.showDialog(IpokiAR.DIALOG_RANGE);
 			}
 			for (Friend f: Friend.mFriendsInDistance) {
 				int friendDis = f.getDistanceFromScreenPoint(x, y);
