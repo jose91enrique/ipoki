@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent" 
+  android:background="@color/white"
+  android:orientation="vertical">
+	<ImageView android:id="@+id/Splash" 
+		android:layout_width="wrap_content" 
+		android:layout_height="wrap_content"
+		android:src="@drawable/splash"></ImageView>
+		<LinearLayout
+			android:id="@+id/LoginLayout" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center_horizontal" 
+	        android:orientation="vertical"
+	        android:visibility="visible">
+			<TextView 
+				android:text="User Name" 
+				android:id="@+id/UserLabel" 
+				android:layout_width="wrap_content" 
+				android:layout_height="wrap_content" android:textColor="@color/blue" android:textStyle="bold"></TextView>		
+			<EditText 
+				android:text="User" 
+				android:id="@+id/UserName" 
+				android:layout_height="wrap_content" android:layout_width="100dip" android:inputType="text"></EditText>
+			<TextView 
+				android:text="Password" 
+				android:id="@+id/PassLabel" 
+				android:layout_width="wrap_content" 
+				android:layout_height="wrap_content" android:textStyle="bold" android:textColor="@color/blue"></TextView>
+			<EditText 
+				android:text="Pass" 
+				android:id="@+id/Password" 
+				android:layout_height="wrap_content" android:layout_width="100dip" android:inputType="textPassword"></EditText>
+	</LinearLayout>
+</LinearLayout>
