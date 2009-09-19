@@ -7,103 +7,134 @@
 	<LinearLayout
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		android:layout_width="fill_parent"
-		android:layout_height="wrap_content">
+		android:layout_height="wrap_content"
+		>
 		<LinearLayout
 			xmlns:android="http://schemas.android.com/apk/res/android"
 			android:layout_height="wrap_content"
-			android:padding="10px" 
-			android:layout_width="120px" 
+			android:padding="5px" 
+			android:layout_width="100px"
+			android:orientation="vertical" 
 			android:gravity="center_vertical|center_horizontal">
+			<ImageView 
+				android:id="@+id/user_image" 
+				android:layout_width="wrap_content" 
+				android:layout_height="50px"></ImageView>
 			<TextView 
 				android:id="@+id/map_user_name" 
 				android:layout_width="wrap_content" 
 				android:layout_height="wrap_content" 
-				android:text="javierito" style="@style/MapUser"></TextView>	
+				style="@style/MapUser"></TextView>	
 		</LinearLayout>
-		<LinearLayout
-			xmlns:android="http://schemas.android.com/apk/res/android"
-			android:layout_width="100px"
-			android:layout_height="wrap_content"
-			android:orientation="vertical">
-			<LinearLayout
-				xmlns:android="http://schemas.android.com/apk/res/android"
-				android:layout_width="wrap_content"
-				android:layout_height="fill_parent"
-				android:padding="5px"
-				android:orientation="vertical">
-				<TextView 
-					android:layout_width="wrap_content" 
-					android:layout_height="wrap_content" 
-					android:layout_gravity="left|center_vertical" 
-					android:id="@+id/label_map_latitude" 
-					android:text="Latitude" style="@style/MapSmallLabel"></TextView>	
-				<TextView 
-					android:layout_width="wrap_content" 
-					android:layout_height="wrap_content" 
-					android:layout_gravity="left|center_vertical" 
-					android:text="-89.9999" 
-					android:id="@+id/map_latitude" style="@style/MapSmallData"></TextView>	
-			</LinearLayout>
-			<LinearLayout
-				xmlns:android="http://schemas.android.com/apk/res/android"
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content"
-				android:padding="5px"
-				android:orientation="vertical">
-				<TextView 
-					android:layout_width="wrap_content" 
-					android:layout_height="wrap_content" 
-					android:layout_gravity="left|center_vertical" 
-					android:text="Speed" 
-					android:id="@+id/label_map_speed" style="@style/MapSmallLabel"></TextView>	
-				<TextView 
-					android:id="@+id/map_speed" 
-					android:layout_width="wrap_content" 
-					android:layout_height="wrap_content" android:layout_gravity="left|center_vertical" android:text="199 km/h" style="@style/MapSmallData"></TextView>	
-			</LinearLayout>
+		<TableLayout android:layout_width="220px" android:layout_height="wrap_content">
+			<TableRow>
+				<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="55px" android:layout_height="wrap_content" android:padding="5px" android:orientation="vertical">
+					<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="wrap_content" android:layout_height="fill_parent" android:orientation="vertical">
+						<TextView 
+							android:layout_width="wrap_content" 
+							android:layout_height="wrap_content" 
+							android:layout_gravity="left|center_vertical" 
+							android:id="@+id/label_map_latitude" 
+							android:text="Latitude" style="@style/MapSmallLabel"></TextView>	
+						<TextView 
+							android:layout_width="wrap_content" 
+							android:layout_height="wrap_content" 
+							android:layout_gravity="left|center_vertical" 
+							android:text="-89.9999" 
+							android:id="@+id/map_latitude" style="@style/MapSmallData"></TextView>	
+					</LinearLayout>
+				</LinearLayout>
+				<LinearLayout
+					xmlns:android="http://schemas.android.com/apk/res/android"
+					android:layout_width="55px"
+					android:layout_height="wrap_content"
+					android:orientation="vertical">
+					<LinearLayout
+						xmlns:android="http://schemas.android.com/apk/res/android"
+						android:layout_width="fill_parent"
+						android:layout_height="wrap_content"
+						android:padding="5px"
+						android:orientation="vertical">
+						<TextView 
+							android:layout_width="wrap_content" 
+							android:layout_height="wrap_content" 
+							android:layout_gravity="left|center_vertical" android:id="@+id/label_map_longitude" android:text="Longitude" style="@style/MapSmallLabel"></TextView>	
+						<TextView 
+							android:id="@+id/map_longitude" 
+							android:layout_width="wrap_content" 
+							android:layout_height="wrap_content" android:layout_gravity="left|center_vertical" android:text="-189.9999" style="@style/MapSmallData"></TextView>	
+					</LinearLayout>
+				</LinearLayout>		
+		    </TableRow>
+		    <TableRow>
+				<LinearLayout
+					xmlns:android="http://schemas.android.com/apk/res/android"
+					android:layout_width="55px"
+					android:layout_height="wrap_content"
+					android:orientation="vertical">
+					<LinearLayout
+						xmlns:android="http://schemas.android.com/apk/res/android"
+						android:layout_width="wrap_content"
+						android:layout_height="fill_parent"
+						android:padding="5px"
+						android:orientation="vertical">
+						<TextView 
+							android:layout_width="wrap_content" 
+							android:layout_height="wrap_content" 
+							android:layout_gravity="left|center_vertical" 
+							android:text="Speed" 
+							android:id="@+id/label_map_speed" style="@style/MapSmallLabel"></TextView>	
+						<TextView 
+							android:id="@+id/map_speed" 
+							android:layout_width="wrap_content" 
+							android:layout_height="wrap_content" android:layout_gravity="left|center_vertical" android:text="199 km/h" style="@style/MapSmallData"></TextView>	
+					</LinearLayout>
+				</LinearLayout>
+				<LinearLayout
+					xmlns:android="http://schemas.android.com/apk/res/android"
+					android:layout_width="55px"
+					android:layout_height="wrap_content"
+					android:orientation="vertical">
+					<LinearLayout
+						xmlns:android="http://schemas.android.com/apk/res/android"
+						android:layout_width="fill_parent"
+						android:layout_height="wrap_content"
+						android:padding="5px"
+						android:orientation="vertical">
+						<TextView 
+							android:layout_width="wrap_content" 
+							android:layout_height="wrap_content" 
+							android:layout_gravity="left|center_vertical" android:text="Height" android:id="@+id/label_map_height" style="@style/MapSmallLabel"></TextView>	
+						<TextView 
+							android:layout_width="wrap_content" 
+							android:layout_height="wrap_content" android:layout_gravity="left|center_vertical" android:text="2999 m" android:id="@+id/map_height" style="@style/MapSmallData"></TextView>	
+					</LinearLayout>
+				</LinearLayout>
+		    </TableRow>
+		    <TableRow>
+				<ToggleButton android:id="@+id/button_record"
+					android:textOn="Recording ON"
+					android:textOff="Recording OFF"
+					android:layout_height="wrap_content" android:layout_width="110px"/>
+				<ToggleButton android:id="@+id/button_publish"
+					android:textOn="Publishing ON"
+					android:textOff="Publishing OFF"
+					android:layout_height="wrap_content" android:layout_width="110px"/>
+		    </TableRow>
+		</TableLayout>
+		
 		</LinearLayout>
-		<LinearLayout
-			xmlns:android="http://schemas.android.com/apk/res/android"
-			android:layout_width="100px"
-			android:layout_height="wrap_content"
-			android:orientation="vertical">
-			<LinearLayout
-				xmlns:android="http://schemas.android.com/apk/res/android"
-				android:layout_width="wrap_content"
-				android:layout_height="fill_parent"
-				android:padding="5px"
-				android:orientation="vertical">
-				<TextView 
-					android:layout_width="wrap_content" 
-					android:layout_height="wrap_content" 
-					android:layout_gravity="left|center_vertical" android:id="@+id/label_map_longitude" android:text="Longitude" style="@style/MapSmallLabel"></TextView>	
-				<TextView 
-					android:id="@+id/map_longitude" 
-					android:layout_width="wrap_content" 
-					android:layout_height="wrap_content" android:layout_gravity="left|center_vertical" android:text="-189.9999" style="@style/MapSmallData"></TextView>	
-			</LinearLayout>
-			<LinearLayout
-				xmlns:android="http://schemas.android.com/apk/res/android"
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content"
-				android:padding="5px"
-				android:orientation="vertical">
-				<TextView 
-					android:layout_width="wrap_content" 
-					android:layout_height="wrap_content" 
-					android:layout_gravity="left|center_vertical" android:text="Height" android:id="@+id/label_map_height" style="@style/MapSmallLabel"></TextView>	
-				<TextView 
-					android:layout_width="wrap_content" 
-					android:layout_height="wrap_content" android:layout_gravity="left|center_vertical" android:text="2999 m" android:id="@+id/map_height" style="@style/MapSmallData"></TextView>	
-			</LinearLayout>
-		</LinearLayout>
-	</LinearLayout>
 	<com.google.android.maps.MapView
 		android:id="@+id/ipoki_map"
 		android:layout_width="fill_parent" 
-		android:layout_height="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
 		android:enabled="true"
 		android:clickable="true"
 		android:apiKey="0slLUwYJ2HzIjfqA-mmYITQe45PnAN2BnvBuWog" />
-
+	<LinearLayout 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content"
+		android:padding="4px">
+</LinearLayout>
 </LinearLayout>
