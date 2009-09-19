@@ -41,6 +41,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
@@ -55,7 +56,7 @@ public class IpokiMain extends MapActivity {
 	// User data
 	private String mUser;
 	private String mPass;
-	private String mIntervalo;
+	private long mUpdateFreq;
 	private String mVer = "ipoki.android.1.0";
 	private Drawable mPicture;
 
@@ -69,6 +70,11 @@ public class IpokiMain extends MapActivity {
 	static double mHigh = 0;
 	static double mTo = 0;
 	static boolean isMapShowed = false;
+	private boolean mPublishingOn = false;
+	private long mLastTime = 0;
+	private double mOldLatitude = 0;
+	private double mOldLongitude = 0;
+
 
 	// Download threads
 	private ProgressDialog processDialog = null;
@@ -97,14 +103,8 @@ public class IpokiMain extends MapActivity {
 	public TextView outspeed;
 	public TextView outhigh;
 	
-	public boolean mOn = false;
 	private final String mServer = "http://www.ipoki.com";
 
-	private double oldLatitude = 0;
-	private double oldLongitude = 0;
-	private String wprivate = "0";
-	private String wrec = "0";
-	private long lastTime = 0;
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -133,27 +133,13 @@ public class IpokiMain extends MapActivity {
 		}
 		else {
 	    	mPass = p.getString("pass", "pass");
-	    	mIntervalo = p.getString("intervalo", "3");
+	    	mUpdateFreq = p.getLong("updateFreq", 60);
 	    	logIn();
 		}
 			
-
-
 		mFriendsUpdateThread = new FriendsUpdateThread();
         IpokiMain.mFriendsUpdateThread.setRunning(true);
         IpokiMain.mFriendsUpdateThread.start();
-
-
-        
-
-		// leer preferencias la primera vez
-/*		PreferenceManager.setDefaultValues(this, R.xml.setup, false);
-		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-		mUser = p.getString("user", "value_default_98732");
-		// si no hay user grabado, va a preferencias para pedirlo
-		if (mUser.equals("value_default_98732")) {
-			ShowWelcome();
-		}*/
     }
 	
 	
@@ -196,22 +182,17 @@ public class IpokiMain extends MapActivity {
     private void logIn() {
     	// TODO: to strings.xml
     	String userUrl = mServer + "/signin.php?user=" + mUser + "&pass=" + mPass + "&ver=" + mVer;
-		try {
-			URL url = new URL(userUrl);
-			new LoginUser().execute(url);
-			// TODO: to strings.xml
-     		processDialog = ProgressDialog.show(IpokiMain.this, "Ipoki", "Logging in user");
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} 
+		new LoginUser().execute(userUrl);
+		// TODO: to strings.xml
+		processDialog = ProgressDialog.show(IpokiMain.this, "Ipoki", "Logging in user"); 
     }
     
-    private class LoginUser extends AsyncTask<URL, Integer, String> {
+    private class LoginUser extends AsyncTask<String, Integer, String> {
 
      	@Override
- 		protected String doInBackground(URL... params) {
+ 		protected String doInBackground(String... params) {
      		// Make http get to url
- 	    	return IpokiMain.this.getFromServer(params[0]);
+ 	    	return IpokiMain.this.serverRequest(params[0]);
  		}
      	
  	    protected void onPostExecute(String result) {
@@ -232,10 +213,7 @@ public class IpokiMain extends MapActivity {
  		    	String[] resultData = result.split("\\${3}");
  		    	if (resultData.length >= 6) {
  			 		mUserKey = resultData[1];
- 			 		wrec = resultData[4];
- 			 		wprivate = resultData[5];
- 			 		
- 			 		mOn = true;
+ 			 		mPublishingOn = true;
  			 		
  			 		// All went fine. Store credentials
  			 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(IpokiMain.this);
@@ -246,28 +224,23 @@ public class IpokiMain extends MapActivity {
  			 		
  			    	String userUrl = "http://www.ipoki.com/myfriends2.php?iduser=" + mUserKey;
  			    	String picUrl = resultData[6];
- 					try {
- 						URL url = new URL(userUrl);
- 						new DownloadFriends().execute(url);
- 						url = new URL(picUrl);
- 						new DownloadPicture().execute(url);
- 			     		processDialog = ProgressDialog.show(IpokiMain.this, "Ipoki", "Downloading friends");
- 					} catch (MalformedURLException e) {
- 						e.printStackTrace();
- 					} 
+ 					new DownloadFriends().execute(userUrl);
+					new DownloadPicture().execute(picUrl);
+					processDialog = ProgressDialog.show(IpokiMain.this, "Ipoki", "Downloading friends"); 
 
  		    	}
  		 	}
  	    }
     }
     
-    private class DownloadPicture extends AsyncTask<URL, Integer, Drawable> {
+    private class DownloadPicture extends AsyncTask<String, Integer, Drawable> {
 
     	@Override
-		protected Drawable doInBackground(URL... params) {
+		protected Drawable doInBackground(String... params) {
 			Drawable d = null;
 	    	try {
-	    		HttpURLConnection urlConnection = (HttpURLConnection)params[0].openConnection();
+	    		URL url = new URL(params[0]);
+	    		HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
 	    		int responseCode = urlConnection.getResponseCode();
 
 	    		if (responseCode == HttpURLConnection.HTTP_OK) {
@@ -287,11 +260,11 @@ public class IpokiMain extends MapActivity {
     }
 
     
-    private class DownloadFriends extends AsyncTask<URL, Integer, Friend[]> {
+    private class DownloadFriends extends AsyncTask<String, Integer, Friend[]> {
 
      	@Override
- 		protected Friend[] doInBackground(URL... params) {
-     		String result = IpokiMain.this.getFromServer(params[0]);
+ 		protected Friend[] doInBackground(String... params) {
+     		String result = IpokiMain.this.serverRequest(params[0]);
  	    	return processFriends(result);
  		}
      	
@@ -328,8 +301,6 @@ public class IpokiMain extends MapActivity {
      	}
      	
  	    protected void onPostExecute(Friend[] friends) {
-     		processDialog.dismiss();
-     		
      		// Main friends collection
  	    	mFriends = friends;
  	    	
@@ -341,6 +312,7 @@ public class IpokiMain extends MapActivity {
  	    		ARView.mSelectedFriend = Friend.mFriendsInDistance[0];
  	    	
  	    	// We dismiss login screen and go for the main one
+     		processDialog.dismiss();
  	    	showMainView();
  	    }
     }
@@ -367,13 +339,35 @@ public class IpokiMain extends MapActivity {
 		ImageView userImage = (ImageView) findViewById(R.id.user_image);
 		userImage.setImageDrawable(mPicture);
     	mapView.invalidate();
-
-		// los textbox
-/*        outlat = (TextView) findViewById(R.id.txtlat);
-        outlon = (TextView) findViewById(R.id.txtlon);
-        outspeed = (TextView) findViewById(R.id.txtspeed);
-        outhigh = (TextView) findViewById(R.id.txth);*/
     	
+    	final ToggleButton recordButton = (ToggleButton) findViewById(R.id.button_record);
+    	recordButton.setOnClickListener(new OnClickListener() {
+    	    public void onClick(View v) {
+    	        // Perform action on clicks
+    	        if (recordButton.isChecked()) {
+    	        	new Thread() {
+    	            	public void run() {
+    	            		String url = mServer + "/set_h_off.php?iduser=" + mUserKey;
+    	            		serverRequest(url);
+    	            	} 
+    	            }.start();    	        
+    	        } else {
+    	        	new Thread() {
+    	            	public void run() {
+    	            		String url = mServer + "/set_h_on.php?iduser=" + mUserKey;
+    	            		serverRequest(url);
+    	            	} 
+    	            }.start();    	        
+    	        }
+    	    }
+    	});
+    	final ToggleButton publishButton = (ToggleButton) findViewById(R.id.button_publish);
+    	publishButton.setOnClickListener(new OnClickListener() {
+    	    public void onClick(View v) {
+    	    	mPublishingOn = !mPublishingOn;
+    	    }
+    	});
+
     	mMapUserName = (TextView) findViewById(R.id.map_user_name);
     	outlat = (TextView) findViewById(R.id.map_latitude);
         outlon = (TextView) findViewById(R.id.map_longitude);
@@ -416,36 +410,24 @@ public class IpokiMain extends MapActivity {
 	    	 outhigh.setText(String.format("%.1f",mHigh));
 		 }
     	 
-/*    	 if (mOn) {
-    		// si esta conectado se manda la posicion 
-    		// solo si ha pasado el intervalo correspondiente (MINIMO=3)
-    		int iwork = 0;
- 			try {
- 	    		iwork = Integer.parseInt(mIntervalo);
-			} catch (Exception e) {
-				//e.printStackTrace();
-			}
-    		if (iwork < 3) iwork = 3;
-    		long mNow = System.currentTimeMillis(); 
-    		if ((mNow - lastTime) > (iwork * 1000)) {
-        	 	SendLoc();
-        	 	lastTime = System.currentTimeMillis();
+    	 if (mPublishingOn) {
+    		long now = System.currentTimeMillis(); 
+    		if ((now - mLastTime) > (mUpdateFreq * 1000)) {
+        	 	updateLocationAtServer();
+        	 	mLastTime = System.currentTimeMillis();
     		}
-    	 }*/
+    	 }
      }
 
-     public void SendLoc() {
+     public void updateLocationAtServer() {
     	// controla si ha habido cambio de posicion
-    	String mChange = "0"; 
- 	 	if (oldLatitude != mLatitude) {
- 	 		mChange = "1";
+    	String changed = "0"; 
+ 	 	if (mOldLatitude != mLatitude || mOldLongitude != mLongitude) {
+ 	 		changed = "1";
  	 	}
- 	 	if (oldLongitude != mLongitude) {
- 	 		mChange="1";
- 	 	}
-    	Comunica(mServer + "/ear.php?iduser=" + mUserKey + "&lat=" + String.valueOf(mLatitude).substring(0,10) + "&lon=" + String.valueOf(mLongitude).substring(0,10) + "&h=" + String.valueOf(mHigh) + "&speed=" + String.valueOf(mSpeed*3.6) + "&to=" + String.valueOf(mTo) + "&comment=&action=0&change=" + mChange);
-	 	oldLatitude = mLatitude;
-	 	oldLongitude = mLongitude;
+    	serverRequest(mServer + "/ear.php?iduser=" + mUserKey + "&lat=" + String.valueOf(mLatitude).substring(0,10) + "&lon=" + String.valueOf(mLongitude).substring(0,10) + "&h=" + String.valueOf(mHigh) + "&speed=" + String.valueOf(mSpeed*3.6) + "&to=" + String.valueOf(mTo) + "&comment=&action=0&change=" + changed);
+	 	mOldLatitude = mLatitude;
+	 	mOldLongitude = mLongitude;
      }
     
      
@@ -456,32 +438,12 @@ public class IpokiMain extends MapActivity {
      private void PowerOff(){
     	// hace la llamada a la web
       	Comunica(mServer + "/signout.php?iduser=" + mUserKey);
-      	mOn = false;
-     }
-     
-     private void SetPublic() {
- 	    // hace la llamada a la web
-    	Comunica(mServer + "/set_p_off.php?iduser=" + mUserKey);
-     }
-
-     private void SetPrivate() {
-  	    // hace la llamada a la web
-     	Comunica(mServer + "/set_p_on.php?iduser=" + mUserKey);
-     }
-
-     private void ActiveRec(){
-  	    // hace la llamada a la web
-     	Comunica(mServer + "/set_h_on.php?iduser=" + mUserKey);
-     }
-
-     private void InactiveRec(){
-  	    // hace la llamada a la web
-     	Comunica(mServer + "/set_h_off.php?iduser=" + mUserKey);
+      	mPublishingOn = false;
      }
 
      public void ShowExit() {
     	 // si esta conectado pregunta si se borra la posicion
-    	 if (mOn){
+    	 if (mPublishingOn){
     		PideFin();
     	 } else {
    	    	// Acabar
@@ -516,15 +478,8 @@ public class IpokiMain extends MapActivity {
         builder.show();
      }
 
-     public void ShowMap() {
-     	// Muestra el mapa del usuario
-     	Intent intent = new Intent(); 
-    	intent.setClass(IpokiMain.this, Mymap.class); 
-    	startActivity(intent); 
-     }
-     
      public void ShowFriends() {
-    	 if (!mOn){
+    	 if (!mPublishingOn){
  	 	    AlertDialog.Builder builder = new AlertDialog.Builder(IpokiMain.this);
 	 	    builder.setTitle("Ipoki Connection");
 	 	    builder.setIcon(R.drawable.alert_dialog_icon);
@@ -558,179 +513,6 @@ public class IpokiMain extends MapActivity {
     	    }
     	}
      
-    private OnClickListener pulsabtna = new OnClickListener(){
-
-		@Override
-		public void onClick(View arg0) {
-			Toast.makeText(getBaseContext(), 
-					   "Set private position", 
-					   Toast.LENGTH_LONG).show();
-			
-			ImageView image = (ImageView)findViewById(R.id.img00); 
-		    image.setVisibility(View.INVISIBLE); 
-		    image = (ImageView)findViewById(R.id.img01); 
-		    image.setVisibility(View.VISIBLE); 
-
-		    // llama a SetPrivate
-		    SetPrivate();
-			}
-		};
-
-    private OnClickListener pulsabtnb = new OnClickListener(){
-
-		@Override
-		public void onClick(View arg0) {
-			Toast.makeText(getBaseContext(), 
-					   "Set public position", 
-					   Toast.LENGTH_LONG).show();
-			
-			ImageView image = (ImageView)findViewById(R.id.img01); 
-		    image.setVisibility(View.INVISIBLE); 
-		    image = (ImageView)findViewById(R.id.img00); 
-		    image.setVisibility(View.VISIBLE);
-		    
-		    // llama a SetPublic
-		    SetPublic();
-		}
-    };
-
-    private OnClickListener pulsaredbtnon = new OnClickListener(){
-
-		@Override
-		public void onClick(View arg0) {
-			Toast.makeText(getBaseContext(), 
-					   "Track route on", 
-					   Toast.LENGTH_LONG).show();
-			
-			ImageView image = (ImageView)findViewById(R.id.img20); 
-		    image.setVisibility(View.INVISIBLE); 
-		    image = (ImageView)findViewById(R.id.img21); 
-		    image.setVisibility(View.VISIBLE); 
-		    image = (ImageView)findViewById(R.id.img11); 
-		    image.setVisibility(View.VISIBLE); 
-		    image = (ImageView)findViewById(R.id.img10); 
-		    image.setVisibility(View.INVISIBLE);
-		    
-		    //llamar a ActiveRec
-		    ActiveRec();
-		}
-    };
-
-    private OnClickListener pulsaredbtnoff = new OnClickListener(){
-
-		@Override
-		public void onClick(View arg0) {
-			Toast.makeText(getBaseContext(), 
-						"Track route off", 
-					   Toast.LENGTH_LONG).show();
-
-			ImageView image = (ImageView)findViewById(R.id.img21); 
-		    image.setVisibility(View.INVISIBLE); 
-		    image = (ImageView)findViewById(R.id.img20); 
-		    image.setVisibility(View.VISIBLE); 
-		    image = (ImageView)findViewById(R.id.img10); 
-		    image.setVisibility(View.VISIBLE); 
-		    image = (ImageView)findViewById(R.id.img11); 
-		    image.setVisibility(View.INVISIBLE); 
-
-		    // llamar a InactiveRec
-		    InactiveRec();
-		}
-    };
-
-    private OnTouchListener tocabtnon = new OnTouchListener(){
-    	
-		@Override
-		public boolean onTouch(View v, MotionEvent event) {
-			// hace que esto salga inmediatamente al pulsar !!!
-			ImageView image = (ImageView)findViewById(R.id.img30); 
-		    image.setVisibility(View.INVISIBLE); 
-		    image = (ImageView)findViewById(R.id.img31); 
-		    image.setVisibility(View.VISIBLE);
-		    return false;
-		}
-    };
-
-    private OnClickListener pulsabtnon = new OnClickListener(){
-    	
-		@Override
-		public void onClick(View arg0) {
-			// llamar a PowerOn
-		    logIn();
-		    PonerBotones();
-		}
-    };
-
-    private OnClickListener pulsabtnoff = new OnClickListener(){
-
-		@Override
-		public void onClick(View arg0) {
-			Toast.makeText(getBaseContext(), 
-					   "Disconnecting", 
-					   Toast.LENGTH_LONG).show();
-			ImageView image = (ImageView)findViewById(R.id.img31); 
-		    image.setVisibility(View.INVISIBLE); 
-		    image = (ImageView)findViewById(R.id.img30); 
-		    image.setVisibility(View.VISIBLE);
-		    
-		    // llama a PowerOff
-	        PowerOff();		    
-		    QuitarBotones();
-		}
-    };
-
-    private void QuitarBotones(){
-    	TextView lab = (TextView)findViewById(R.id.lab3); 
-    	lab.setVisibility(View.INVISIBLE); 
-    	lab = (TextView)findViewById(R.id.lab1); 
-    	lab.setVisibility(View.INVISIBLE); 
-    	lab = (TextView)findViewById(R.id.lab2); 
-    	lab.setVisibility(View.INVISIBLE); 
-
-    	ImageView image = (ImageView)findViewById(R.id.img00); 
-	    image.setVisibility(View.INVISIBLE); 
-	    image = (ImageView)findViewById(R.id.img01); 
-	    image.setVisibility(View.INVISIBLE); 
-		image = (ImageView)findViewById(R.id.img20); 
-	    image.setVisibility(View.INVISIBLE); 
-	    image = (ImageView)findViewById(R.id.img21); 
-	    image.setVisibility(View.INVISIBLE); 
-	    image = (ImageView)findViewById(R.id.img11); 
-	    image.setVisibility(View.INVISIBLE); 
-	    image = (ImageView)findViewById(R.id.img10); 
-	    image.setVisibility(View.INVISIBLE);
-    }
-    
-    private void PonerBotones(){
-    	TextView lab = (TextView)findViewById(R.id.lab3); 
-    	lab.setVisibility(View.VISIBLE); 
-    	lab = (TextView)findViewById(R.id.labtit); 
-    	lab.setVisibility(View.INVISIBLE); 
-    	lab = (TextView)findViewById(R.id.lab1); 
-    	lab.setVisibility(View.VISIBLE); 
-    	lab = (TextView)findViewById(R.id.lab2); 
-    	lab.setVisibility(View.VISIBLE); 
-
-    	// activar los controles de REC y Privado segun la configuracion
- 		if (wrec.equals("2")) {
-			ImageView image = (ImageView)findViewById(R.id.img11); 
-		    image.setVisibility(View.VISIBLE); 
-		    image = (ImageView)findViewById(R.id.img21); 
-		    image.setVisibility(View.VISIBLE);
- 		} else {
- 			ImageView image = (ImageView)findViewById(R.id.img10); 
- 		    image.setVisibility(View.VISIBLE); 
- 		    image = (ImageView)findViewById(R.id.img20); 
- 		    image.setVisibility(View.VISIBLE); 
- 		}
- 		if (wprivate.equals("2")) {
-			ImageView image = (ImageView)findViewById(R.id.img00); 
-		    image.setVisibility(View.VISIBLE);
- 		} else {
- 	    	ImageView image = (ImageView)findViewById(R.id.img01); 
- 		    image.setVisibility(View.VISIBLE); 
- 		}
-    }
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -741,17 +523,13 @@ public class IpokiMain extends MapActivity {
         
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.mymap:
-                //mymap            	
-            	ShowMap();
+            case R.id.setup:
+                //settings
+            	ShowSetup();
             	break;            
             case R.id.myfriends:
                 //myfriends
             	ShowFriends();
-            	break;            
-            case R.id.setup:
-                //settings
-            	ShowSetup();
             	break;            
             case R.id.ar_view:
             	startActivity(new Intent(this, IpokiAR.class));
@@ -830,22 +608,23 @@ public class IpokiMain extends MapActivity {
 		return resultado;
     }
     
-    String getFromServer(URL url) {
-			String result = "";
- 	    	try {
- 	    		HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
- 	    		int responseCode = urlConnection.getResponseCode();
+    String serverRequest(String urlString) {
+		String result = "";
+    	try {
+        	URL url = new URL(urlString);
+    		HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
+    		int responseCode = urlConnection.getResponseCode();
 
- 	    		if (responseCode == HttpURLConnection.HTTP_OK) {
- 	    			InputStream is = urlConnection.getInputStream();
- 	    			BufferedReader br = new BufferedReader(new InputStreamReader(is));
- 	    			result = br.readLine();
- 	    		}
- 	    	} catch (IOException e) {
- 				e.printStackTrace();
- 			}
- 	    	
- 	    	return result;
+    		if (responseCode == HttpURLConnection.HTTP_OK) {
+    			InputStream is = urlConnection.getInputStream();
+    			BufferedReader br = new BufferedReader(new InputStreamReader(is));
+    			result = br.readLine();
+    		}
+    	} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	
+    	return result;
     }
     
 

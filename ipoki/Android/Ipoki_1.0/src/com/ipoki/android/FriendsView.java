@@ -33,9 +33,6 @@ public class FriendsView extends ListActivity {
 
 	FriendsAdapter mAdapter;
 	
-	static Friend[] mFriends = null;
-	static FriendsUpdateThread mFriendsUpdateThread = null;
-
 	public static String pName;
 	public static String pFoto;
 	public static double pLat;
@@ -46,17 +43,16 @@ public class FriendsView extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.friendslist);
-        
-		getFriends();
+        loadFriends();
     }
 
     public void onListItemClick(ListView l, View v, int position, long id){
 		getListView().getItemAtPosition(position); 
-		pName = mFriends[position].mName;
-		pLat = mFriends[position].mLatitude;
-		pLon = mFriends[position].mLongitude;
+		pName = IpokiMain.mFriends[position].mName;
+		pLat = IpokiMain.mFriends[position].mLatitude;
+		pLon = IpokiMain.mFriends[position].mLongitude;
 //		pFoto = mFriends[position].mRutafoto;
-		pFecha = mFriends[position].mLocationDate.toLocaleString();
+		pFecha = IpokiMain.mFriends[position].mLocationDate.toLocaleString();
 		if ((pLat==0) & (pLon==0)) {
 	 	    AlertDialog.Builder builder = new AlertDialog.Builder(this);
 	 	    builder.setTitle("Warning");
@@ -69,10 +65,10 @@ public class FriendsView extends ListActivity {
 		}
 	}
 
-    private void CargaAmigos(){
+    private void loadFriends(){
 		mAdapter = new FriendsAdapter(this);
 		setListAdapter(mAdapter);
-    	if (mFriends.length==0) {
+    	if (IpokiMain.mFriends.length==0) {
 	    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
 	 	    builder.setTitle("Information");
 	 	    builder.setIcon(R.drawable.alert_dialog_icon);
@@ -96,9 +92,9 @@ public class FriendsView extends ListActivity {
         
 		@Override
 		public int getCount() {
-			if (mFriends == null)
+			if (IpokiMain.mFriends == null)
 				return 0;
-			return mFriends.length;
+			return IpokiMain.mFriends.length;
 		}
 
 		public Object getItem(int position) {
@@ -126,18 +122,18 @@ public class FriendsView extends ListActivity {
             convertView.setTag(holder);
 
             // Bind the data with the holder.
-            holder.text1.setText("  " + mFriends[position].mName);
+            holder.text1.setText("  " + IpokiMain.mFriends[position].mName);
             
-            double mwork[] = mFriends[position].getDistanceBearing();
-            double m1 = mFriends[position].mLatitude;
-            double m2 = mFriends[position].mLongitude;
+            double mwork[] = IpokiMain.mFriends[position].getDistanceBearing();
+            double m1 = IpokiMain.mFriends[position].mLatitude;
+            double m2 = IpokiMain.mFriends[position].mLongitude;
             
             if ((m1==0) & (m2==0)) {
         		holder.text2.setText("   No located.");
-        		holder.text3.setText("    " + mFriends[position].mLocationDate);
+        		holder.text3.setText("    " + IpokiMain.mFriends[position].mLocationDate);
     		} else {
     			holder.text2.setText("   Spotted at " + String.format("%.1f", mwork[0])+ " Km. from you.");
-        		holder.text3.setText("    " + String.format("%.5f",m1) + "  " + String.format("%.5f",m2) + "    " + mFriends[position].mLocationDate);
+        		holder.text3.setText("    " + String.format("%.5f",m1) + "  " + String.format("%.5f",m2) + "    " + IpokiMain.mFriends[position].mLocationDate);
     		}
 
             //holder.icon.setImageBitmap((position & 1) == 1 ? mIcon1 : mIcon2);
@@ -152,71 +148,7 @@ public class FriendsView extends ListActivity {
         }
     }
     
-    private void getFriends(){
-    	URL url;
-    	// TODO falta meter Main.mServer para que este bien...
-		String userUrl = getString(R.string.friends_url) + IpokiMain.mUserKey;
 
-		try {
-			url = new URL(userUrl);
-			new DownloadFriends().execute(url);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} 
-    }
-
-    private class DownloadFriends extends AsyncTask<URL, Integer, Friend[]> {
-
-    	@Override
-		protected Friend[] doInBackground(URL... params) {
-			String friendsString = "";
-	    	try {
-	    		HttpURLConnection urlConnection = (HttpURLConnection)params[0].openConnection();
-	    		int responseCode = urlConnection.getResponseCode();
-
-	    		if (responseCode == HttpURLConnection.HTTP_OK) {
-	    			InputStream is = urlConnection.getInputStream();
-	    			BufferedReader br = new BufferedReader(new InputStreamReader(is));
-	    			friendsString = br.readLine();
-	    		}
-	    	} catch (IOException e) {
-				e.printStackTrace();
-			}
-	    	return processFriends(friendsString);
-		}
-    	
-    	private Friend[] processFriends(String result)
-    	{
-	    	String[] friendsData = null;
-	    	friendsData = result.substring(3).split("\\${3}");
-	    	
-	    	if (friendsData.length % 6 != 0)
-	    		Log.w("Ipoki", "Malformed data from server");
-
-	    	int friendsNum = friendsData.length / 6;
-	    	Friend[] friends = new Friend[friendsNum];
-	    	for (int i = 0; i < friendsNum; i++) {
-	    		friends[i] = new Friend(friendsData[6 * i], 
-	    								friendsData[6 * i + 1], 
-	    								friendsData[6 * i + 2],
-	    								friendsData[6 * i + 3],
-	    								friendsData[6 * i + 4],
-	    								friendsData[6 * i + 5]);
-	    		friends[i].updateDistanceBearing(IpokiMain.mLongitude, IpokiMain.mLatitude);
-//   		double[] d = friends[i].getDistanceBearing();
-//   		Log.i("Ipoki", friends[i].mName + " : " + Double.toString(d[0]) + " - " + Double.toString(d[1]));
-	    	}	    	
-	    	return friends;
-    	}
-		
-	    protected void onPostExecute(Friend[] friends) {
-	    	mFriends = friends;
-	    	CargaAmigos();
-			//Log.i("Ipoki", "acaba Onpostexecute");   
-			//Log.i("Ipoki", "hay amigos " + String.valueOf(mAdapter.getCount()));	    
-			}
-    }
-    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
