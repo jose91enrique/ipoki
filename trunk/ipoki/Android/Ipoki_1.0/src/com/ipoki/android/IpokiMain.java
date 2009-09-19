@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Locale;
 
 import android.app.AlertDialog;
@@ -15,6 +16,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
@@ -41,6 +43,8 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
+import com.google.android.maps.MyLocationOverlay;
+import com.google.android.maps.Overlay;
 
 public class IpokiMain extends MapActivity {
 	// User data
@@ -309,10 +313,19 @@ public class IpokiMain extends MapActivity {
     	MapView mapView = (MapView)findViewById(R.id.ipoki_map);
     	mMapController = mapView.getController();
     	mapView.setSatellite(true);
-    	mapView.displayZoomControls(false);
-    	mMapController.setZoom(17);
+    	mapView.setBuiltInZoomControls(true);
+    	mMapController.setZoom(13);
     	GeoPoint geoPoint = new GeoPoint((int)(mLatitude*1E6), (int)(mLongitude*1E6));
     	mMapController.animateTo(geoPoint);
+		Drawable marker = getResources().getDrawable(R.drawable.ipokito32x32orange);
+		marker.setBounds(0, 0, marker.getIntrinsicWidth(), marker
+				.getIntrinsicHeight());
+		mapView.getOverlays().add(new FriendsOverlay(marker));
+		List<Overlay> overlays = mapView.getOverlays(); 
+		MyLocationOverlay myLocationOverlay = new MyLocationOverlay(this, mapView);
+		myLocationOverlay.enableCompass();
+		myLocationOverlay.enableMyLocation();
+		overlays.add(myLocationOverlay);
     	mapView.invalidate();
 
 		// los textbox
