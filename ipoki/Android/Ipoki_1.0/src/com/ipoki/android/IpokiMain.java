@@ -1,5 +1,6 @@
 package com.ipoki.android;
  
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,6 +8,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -16,6 +18,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Geocoder;
 import android.location.Location;
@@ -40,11 +43,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
+import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
+import com.google.android.maps.OverlayItem;
 
 public class IpokiMain extends MapActivity {
 	// User data
@@ -52,6 +57,8 @@ public class IpokiMain extends MapActivity {
 	private String mPass;
 	private String mIntervalo;
 	private String mVer = "ipoki.android.1.0";
+	private Drawable mPicture;
+
 
 	// Location
 	private LocationManager mLocationManager=null;
@@ -227,6 +234,7 @@ public class IpokiMain extends MapActivity {
  			 		mUserKey = resultData[1];
  			 		wrec = resultData[4];
  			 		wprivate = resultData[5];
+ 			 		
  			 		mOn = true;
  			 		
  			 		// All went fine. Store credentials
@@ -237,9 +245,12 @@ public class IpokiMain extends MapActivity {
  			 		editor.commit();
  			 		
  			    	String userUrl = "http://www.ipoki.com/myfriends2.php?iduser=" + mUserKey;
+ 			    	String picUrl = resultData[6];
  					try {
  						URL url = new URL(userUrl);
  						new DownloadFriends().execute(url);
+ 						url = new URL(picUrl);
+ 						new DownloadPicture().execute(url);
  			     		processDialog = ProgressDialog.show(IpokiMain.this, "Ipoki", "Downloading friends");
  					} catch (MalformedURLException e) {
  						e.printStackTrace();
@@ -249,6 +260,32 @@ public class IpokiMain extends MapActivity {
  		 	}
  	    }
     }
+    
+    private class DownloadPicture extends AsyncTask<URL, Integer, Drawable> {
+
+    	@Override
+		protected Drawable doInBackground(URL... params) {
+			Drawable d = null;
+	    	try {
+	    		HttpURLConnection urlConnection = (HttpURLConnection)params[0].openConnection();
+	    		int responseCode = urlConnection.getResponseCode();
+
+	    		if (responseCode == HttpURLConnection.HTTP_OK) {
+	    			InputStream is = urlConnection.getInputStream();
+	    			BufferedInputStream bis = new BufferedInputStream(is);
+	    			d = Drawable.createFromStream(bis, "");
+	    		}
+	    	} catch (IOException e) {
+				e.printStackTrace();
+			}
+	    	return d;
+		}
+		
+	    protected void onPostExecute(Drawable picture) {
+	    	mPicture = picture;
+	    }
+    }
+
     
     private class DownloadFriends extends AsyncTask<URL, Integer, Friend[]> {
 
@@ -298,6 +335,7 @@ public class IpokiMain extends MapActivity {
  	    	
  	    	// We build another collection, this one with the friends in range
  	    	Friend.getFriendsInDistance();
+ 	    	mFriendsDownloaded = true;
  	    	if (Friend.mFriendsInDistance.length > 0)
  	    		// Selected friend by default
  	    		ARView.mSelectedFriend = Friend.mFriendsInDistance[0];
@@ -326,6 +364,8 @@ public class IpokiMain extends MapActivity {
 		myLocationOverlay.enableCompass();
 		myLocationOverlay.enableMyLocation();
 		overlays.add(myLocationOverlay);
+		ImageView userImage = (ImageView) findViewById(R.id.user_image);
+		userImage.setImageDrawable(mPicture);
     	mapView.invalidate();
 
 		// los textbox
@@ -345,24 +385,8 @@ public class IpokiMain extends MapActivity {
 		 outlat.setText(String.format("%.4f", mLatitude));
 		 outspeed.setText(String.format("%.1f km/h",mSpeed*3.6));
 		 outhigh.setText(String.format("%.1f m",mHigh));
-
         
         isMapShowed = true;
-        
-        // los oidores de los botones
-/*        ImageView btna = (ImageView) findViewById(R.id.img00);
-        btna.setOnClickListener(pulsabtna);
-        ImageView btnb = (ImageView) findViewById(R.id.img01);
-        btnb.setOnClickListener(pulsabtnb);
-        ImageView redbtnon = (ImageView) findViewById(R.id.img20);
-        redbtnon.setOnClickListener(pulsaredbtnon);
-        ImageView redbtnoff = (ImageView) findViewById(R.id.img21);
-        redbtnoff.setOnClickListener(pulsaredbtnoff);
-        ImageView btnon = (ImageView) findViewById(R.id.img30);
-        btnon.setOnTouchListener (tocabtnon);
-        btnon.setOnClickListener(pulsabtnon);
-        ImageView btnoff = (ImageView) findViewById(R.id.img31);
-        btnoff.setOnClickListener(pulsabtnoff);*/
 }
     
     public void showWelcome() {
@@ -846,4 +870,45 @@ public class IpokiMain extends MapActivity {
 		// TODO Auto-generated method stub
 		return false;
 	}    
+	
+	public class FriendsOverlay extends ItemizedOverlay<OverlayItem> {
+		private List<Friend> locations = new ArrayList<Friend>();
+		private Drawable mMarker;
+
+		public FriendsOverlay(Drawable marker) {
+			super(marker);
+			mMarker = marker;
+			
+			for (Friend f: IpokiMain.mFriends) {
+				locations.add(f);		
+			}
+			populate();
+		}
+
+		public void draw(Canvas canvas, MapView mapView, boolean shadow) {
+			super.draw(canvas, mapView, shadow);
+			boundCenterBottom(mMarker);
+		}
+		
+		@Override
+		protected boolean onTap(int i) {
+/*			Friend f = locations.get(i);
+			IpokiMain.this.mMapUserName.setText(f.mName);*/
+			return false;
+		}
+		
+		@Override
+		protected OverlayItem createItem(int i) {
+			Friend f = locations.get(i);
+			GeoPoint gp = new GeoPoint((int) (f.mLatitude * 1E6), (int) (f.mLongitude * 1E6));
+			return new OverlayItem(gp, f.mName, "tralala");		
+		}
+
+		@Override
+		public int size() {
+			return locations.size();
+		}
+
+	}
+
 }
