@@ -3,8 +3,20 @@
     <style name="Background">
         <item name="android:background">@drawable/fondo</item>
     </style>  
-  
+  	
+  	<style name="MapSmallLabel">
+  		<item name="android:textSize">10px</item>
+  	</style>
+  	<style name="MapSmallData">
+  		<item name="android:textSize">10px</item>
+  		<item name="android:textStyle">bold</item>
+  	</style>
+  	<style name="MapUser">
+  		<item name="android:textSize">18px</item>
+  		<item name="android:textStyle">bold</item>
+  	</style>
 	<color name="orange">#ffc000</color>
 	<color name="red">#ff0000</color>
-
+	<color name="white">#ffffff</color>
+	<color name="blue">#0000ff</color>
 </resources>

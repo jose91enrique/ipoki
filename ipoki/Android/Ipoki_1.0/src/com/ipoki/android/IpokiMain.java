@@ -9,9 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
 
-import com.ipoki.android.Friend;
-import com.ipoki.android.FriendsUpdateThread;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -34,26 +31,56 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class IpokiMain extends Activity {
+import com.google.android.maps.GeoPoint;
+import com.google.android.maps.MapActivity;
+import com.google.android.maps.MapController;
+import com.google.android.maps.MapView;
+
+public class IpokiMain extends MapActivity {
+	// User data
+	private String mUser;
+	private String mPass;
+	private String mIntervalo;
+	private String mVer = "ipoki.android.1.0";
+
+	// Location
+	private LocationManager mLocationManager=null;
+	private LocationListener mLocationListener=null;
+	static double mLatitude = 0;
+	static double mLongitude = 0;
+	static float mSpeed = 0;
+	static double mHigh = 0;
+	static double mTo = 0;
+	static boolean isMapShowed = false;
+
+	// Download threads
+	private ProgressDialog processDialog = null;
+	
+	// Utils
+	private Geocoder mGeocoder;
+	
+	// Login screen 
+	private boolean mLoginLayoutVisible = false;
+	private EditText mUserText;
+	private EditText mPassText;
+
+	// Map
+	private MapController mMapController;
+	
 	// Static members
 	static String mUserKey = null;
 	static Friend[] mFriends = null;
 	static FriendsUpdateThread mFriendsUpdateThread = null;
 	public static boolean mFriendsDownloaded = false;
 
-	private ProgressDialog processDialog = null;
-	private LocationManager mLocationManager=null;
-	private LocationListener mLocationListener=null;
-	static double mLatitude;
-	static double mLongitude;
-	static float mSpeed;
-	static double mHigh;
-	static double mTo;
 	
+	public TextView mMapUserName;
 	public TextView outlat;
 	public TextView outlon;
 	public TextView outspeed;
@@ -61,14 +88,9 @@ public class IpokiMain extends Activity {
 	
 	public boolean mOn = false;
 	private final String mServer = "http://www.ipoki.com";
-	private String mVer = "AND-1.0";
-	Geocoder mGeocoder;
 
 	private double oldLatitude = 0;
 	private double oldLongitude = 0;
-	private String mUser = null;
-	private String mPass = null;
-	private String mIntervalo = null;
 	private String wprivate = "0";
 	private String wrec = "0";
 	private long lastTime = 0;
@@ -77,22 +99,245 @@ public class IpokiMain extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        setContentView(R.layout.main);
+        // Search location
+		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		mLocationListener = new MyLocationListener();
+		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 100, mLocationListener);
+		mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 3000, 100, mLocationListener);
+        
+        // Set splash/login screen
+        setContentView(R.layout.init);
+        
+        // Get preferences
+		PreferenceManager.setDefaultValues(this, R.xml.setup, false);
+		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
 		
+		// Used to get address information
+        mGeocoder = new Geocoder(this, Locale.getDefault());
+
+		// TODO: to strings.xml
+		mUser = p.getString("user", "");
+		if (mUser == "") {
+			showLoginPass();
+		}
+		else {
+	    	mPass = p.getString("pass", "pass");
+	    	mIntervalo = p.getString("intervalo", "3");
+	    	logIn();
+		}
+			
+
+
 		mFriendsUpdateThread = new FriendsUpdateThread();
         IpokiMain.mFriendsUpdateThread.setRunning(true);
         IpokiMain.mFriendsUpdateThread.start();
 
-        mGeocoder = new Geocoder(this, Locale.getDefault());
+
+        
+
+		// leer preferencias la primera vez
+/*		PreferenceManager.setDefaultValues(this, R.xml.setup, false);
+		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
+		mUser = p.getString("user", "value_default_98732");
+		// si no hay user grabado, va a preferencias para pedirlo
+		if (mUser.equals("value_default_98732")) {
+			ShowWelcome();
+		}*/
+    }
+	
+	
+	/*
+	 * Login and user edits are on an invisible layout.
+	 * If this is our first time with the app, or the credentials are wrong, 
+	 * we make the layout visible.
+	 */
+
+	// Make login/pass layout visible
+	public void showLoginPass() {
+		showLoginPass("", "");
+	}
+
+	public void showLoginPass(String user, String pass) {
+		View logpassLayout =  (View) findViewById(R.id.login_layout);
+		logpassLayout.setVisibility(View.VISIBLE);
+
+		mUserText = (EditText) findViewById(R.id.user_name);
+		mUserText.setText(user);
+		mPassText = (EditText) findViewById(R.id.password);
+		mPassText.setText(pass);
+
+		// Set button listener
+		Button loginButton = (Button) findViewById(R.id.login_button);
+		loginButton.setOnClickListener(clickLogin);
+	}
+
+    private OnClickListener clickLogin = new OnClickListener(){
+		@Override
+		public void onClick(View arg0) {
+			// Get user and pass to call signin url
+			mUser = mUserText.getText().toString();
+			mPass = mPassText.getText().toString();
+			logIn();
+		}
+    };
+    
+    // To log in we use an AsyncTask
+    private void logIn() {
+    	// TODO: to strings.xml
+    	String userUrl = mServer + "/signin.php?user=" + mUser + "&pass=" + mPass + "&ver=" + mVer;
+		try {
+			URL url = new URL(userUrl);
+			new LoginUser().execute(url);
+			// TODO: to strings.xml
+     		processDialog = ProgressDialog.show(IpokiMain.this, "Ipoki", "Logging in user");
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} 
+    }
+    
+    private class LoginUser extends AsyncTask<URL, Integer, String> {
+
+     	@Override
+ 		protected String doInBackground(URL... params) {
+     		// Make http get to url
+ 	    	return IpokiMain.this.getFromServer(params[0]);
+ 		}
+     	
+ 	    protected void onPostExecute(String result) {
+     		processDialog.dismiss();
+
+    		// TODO: to strings.xml
+     		if (result.equals("CODIGO$$$ERROR$$$")) {
+     			// Wrong user/pass.
+    			Toast.makeText(getBaseContext(), 
+ 					   "Wrong user or password", 
+ 					   Toast.LENGTH_SHORT).show();
+
+ 		        if (!mLoginLayoutVisible) {
+ 		        	showLoginPass(mUser, mPass);
+ 		        }
+ 		        
+ 		 	} else {
+ 		    	String[] resultData = result.split("\\${3}");
+ 		    	if (resultData.length >= 6) {
+ 			 		mUserKey = resultData[1];
+ 			 		wrec = resultData[4];
+ 			 		wprivate = resultData[5];
+ 			 		mOn = true;
+ 			 		
+ 			 		// All went fine. Store credentials
+ 			 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(IpokiMain.this);
+ 			 		SharedPreferences.Editor editor = prefs.edit();
+ 			 		editor.putString("user", mUser);
+ 			 		editor.putString("pass", mPass);
+ 			 		editor.commit();
+ 			 		
+ 			    	String userUrl = "http://www.ipoki.com/myfriends2.php?iduser=" + mUserKey;
+ 					try {
+ 						URL url = new URL(userUrl);
+ 						new DownloadFriends().execute(url);
+ 			     		processDialog = ProgressDialog.show(IpokiMain.this, "Ipoki", "Downloading friends");
+ 					} catch (MalformedURLException e) {
+ 						e.printStackTrace();
+ 					} 
+
+ 		    	}
+ 		 	}
+ 	    }
+    }
+    
+    private class DownloadFriends extends AsyncTask<URL, Integer, Friend[]> {
+
+     	@Override
+ 		protected Friend[] doInBackground(URL... params) {
+     		String result = IpokiMain.this.getFromServer(params[0]);
+ 	    	return processFriends(result);
+ 		}
+     	
+     	// With the raw data, we build a Friend object for each friend
+     	private Friend[] processFriends(String result)
+     	{
+ 	    	String[] friendsData = null;
+ 	    	/* Friends data comes with this format:
+ 	    	*  $$$user$$$latitude$$$longitude$$$key$$$date_last_position$$$picture_url
+ 	    	*  Let's split it into a string array
+ 	    	**/
+ 	    	friendsData = result.substring(3).split("\\${3}");
+ 	    	
+ 	    	if (friendsData.length % 6 != 0)
+ 	    		Log.w("Ipoki", "Malformed data from server");
+
+ 	    	// Each friend is composed of 6 fields
+ 	    	int friendsNum = friendsData.length / 6;
+ 	    	Friend[] friends = new Friend[friendsNum];
+ 	    	for (int i = 0; i < friendsNum; i++) {
+ 	    		friends[i] = new Friend(friendsData[6 * i], 
+ 	    								friendsData[6 * i + 1], 
+ 	    								friendsData[6 * i + 2], 
+ 	    								friendsData[6 * i + 3], 
+ 	    								friendsData[6 * i + 4], 
+ 	    								friendsData[6 * i + 5]);
+ 	    		// From our current position, calculate distance and direction (bearing)
+ 	    		friends[i].updateDistanceBearing(mLongitude, mLatitude);
+ 	    		// Get address
+ 	    		friends[i].setAddress(mGeocoder);
+ 	    	}
+ 	    	
+ 	    	return friends;
+     	}
+     	
+ 	    protected void onPostExecute(Friend[] friends) {
+     		processDialog.dismiss();
+     		
+     		// Main friends collection
+ 	    	mFriends = friends;
+ 	    	
+ 	    	// We build another collection, this one with the friends in range
+ 	    	Friend.getFriendsInDistance();
+ 	    	if (Friend.mFriendsInDistance.length > 0)
+ 	    		// Selected friend by default
+ 	    		ARView.mSelectedFriend = Friend.mFriendsInDistance[0];
+ 	    	
+ 	    	// We dismiss login screen and go for the main one
+ 	    	showMainView();
+ 	    }
+    }
+    
+    private void showMainView() {
+    	//setContentView(R.layout.main);
+    	setContentView(R.layout.map_layout);
+    	MapView mapView = (MapView)findViewById(R.id.ipoki_map);
+    	mMapController = mapView.getController();
+    	mapView.setSatellite(true);
+    	mapView.displayZoomControls(false);
+    	mMapController.setZoom(17);
+    	GeoPoint geoPoint = new GeoPoint((int)(mLatitude*1E6), (int)(mLongitude*1E6));
+    	mMapController.animateTo(geoPoint);
+    	mapView.invalidate();
 
 		// los textbox
-        outlat = (TextView) findViewById(R.id.txtlat);
+/*        outlat = (TextView) findViewById(R.id.txtlat);
         outlon = (TextView) findViewById(R.id.txtlon);
         outspeed = (TextView) findViewById(R.id.txtspeed);
-        outhigh = (TextView) findViewById(R.id.txth);
+        outhigh = (TextView) findViewById(R.id.txth);*/
+    	
+    	mMapUserName = (TextView) findViewById(R.id.map_user_name);
+    	outlat = (TextView) findViewById(R.id.map_latitude);
+        outlon = (TextView) findViewById(R.id.map_longitude);
+        outspeed = (TextView) findViewById(R.id.map_speed);
+        outhigh = (TextView) findViewById(R.id.map_height);
+        
+        mMapUserName.setText(mUser);
+		 outlon.setText(String.format("%.4f", mLongitude));
+		 outlat.setText(String.format("%.4f", mLatitude));
+		 outspeed.setText(String.format("%.1f km/h",mSpeed*3.6));
+		 outhigh.setText(String.format("%.1f m",mHigh));
+
+        
+        isMapShowed = true;
         
         // los oidores de los botones
-        ImageView btna = (ImageView) findViewById(R.id.img00);
+/*        ImageView btna = (ImageView) findViewById(R.id.img00);
         btna.setOnClickListener(pulsabtna);
         ImageView btnb = (ImageView) findViewById(R.id.img01);
         btnb.setOnClickListener(pulsabtnb);
@@ -104,25 +349,10 @@ public class IpokiMain extends Activity {
         btnon.setOnTouchListener (tocabtnon);
         btnon.setOnClickListener(pulsabtnon);
         ImageView btnoff = (ImageView) findViewById(R.id.img31);
-        btnoff.setOnClickListener(pulsabtnoff);
-        
-		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		mLocationListener = new MyLocationListener();
-		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 1, mLocationListener);
-		mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 3000, 100, mLocationListener);
-
-
-		// leer preferencias la primera vez
-		PreferenceManager.setDefaultValues(this, R.xml.setup, false);
-		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-		mUser = p.getString("user", "value_default_98732");
-		// si no hay user grabado, va a preferencias para pedirlo
-		if (mUser.equals("value_default_98732")) {
-			ShowWelcome();
-		}
-     }
-	
-	 public void ShowWelcome() {
+        btnoff.setOnClickListener(pulsabtnoff);*/
+}
+    
+    public void showWelcome() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(IpokiMain.this);
  	    builder.setTitle("Welcome to Ipoki");
  	    builder.setIcon(R.drawable.icon);
@@ -140,14 +370,16 @@ public class IpokiMain extends Activity {
         builder.show();
 	}
 
-	 public void ShowLoc() {    	 
-      	 // pintar la posicion, velocidad y altura
-    	 outlon.setText(String.format("%.5f", mLongitude));
-    	 outlat.setText(String.format("%.5f", mLatitude));
-    	 outspeed.setText(String.format("%.1f",mSpeed*3.6));
-    	 outhigh.setText(String.format("%.1f",mHigh));
+	 public void updateLocationViews() {    	 
+		 if (isMapShowed) {
+	      	 // pintar la posicion, velocidad y altura
+	    	 outlon.setText(String.format("%.5f", mLongitude));
+	    	 outlat.setText(String.format("%.5f", mLatitude));
+	    	 outspeed.setText(String.format("%.1f",mSpeed*3.6));
+	    	 outhigh.setText(String.format("%.1f",mHigh));
+		 }
     	 
-    	 if (mOn) {
+/*    	 if (mOn) {
     		// si esta conectado se manda la posicion 
     		// solo si ha pasado el intervalo correspondiente (MINIMO=3)
     		int iwork = 0;
@@ -162,7 +394,7 @@ public class IpokiMain extends Activity {
         	 	SendLoc();
         	 	lastTime = System.currentTimeMillis();
     		}
-    	 }
+    	 }*/
      }
 
      public void SendLoc() {
@@ -179,99 +411,9 @@ public class IpokiMain extends Activity {
 	 	oldLongitude = mLongitude;
      }
     
-     private void logIn(){
-		PreferenceManager.setDefaultValues(this, R.xml.setup, false);
-		SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-		mUser = p.getString("user", "value_default_98732");
-    	mPass = p.getString("pass", "value_default");
-    	mIntervalo = p.getString("intervalo", "3");
-    	String userUrl = mServer + "/signin.php?user=" + mUser + "&pass=" + mPass + "&ver=" + mVer;
-		try {
-			URL url = new URL(userUrl);
-			new LoginUser().execute(url);
-     		processDialog = ProgressDialog.show(IpokiMain.this, "Ipoki", "Logging in user");
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} 
-     }
      
-     private class LoginUser extends AsyncTask<URL, Integer, String> {
 
-     	@Override
- 		protected String doInBackground(URL... params) {
- 	    	return IpokiMain.this.getFromServer(params[0]);
- 		}
-     	
- 	    protected void onPostExecute(String result) {
-     		processDialog.dismiss();
-
- 		 	if (result.equals("CODIGO$$$ERROR$$$")) {
- 		 	    AlertDialog.Builder builder = new AlertDialog.Builder(IpokiMain.this);
- 		 	    builder.setTitle("Login error");
- 		 	    builder.setIcon(R.drawable.alert_dialog_icon);
- 		 	    builder.setMessage("Wrong user or password");
- 		        builder.show();
- 		 	} else {
- 		    	String[] resultData = result.split("\\${3}");
- 		    	if (resultData.length >= 6) {
- 			 		mUserKey = resultData[1];
- 			 		wrec = resultData[4];
- 			 		wprivate = resultData[5];
- 			 		mOn = true;
- 			 		
- 			    	String userUrl = "http://www.ipoki.com/myfriends2.php?iduser=" + mUserKey;
- 					try {
- 						URL url = new URL(userUrl);
- 						new DownloadFriends().execute(url);
- 					} catch (MalformedURLException e) {
- 						e.printStackTrace();
- 					} 
-
- 		    	}
- 		 	}
- 	    }
-     }
      
-     private class DownloadFriends extends AsyncTask<URL, Integer, Friend[]> {
-
-     	@Override
- 		protected Friend[] doInBackground(URL... params) {
-     		String result = IpokiMain.this.getFromServer(params[0]);
- 	    	return processFriends(result);
- 		}
-     	
-     	private Friend[] processFriends(String result)
-     	{
- 	    	String[] friendsData = null;
- 	    	friendsData = result.substring(3).split("\\${3}");
- 	    	
- 	    	if (friendsData.length % 4 != 0)
- 	    		Log.w("Ipoki", "Malformed data from server");
-
- 	    	int friendsNum = friendsData.length / 6;
- 	    	Friend[] friends = new Friend[friendsNum];
- 	    	for (int i = 0; i < friendsNum; i++) {
- 	    		friends[i] = new Friend(friendsData[6 * i], 
- 	    								friendsData[6 * i + 1], 
- 	    								friendsData[6 * i + 2], 
- 	    								friendsData[6 * i + 3], 
- 	    								friendsData[6 * i + 4], 
- 	    								friendsData[6 * i + 5]);
- 	    		friends[i].updateDistanceBearing(mLongitude, mLatitude);
- 	    		friends[i].setAddress(mGeocoder);
- 	    	}
- 	    	
- 	    	return friends;
-     	}
-     	
- 	    protected void onPostExecute(Friend[] friends) {
- 	    	mFriends = friends;
- 	    	Friend.getFriendsInDistance();
- 	    	if (Friend.mFriendsInDistance.length > 0)
- 	    		ARView.mSelectedFriend = Friend.mFriendsInDistance[0];
- 	    	mFriendsDownloaded = true;
- 	    }
-     }
 
 
      private void PowerOff(){
@@ -596,7 +738,7 @@ public class IpokiMain extends Activity {
 				mHigh = location.getAltitude();
 				mTo = location.getBearing();
 				// lo pinta
-				ShowLoc();
+				updateLocationViews();
 			}			
 		}
 	
@@ -683,5 +825,12 @@ public class IpokiMain extends Activity {
            } catch (InterruptedException e) {
             }
         }
-    }    
+    }
+
+
+	@Override
+	protected boolean isRouteDisplayed() {
+		// TODO Auto-generated method stub
+		return false;
+	}    
 }
