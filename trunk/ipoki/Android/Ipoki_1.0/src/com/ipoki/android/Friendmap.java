@@ -48,13 +48,13 @@ public class Friendmap extends MapActivity implements OnClickListener {
         mapOverlays = mMapView.getOverlays();
         drawable = this.getResources().getDrawable(R.drawable.ipokito2);
         itemizedOverlay = new IpokitoIcon(drawable);
-        int friendsNum = FriendsView.mFriends.length;
+        int friendsNum = IpokiMain.mFriends.length;
         
     	for (int i = 0; i < friendsNum; i++) {
-    		GeoPoint point = new GeoPoint((int)(FriendsView.mFriends[i].mLatitude * 1E6),
-    							          (int)(FriendsView.mFriends[i].mLongitude* 1E6));
+    		GeoPoint point = new GeoPoint((int)(IpokiMain.mFriends[i].mLatitude * 1E6),
+    							          (int)(IpokiMain.mFriends[i].mLongitude* 1E6));
     		OverlayItem overlayitem = new OverlayItem(point, "", "");
-            itemizedOverlay.addOverlay(overlayitem, FriendsView.mFriends[i].mName);
+            itemizedOverlay.addOverlay(overlayitem, IpokiMain.mFriends[i].mName);
     	}
         mapOverlays.add(itemizedOverlay);
         

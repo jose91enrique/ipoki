@@ -77,7 +77,7 @@ public class Friendshow extends MapActivity implements OnClickListener {
         // 
         // TODO --> revisar la API Key, esta es la de produccion
         //
-        mMapView = new MapView(this, "0cbsCnwzkViQZwFgU2Coie94cLA__ycwQxX3pqg");
+        mMapView = new MapView(this, "0slLUwYJ2HzIjfqA-mmYITQe45PnAN2BnvBuWog");
         frame.addView(mMapView, new FrameLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
         mMapView.getController().setZoom(15);
         mMapView.setClickable(true);
