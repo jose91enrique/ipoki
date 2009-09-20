@@ -24,8 +24,8 @@ public class Mymap extends MapActivity implements OnClickListener {
         // 
         // TODO --> revisar la API Key, esta es la de produccion
         //
-        //mMapView = new MapView(this, "0cbsCnwzkViQZwFgU2Coie94cLA__ycwQxX3pqg");
-        mMapView = new MapView(this, "0slLUwYJ2HzIjfqA-mmYITQe45PnAN2BnvBuWog");
+        mMapView = new MapView(this, "0cbsCnwzkViQZwFgU2Coie94cLA__ycwQxX3pqg");
+        //mMapView = new MapView(this, "0slLUwYJ2HzIjfqA-mmYITQe45PnAN2BnvBuWog");
         frame.addView(mMapView, new FrameLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 
         // Create an overlay to show current location
@@ -33,7 +33,8 @@ public class Mymap extends MapActivity implements OnClickListener {
         mMyLocationOverlay.runOnFirstFix(new Runnable() { public void run() {
             mMapView.getController().animateTo(mMyLocationOverlay.getMyLocation());
         }});
-
+        mMyLocationOverlay.enableCompass();
+        
         mMapView.getOverlays().add(mMyLocationOverlay);
         mMapView.getController().setZoom(17);
         mMapView.setClickable(true);

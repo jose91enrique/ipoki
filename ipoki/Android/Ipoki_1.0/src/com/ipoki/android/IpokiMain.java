@@ -347,14 +347,14 @@ public class IpokiMain extends MapActivity {
     	        if (recordButton.isChecked()) {
     	        	new Thread() {
     	            	public void run() {
-    	            		String url = mServer + "/set_h_off.php?iduser=" + mUserKey;
+    	            		String url = mServer + "/set_h_on.php?iduser=" + mUserKey;
     	            		serverRequest(url);
     	            	} 
     	            }.start();    	        
     	        } else {
     	        	new Thread() {
     	            	public void run() {
-    	            		String url = mServer + "/set_h_on.php?iduser=" + mUserKey;
+    	            		String url = mServer + "/set_h_off.php?iduser=" + mUserKey;
     	            		serverRequest(url);
     	            	} 
     	            }.start();    	        
@@ -364,7 +364,22 @@ public class IpokiMain extends MapActivity {
     	final ToggleButton publishButton = (ToggleButton) findViewById(R.id.button_publish);
     	publishButton.setOnClickListener(new OnClickListener() {
     	    public void onClick(View v) {
-    	    	mPublishingOn = !mPublishingOn;
+    	        // Perform action on clicks
+    	        if (publishButton.isChecked()) {
+    	        	new Thread() {
+    	            	public void run() {
+    	            		String url = mServer + "/set_p_off.php?iduser=" + mUserKey;
+    	            		serverRequest(url);
+    	            	} 
+    	            }.start();    	        
+    	        } else {
+    	        	new Thread() {
+    	            	public void run() {
+    	            		String url = mServer + "/set_p_on.php?iduser=" + mUserKey;
+    	            		serverRequest(url);
+    	            	} 
+    	            }.start();    	        
+    	        }
     	    }
     	});
 
@@ -523,6 +538,10 @@ public class IpokiMain extends MapActivity {
         
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+	        case R.id.mymap:
+	            //mymap            	
+	        	ShowMap();
+	        	break;            
             case R.id.setup:
                 //settings
             	ShowSetup();
@@ -541,6 +560,13 @@ public class IpokiMain extends MapActivity {
         }
         return false;
     }
+
+    public void ShowMap() {
+     	// Muestra el mapa del usuario
+     	Intent intent = new Intent(); 
+    	intent.setClass(IpokiMain.this, Mymap.class); 
+    	startActivity(intent); 
+     }
 
     private class MyLocationListener implements LocationListener {
     	

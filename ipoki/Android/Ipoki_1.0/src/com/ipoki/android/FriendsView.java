@@ -162,10 +162,6 @@ public class FriendsView extends ListActivity {
                 //map friends
             	ShowMapFriends();
             	break;            
-            case R.id.real:
-                //Augmented Reality
-            	ShowAR();
-            	break;            
             case R.id.friendexit:
                 //exit
             	finish();
@@ -189,16 +185,6 @@ public class FriendsView extends ListActivity {
      	Intent intent = new Intent(); 
     	intent.setClass(FriendsView.this, Friendmap.class); 
     	startActivity(intent); 
-     }
-     
-     public void ShowAR() {
-     	// Muestra los amigos en RA
- 		Toast.makeText(getBaseContext(), 
-				   "Loading Augmented Reality...", 
-				   Toast.LENGTH_LONG).show();
- 		Intent intent = new Intent(); 
-  		intent.setClass(FriendsView.this, IpokiMain.class); 
- 		startActivity(intent);
      }
 
 }
