@@ -131,7 +131,7 @@
 		android:layout_weight="1"
 		android:enabled="true"
 		android:clickable="true"
-		android:apiKey="0slLUwYJ2HzIjfqA-mmYITQe45PnAN2BnvBuWog" />
+		android:apiKey="0cbsCnwzkViQZwFgU2Coie94cLA__ycwQxX3pqg" />
 	<LinearLayout 
 		android:layout_width="fill_parent" 
 		android:layout_height="wrap_content"

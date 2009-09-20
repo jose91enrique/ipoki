@@ -5,10 +5,6 @@
         android:title="Friends map"
         android:icon="@drawable/map" />
  
-    <item android:id="@+id/real"
-        android:title="Reality"
-        android:icon="@drawable/friends" />
-
     <item android:id="@+id/friendexit"
         android:title="Exit"
         android:icon="@drawable/exit" />

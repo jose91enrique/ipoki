@@ -14,7 +14,7 @@
         android:icon="@drawable/settings" />
 
     <item android:id="@+id/ar_view"
-        android:title="Camera mode"
+        android:title="Reality"
         android:icon="@android:drawable/ic_menu_camera" />
 
     <item android:id="@+id/exit"
