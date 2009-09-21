@@ -63,8 +63,11 @@ public class IpokiAR extends Activity implements SeekBar.OnSeekBarChangeListener
 	            public void onClick(View v) {
 	            	if (IpokiMain.mFriendsDownloaded) {
 		            	Friend.getFriendsInDistance();
-		     	    	if (Friend.mFriendsInDistance.length > 0)
+		     	    	if (Friend.mFriendsInDistance.length > 0) {
+		     	    		if (ARView.mSelectedFriend != null)
+		     	    			ARView.mSelectedFriend.isSelected = false;
 		     	    		ARView.mSelectedFriend = Friend.mFriendsInDistance[0];
+		     	    	}
 		     	    	else
 		     	    		ARView.mSelectedFriend = null;
 	            	}
