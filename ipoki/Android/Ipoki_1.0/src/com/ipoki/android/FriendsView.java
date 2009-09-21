@@ -1,19 +1,13 @@
 package com.ipoki.android;
  
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.ArrayList;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -32,6 +26,7 @@ public class FriendsView extends ListActivity {
 	static double mLongitude;
 
 	FriendsAdapter mAdapter;
+	static String[] mData = null;
 	
 	public static String pName;
 	public static String pFoto;
@@ -42,22 +37,36 @@ public class FriendsView extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+		int numFriends = IpokiMain.mFriends.length;
+		mData = new String[numFriends*5];
+		for(int i = 0; i < numFriends; i++) {
+			mData[i*5] = IpokiMain.mFriends[i].mName;
+			mData[i*5+1] = String.valueOf(IpokiMain.mFriends[i].mLongitude);
+			mData[i*5+2] = String.valueOf(IpokiMain.mFriends[i].mLatitude);
+			mData[i*5+3] = String.format("%.1f", IpokiMain.mFriends[i].mDistance);
+			mData[i*5+4] = IpokiMain.mFriends[i].mLocationDate.toLocaleString();
+		}
         setContentView(R.layout.friendslist);
         loadFriends();
+    }
+    
+    @Override
+    protected void onDestroy() {
+    	super.onDestroy();
     }
 
     public void onListItemClick(ListView l, View v, int position, long id){
 		getListView().getItemAtPosition(position); 
-		pName = IpokiMain.mFriends[position].mName;
-		pLat = IpokiMain.mFriends[position].mLatitude;
-		pLon = IpokiMain.mFriends[position].mLongitude;
+		pName = mData[position*5];
+		pLon = Double.parseDouble(mData[position*5+1]);
+		pLat = Double.parseDouble(mData[position*5+2]);
 //		pFoto = mFriends[position].mRutafoto;
-		pFecha = IpokiMain.mFriends[position].mLocationDate.toLocaleString();
+		pFecha = mData[position*5+4];
 		if ((pLat==0) & (pLon==0)) {
 	 	    AlertDialog.Builder builder = new AlertDialog.Builder(this);
 	 	    builder.setTitle("Warning");
 	 	    builder.setIcon(R.drawable.alert_dialog_icon);
-	 	    builder.setMessage("This friend don't have position.");
+	 	    builder.setMessage("This friend is not located.");
 	        builder.show();
 		} else {
 			// llama a mostrar amigo
@@ -68,7 +77,7 @@ public class FriendsView extends ListActivity {
     private void loadFriends(){
 		mAdapter = new FriendsAdapter(this);
 		setListAdapter(mAdapter);
-    	if (IpokiMain.mFriends.length==0) {
+    	if (mData==null) {
 	    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
 	 	    builder.setTitle("Information");
 	 	    builder.setIcon(R.drawable.alert_dialog_icon);
@@ -92,9 +101,9 @@ public class FriendsView extends ListActivity {
         
 		@Override
 		public int getCount() {
-			if (IpokiMain.mFriends == null)
+			if (mData == null)
 				return 0;
-			return IpokiMain.mFriends.length;
+			return mData.length / 5;
 		}
 
 		public Object getItem(int position) {
@@ -107,33 +116,33 @@ public class FriendsView extends ListActivity {
 
         public View getView(int position, View convertView, ViewGroup parent) {
 
-        	ViewHolder holder;
+     		ViewHolder holder;
 
-            convertView = mInflater.inflate(R.layout.list_item_friend_text, null);
-
-            // Creates a ViewHolder and store references to the two children views
-            // we want to bind data to.
-            holder = new ViewHolder();
-            holder.text1 = (TextView) convertView.findViewById(R.id.text1);
-            holder.text2 = (TextView) convertView.findViewById(R.id.text2);
-            holder.text3 = (TextView) convertView.findViewById(R.id.text3);
-            //holder.icon = (ImageView) convertView.findViewById(R.id.icon);
-
+     		if (convertView == null) {
+	            convertView = mInflater.inflate(R.layout.list_item_friend_text, null);
+	
+	            // Creates a ViewHolder and store references to the two children views
+	            // we want to bind data to.
+	            holder = new ViewHolder();
+	            holder.text1 = (TextView) convertView.findViewById(R.id.text1);
+	            holder.text2 = (TextView) convertView.findViewById(R.id.text2);
+	            holder.text3 = (TextView) convertView.findViewById(R.id.text3);
+	            //holder.icon = (ImageView) convertView.findViewById(R.id.icon);
             convertView.setTag(holder);
+     		}
+     		else {
+                holder = (ViewHolder) convertView.getTag();
+     		}
 
             // Bind the data with the holder.
-            holder.text1.setText("  " + IpokiMain.mFriends[position].mName);
+            holder.text1.setText("  " + mData[position*5]);
             
-            double mwork[] = IpokiMain.mFriends[position].getDistanceBearing();
-            double m1 = IpokiMain.mFriends[position].mLatitude;
-            double m2 = IpokiMain.mFriends[position].mLongitude;
-            
-            if ((m1==0) & (m2==0)) {
+            if ((mData[position*5+2]=="0.0000") & (mData[position*5+1]=="0.0000")) {
         		holder.text2.setText("   No located.");
-        		holder.text3.setText("    " + IpokiMain.mFriends[position].mLocationDate);
+        		holder.text3.setText("    " + mData[position*5+4]);
     		} else {
-    			holder.text2.setText("   Spotted at " + String.format("%.1f", mwork[0])+ " Km. from you.");
-        		holder.text3.setText("    " + String.format("%.5f",m1) + "  " + String.format("%.5f",m2) + "    " + IpokiMain.mFriends[position].mLocationDate);
+    			holder.text2.setText("   Spotted at " + mData[position*5+3]+ " Km. from you.");
+        		holder.text3.setText("    " + mData[position*5+2] + "  " + mData[position*5+1] + "    " + mData[position*5+4]);
     		}
 
             //holder.icon.setImageBitmap((position & 1) == 1 ? mIcon1 : mIcon2);
@@ -162,6 +171,10 @@ public class FriendsView extends ListActivity {
                 //map friends
             	ShowMapFriends();
             	break;            
+            case R.id.real:
+                //Augmented Reality
+            	ShowAR();
+            	break;            
             case R.id.friendexit:
                 //exit
             	finish();
@@ -185,6 +198,16 @@ public class FriendsView extends ListActivity {
      	Intent intent = new Intent(); 
     	intent.setClass(FriendsView.this, Friendmap.class); 
     	startActivity(intent); 
+     }
+     
+     public void ShowAR() {
+     	// Muestra los amigos en RA
+ 		Toast.makeText(getBaseContext(), 
+				   "Loading Augmented Reality...", 
+				   Toast.LENGTH_LONG).show();
+ 		Intent intent = new Intent(); 
+  		intent.setClass(FriendsView.this, IpokiAR.class); 
+ 		startActivity(intent);
      }
 
 }
