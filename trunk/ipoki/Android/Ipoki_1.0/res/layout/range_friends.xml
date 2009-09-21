@@ -8,8 +8,7 @@
 	<SeekBar android:id="@+id/FriendsRange" 
 		android:layout_height="wrap_content" 
 		android:clickable="false" 
-		android:max="500" 
-		android:layout_width="fill_parent" android:padding="5dip"></SeekBar>
+		android:layout_width="fill_parent" android:padding="5dip" android:max="1000"></SeekBar>
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="wrap_content"
