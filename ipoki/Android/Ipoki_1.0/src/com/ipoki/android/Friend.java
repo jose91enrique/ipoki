@@ -16,12 +16,14 @@ import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
+import android.util.Log;
 
 class Friend {
 	final String mName;
 	final double mLongitude;
 	final double mLatitude;
 	final String mSessionKey;
+	final String mUrlPicture;
 	Date mLocationDate;
 	Drawable mPicture;
 	Address mAddress;
@@ -42,13 +44,8 @@ class Friend {
 		mLongitude = Double.parseDouble(longitude);
 		mLatitude = Double.parseDouble(latitude);
 		mSessionKey = sessionKey;
+		mUrlPicture = urlPicture;
 		SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		try {
-			URL url = new URL(urlPicture);
-			new DownloadPicture().execute(url);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} 
 
 		try {
 			mLocationDate = dateFormater.parse(dateTime);
@@ -101,30 +98,32 @@ class Friend {
 		mBearing = Math.atan2(y, x);
 	}
 	
-    private class DownloadPicture extends AsyncTask<URL, Integer, Drawable> {
-
-    	@Override
-		protected Drawable doInBackground(URL... params) {
-			Drawable d = null;
-	    	try {
-	    		HttpURLConnection urlConnection = (HttpURLConnection)params[0].openConnection();
-	    		int responseCode = urlConnection.getResponseCode();
-
-	    		if (responseCode == HttpURLConnection.HTTP_OK) {
-	    			InputStream is = urlConnection.getInputStream();
-	    			BufferedInputStream bis = new BufferedInputStream(is);
-	    			d = Drawable.createFromStream(bis, "");
-	    		}
-	    	} catch (IOException e) {
-				e.printStackTrace();
-			}
-	    	return d;
-		}
+	public static void downloadPictures(final String[] urls) {
+		Thread t = new Thread() {
+        	public void run() {
+				for(int i = 0; i < urls.length; i++) {
+					try {
+						URL url = new URL(urls[i]);
+			    		HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
+			    		int responseCode = urlConnection.getResponseCode();
 		
-	    protected void onPostExecute(Drawable picture) {
-	    	mPicture = picture;
-	    }
-    }
+			    		if (responseCode == HttpURLConnection.HTTP_OK) {
+			    			InputStream is = urlConnection.getInputStream();
+			    			
+			    			BufferedInputStream bis = new BufferedInputStream(is);
+			    			IpokiMain.mFriends[i].mPicture = Drawable.createFromStream(bis, "");
+			    			Log.i("Ipoki", "Foto descargada");
+			    		}
+			    	} catch (IOException e) {
+						e.printStackTrace();
+					}
+				} 
+        	}
+    	};
+    	t.setPriority(Thread.MIN_PRIORITY);
+    	t.start();
+	}
+
     
     public static void placeFriendInOrder(Friend existingFriend, Friend newFriend) {
   		if (existingFriend.mBearing > newFriend.mBearing) {
@@ -198,7 +197,7 @@ class FriendsUpdateThread extends Thread {
 	        	}
         	}
         	try {
-				FriendsUpdateThread.sleep(6000);
+				FriendsUpdateThread.sleep(30000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
