@@ -32,10 +32,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -225,39 +223,30 @@ public class IpokiMain extends MapActivity {
  			    	String userUrl = "http://www.ipoki.com/myfriends2.php?iduser=" + mUserKey;
  			    	String picUrl = resultData[6];
  					new DownloadFriends().execute(userUrl);
-					new DownloadPicture().execute(picUrl);
 					processDialog = ProgressDialog.show(IpokiMain.this, "Ipoki", "Downloading friends"); 
-
+ 					mPicture = downloadPicture(picUrl);
  		    	}
  		 	}
  	    }
     }
     
-    private class DownloadPicture extends AsyncTask<String, Integer, Drawable> {
+    private Drawable downloadPicture(String urlString) {
+		Drawable d = null;
+    	try {
+    		URL url = new URL(urlString);
+    		HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
+    		int responseCode = urlConnection.getResponseCode();
 
-    	@Override
-		protected Drawable doInBackground(String... params) {
-			Drawable d = null;
-	    	try {
-	    		URL url = new URL(params[0]);
-	    		HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
-	    		int responseCode = urlConnection.getResponseCode();
-
-	    		if (responseCode == HttpURLConnection.HTTP_OK) {
-	    			InputStream is = urlConnection.getInputStream();
-	    			BufferedInputStream bis = new BufferedInputStream(is);
-	    			d = Drawable.createFromStream(bis, "");
-	    		}
-	    	} catch (IOException e) {
-				e.printStackTrace();
-			}
-	    	return d;
+    		if (responseCode == HttpURLConnection.HTTP_OK) {
+    			InputStream is = urlConnection.getInputStream();
+    			BufferedInputStream bis = new BufferedInputStream(is);
+    			d = Drawable.createFromStream(bis, "");
+    		}
+    	} catch (IOException e) {
+			e.printStackTrace();
 		}
-		
-	    protected void onPostExecute(Drawable picture) {
-	    	mPicture = picture;
-	    }
-    }
+    	return d;
+	}
 
     
     private class DownloadFriends extends AsyncTask<String, Integer, Friend[]> {
@@ -311,6 +300,12 @@ public class IpokiMain extends MapActivity {
  	    		// Selected friend by default
  	    		ARView.mSelectedFriend = Friend.mFriendsInDistance[0];
  	    	
+ 	    	int numFriends = mFriends.length;
+ 	    	String[] urlsPictures = new String[numFriends];
+ 	    	for (int i = 0; i < numFriends; i++) {
+ 	    		urlsPictures[i] = mFriends[i].mUrlPicture;
+ 	    	}
+ 	    	Friend.downloadPictures(urlsPictures);
  	    	// We dismiss login screen and go for the main one
      		processDialog.dismiss();
  	    	showMainView();
@@ -325,20 +320,22 @@ public class IpokiMain extends MapActivity {
     	mapView.setSatellite(true);
     	mapView.setBuiltInZoomControls(true);
     	mMapController.setZoom(13);
+
     	GeoPoint geoPoint = new GeoPoint((int)(mLatitude*1E6), (int)(mLongitude*1E6));
     	mMapController.animateTo(geoPoint);
-		Drawable marker = getResources().getDrawable(R.drawable.ipokito32x32orange);
+/*		Drawable marker = getResources().getDrawable(R.drawable.ipokito32x32orange);
 		marker.setBounds(0, 0, marker.getIntrinsicWidth(), marker
 				.getIntrinsicHeight());
-		mapView.getOverlays().add(new FriendsOverlay(marker));
+		mapView.getOverlays().add(new FriendsOverlay(marker));*/	
+
 		List<Overlay> overlays = mapView.getOverlays(); 
 		MyLocationOverlay myLocationOverlay = new MyLocationOverlay(this, mapView);
 		myLocationOverlay.enableCompass();
 		myLocationOverlay.enableMyLocation();
-		overlays.add(myLocationOverlay);
+		overlays.add(myLocationOverlay);	
+		
 		ImageView userImage = (ImageView) findViewById(R.id.user_image);
 		userImage.setImageDrawable(mPicture);
-    	mapView.invalidate();
     	
     	final ToggleButton recordButton = (ToggleButton) findViewById(R.id.button_record);
     	recordButton.setOnClickListener(new OnClickListener() {
@@ -347,14 +344,14 @@ public class IpokiMain extends MapActivity {
     	        if (recordButton.isChecked()) {
     	        	new Thread() {
     	            	public void run() {
-    	            		String url = mServer + "/set_h_on.php?iduser=" + mUserKey;
+    	            		String url = mServer + "/set_h_off.php?iduser=" + mUserKey;
     	            		serverRequest(url);
     	            	} 
     	            }.start();    	        
     	        } else {
     	        	new Thread() {
     	            	public void run() {
-    	            		String url = mServer + "/set_h_off.php?iduser=" + mUserKey;
+    	            		String url = mServer + "/set_h_on.php?iduser=" + mUserKey;
     	            		serverRequest(url);
     	            	} 
     	            }.start();    	        
@@ -364,22 +361,7 @@ public class IpokiMain extends MapActivity {
     	final ToggleButton publishButton = (ToggleButton) findViewById(R.id.button_publish);
     	publishButton.setOnClickListener(new OnClickListener() {
     	    public void onClick(View v) {
-    	        // Perform action on clicks
-    	        if (publishButton.isChecked()) {
-    	        	new Thread() {
-    	            	public void run() {
-    	            		String url = mServer + "/set_p_off.php?iduser=" + mUserKey;
-    	            		serverRequest(url);
-    	            	} 
-    	            }.start();    	        
-    	        } else {
-    	        	new Thread() {
-    	            	public void run() {
-    	            		String url = mServer + "/set_p_on.php?iduser=" + mUserKey;
-    	            		serverRequest(url);
-    	            	} 
-    	            }.start();    	        
-    	        }
+    	    	mPublishingOn = !mPublishingOn;
     	    }
     	});
 
@@ -494,21 +476,10 @@ public class IpokiMain extends MapActivity {
      }
 
      public void ShowFriends() {
-    	 if (!mPublishingOn){
- 	 	    AlertDialog.Builder builder = new AlertDialog.Builder(IpokiMain.this);
-	 	    builder.setTitle("Ipoki Connection");
-	 	    builder.setIcon(R.drawable.alert_dialog_icon);
-	 	    builder.setMessage("You are not connected.");
-	        builder.show();
-     	 } else {
-	     	// Muestra los amigos
-			Toast.makeText(getBaseContext(), 
-					   "Loading friends...", 
-					   Toast.LENGTH_LONG).show();
-	      	Intent intent = new Intent(); 
-	     	intent.setClass(IpokiMain.this, FriendsView.class); 
-	     	startActivity(intent);
-     	 }
+     	// Muestra los amigos
+      	Intent intent = new Intent(); 
+     	intent.setClass(IpokiMain.this, FriendsView.class); 
+     	startActivity(intent);
      }
 
      public void ShowSetup() {
@@ -538,10 +509,6 @@ public class IpokiMain extends MapActivity {
         
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-	        case R.id.mymap:
-	            //mymap            	
-	        	ShowMap();
-	        	break;            
             case R.id.setup:
                 //settings
             	ShowSetup();
@@ -560,13 +527,6 @@ public class IpokiMain extends MapActivity {
         }
         return false;
     }
-
-    public void ShowMap() {
-     	// Muestra el mapa del usuario
-     	Intent intent = new Intent(); 
-    	intent.setClass(IpokiMain.this, Mymap.class); 
-    	startActivity(intent); 
-     }
 
     private class MyLocationListener implements LocationListener {
     	
@@ -667,6 +627,12 @@ public class IpokiMain extends MapActivity {
            } catch (InterruptedException e) {
             }
         }
+    }
+    
+    @Override
+    protected void onPause() {
+    	super.onPause();
+    	isMapShowed = false;
     }
 
 
