@@ -69,7 +69,7 @@ public class IpokiMain extends MapActivity {
 	static double mTo = 0;
 	static boolean isMapShowed = false;
 	private boolean mPublishingOn = false;
-	private long mLastTime = 0;
+    private long mLastTime = 0;
 	private double mOldLatitude = 0;
 	private double mOldLongitude = 0;
 
@@ -211,7 +211,16 @@ public class IpokiMain extends MapActivity {
  		    	String[] resultData = result.split("\\${3}");
  		    	if (resultData.length >= 6) {
  			 		mUserKey = resultData[1];
- 			 		mPublishingOn = true;
+                    if (resultData[4] != "2") {
+                    }
+                    else {
+                    }
+                    if (resultData[5] == "2") {
+                        mPublishingOn = false;
+                    } 
+                    else {
+                        mPublishingOn = true;
+                    }
  			 		
  			 		// All went fine. Store credentials
  			 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(IpokiMain.this);
@@ -344,14 +353,14 @@ public class IpokiMain extends MapActivity {
     	        if (recordButton.isChecked()) {
     	        	new Thread() {
     	            	public void run() {
-    	            		String url = mServer + "/set_h_off.php?iduser=" + mUserKey;
+    	            		String url = mServer + "/set_h_on.php?iduser=" + mUserKey;
     	            		serverRequest(url);
     	            	} 
     	            }.start();    	        
     	        } else {
     	        	new Thread() {
     	            	public void run() {
-    	            		String url = mServer + "/set_h_on.php?iduser=" + mUserKey;
+    	            		String url = mServer + "/set_h_off.php?iduser=" + mUserKey;
     	            		serverRequest(url);
     	            	} 
     	            }.start();    	        
@@ -361,7 +370,31 @@ public class IpokiMain extends MapActivity {
     	final ToggleButton publishButton = (ToggleButton) findViewById(R.id.button_publish);
     	publishButton.setOnClickListener(new OnClickListener() {
     	    public void onClick(View v) {
-    	    	mPublishingOn = !mPublishingOn;
+    	        if (publishButton.isChecked()) {
+                    mPublishingOn = true;
+    	        } else {
+                    mPublishingOn = false;
+    	        }
+    	    }
+    	});
+    	final ToggleButton publicButton = (ToggleButton) findViewById(R.id.button_public);
+    	publicButton.setOnClickListener(new OnClickListener() {
+    	    public void onClick(View v) {
+    	        if (publicButton.isChecked()) {
+    	        	new Thread() {
+    	            	public void run() {
+    	            		String url = mServer + "/set_p_off.php?iduser=" + mUserKey;
+    	            		serverRequest(url);
+    	            	} 
+    	            }.start();    	        
+    	        } else {
+    	        	new Thread() {
+    	            	public void run() {
+    	            		String url = mServer + "/set_p_on.php?iduser=" + mUserKey;
+    	            		serverRequest(url);
+    	            	} 
+    	            }.start();    	        
+    	        }
     	    }
     	});
 
@@ -405,6 +438,8 @@ public class IpokiMain extends MapActivity {
 	    	 outlat.setText(String.format("%.5f", mLatitude));
 	    	 outspeed.setText(String.format("%.1f",mSpeed*3.6));
 	    	 outhigh.setText(String.format("%.1f",mHigh));
+            GeoPoint geoPoint = new GeoPoint((int)(mLatitude*1E6), (int)(mLongitude*1E6));
+            mMapController.animateTo(geoPoint);     
 		 }
     	 
     	 if (mPublishingOn) {
@@ -422,7 +457,7 @@ public class IpokiMain extends MapActivity {
  	 	if (mOldLatitude != mLatitude || mOldLongitude != mLongitude) {
  	 		changed = "1";
  	 	}
-    	serverRequest(mServer + "/ear.php?iduser=" + mUserKey + "&lat=" + String.valueOf(mLatitude).substring(0,10) + "&lon=" + String.valueOf(mLongitude).substring(0,10) + "&h=" + String.valueOf(mHigh) + "&speed=" + String.valueOf(mSpeed*3.6) + "&to=" + String.valueOf(mTo) + "&comment=&action=0&change=" + changed);
+    	serverRequest(mServer + "/ear.php?iduser=" + mUserKey + "&lat=" + String.valueOf(mLatitude) + "&lon=" + String.valueOf(mLongitude) + "&h=" + String.valueOf(mHigh) + "&speed=" + String.valueOf(mSpeed*3.6) + "&to=" + String.valueOf(mTo) + "&comment=&action=0&change=" + changed);
 	 	mOldLatitude = mLatitude;
 	 	mOldLongitude = mLongitude;
      }
@@ -629,12 +664,6 @@ public class IpokiMain extends MapActivity {
         }
     }
     
-    @Override
-    protected void onPause() {
-    	super.onPause();
-    	isMapShowed = false;
-    }
-
 
 	@Override
 	protected boolean isRouteDisplayed() {
