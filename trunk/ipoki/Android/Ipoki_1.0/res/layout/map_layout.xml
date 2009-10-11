@@ -28,7 +28,7 @@
 		</LinearLayout>
 		<TableLayout android:layout_width="220px" android:layout_height="wrap_content">
 			<TableRow>
-				<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="55px" android:layout_height="wrap_content" android:padding="5px" android:orientation="vertical">
+				<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="110px" android:layout_height="wrap_content" android:padding="5px" android:orientation="vertical">
 					<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="wrap_content" android:layout_height="fill_parent" android:orientation="vertical">
 						<TextView 
 							android:layout_width="wrap_content" 
@@ -46,7 +46,7 @@
 				</LinearLayout>
 				<LinearLayout
 					xmlns:android="http://schemas.android.com/apk/res/android"
-					android:layout_width="55px"
+					android:layout_width="110px"
 					android:layout_height="wrap_content"
 					android:orientation="vertical">
 					<LinearLayout
@@ -69,7 +69,7 @@
 		    <TableRow>
 				<LinearLayout
 					xmlns:android="http://schemas.android.com/apk/res/android"
-					android:layout_width="55px"
+					android:layout_width="110px"
 					android:layout_height="wrap_content"
 					android:orientation="vertical">
 					<LinearLayout
@@ -92,7 +92,7 @@
 				</LinearLayout>
 				<LinearLayout
 					xmlns:android="http://schemas.android.com/apk/res/android"
-					android:layout_width="55px"
+					android:layout_width="110px"
 					android:layout_height="wrap_content"
 					android:orientation="vertical">
 					<LinearLayout
@@ -102,24 +102,16 @@
 						android:padding="5px"
 						android:orientation="vertical">
 						<TextView 
-							android:layout_width="wrap_content" 
+							android:layout_width="110px" 
 							android:layout_height="wrap_content" 
 							android:layout_gravity="left|center_vertical" android:text="Height" android:id="@+id/label_map_height" style="@style/MapSmallLabel"></TextView>	
 						<TextView 
-							android:layout_width="wrap_content" 
+							android:layout_width="110px" 
 							android:layout_height="wrap_content" android:layout_gravity="left|center_vertical" android:text="2999 m" android:id="@+id/map_height" style="@style/MapSmallData"></TextView>	
 					</LinearLayout>
 				</LinearLayout>
 		    </TableRow>
 		    <TableRow>
-				<ToggleButton android:id="@+id/button_record"
-					android:textOn="Recording ON"
-					android:textOff="Recording OFF"
-					android:layout_height="wrap_content" android:layout_width="110px"/>
-				<ToggleButton android:id="@+id/button_publish"
-					android:textOn="Publishing ON"
-					android:textOff="Publishing OFF"
-					android:layout_height="wrap_content" android:layout_width="110px"/>
 		    </TableRow>
 		</TableLayout>
 		
@@ -135,6 +127,19 @@
 	<LinearLayout 
 		android:layout_width="fill_parent" 
 		android:layout_height="wrap_content"
-		android:padding="4px">
+		android:padding="10px">
+				<ToggleButton android:id="@+id/button_publish"
+					android:textOn="Locating ON"
+					android:textOff="Locating OFF"
+					android:layout_height="wrap_content" android:layout_width="100px"/>
+				<ToggleButton android:id="@+id/button_public"
+					android:textOn="Public"
+					android:textOff="Private"
+					android:layout_height="wrap_content" android:layout_width="100px"/>
+			<ToggleButton android:id="@+id/button_record"
+					android:textOn="Rec ON"
+					android:textOff="Rec OFF"
+					android:layout_height="wrap_content" android:layout_width="100px"/>
+			
 </LinearLayout>
 </LinearLayout>
