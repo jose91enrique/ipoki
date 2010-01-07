@@ -14,5 +14,4 @@ public class EPeregrino extends UiApplication {
 		EPeregrino app = new EPeregrino();
 		app.enterEventDispatcher();
 	}
-
 }

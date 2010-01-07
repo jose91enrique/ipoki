@@ -18,6 +18,7 @@ public class HttpRequestHelper extends Thread {
 	
 	public void run() {
 		try {
+			System.out.println(url);
 			HttpConnection connection = (HttpConnection)Connector.open(url);
 			connection.setRequestMethod("GET");
 			
