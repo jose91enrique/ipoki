@@ -1,0 +1,60 @@
+## RIM Java Development Environment
+# RIM Project file
+#
+# This file is generated and managed by BlackBerry developer tools.
+# It SHOULD NOT BE modified manually.
+#
+AddOn=0
+AlwaysBuild=1
+[AlxImports
+]
+AutoRestart=0
+[ClassProtection
+]
+[CustomBuildFiles
+]
+[CustomBuildRules
+]
+[DefFiles
+]
+[DependsOn
+]
+Description=XacoVeo from Ipoki
+ExcludeFromBuildAll=0
+[Files
+res\logo.png
+src\com\ipoki\xacoveo\bb\EPeregrino.java
+src\com\ipoki\xacoveo\bb\EPeregrinoSettings.java
+src\com\ipoki\xacoveo\bb\HttpRequester.java
+src\com\ipoki\xacoveo\bb\HttpRequestHelper.java
+src\com\ipoki\xacoveo\bb\LocationHandler.java
+src\com\ipoki\xacoveo\bb\screens\LocationScreen.java
+src\com\ipoki\xacoveo\bb\screens\LoginScreen.java
+src\com\ipoki\xacoveo\bb\screens\MapScreen.java
+]
+HaveAlxImports=0
+HaveDefs=0
+HaveImports=0
+[Icons
+res\logo.png
+]
+[ImplicitRules
+]
+[Imports
+]
+Listing=0
+Options=-quiet
+OutputFileName=XacoVeo
+[PackageProtection
+]
+RibbonPosition=0
+[RolloverIcons
+]
+RunOnStartup=0
+StartupTier=7
+SystemModule=0
+Title=XacoVeo
+Type=0
+UserData=|src
+Vendor=Ipoki
+Version=0.2
