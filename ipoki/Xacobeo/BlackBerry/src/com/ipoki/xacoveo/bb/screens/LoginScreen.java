@@ -1,4 +1,4 @@
-package com.ipoki.xacobeo.bb.screens;
+package com.ipoki.xacoveo.bb.screens;
 
 import java.util.Hashtable;
 import java.util.Vector;
@@ -19,9 +19,9 @@ import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.MainScreen;
 
-import com.ipoki.xacobeo.bb.EPeregrinoSettings;
-import com.ipoki.xacobeo.bb.HttpRequestHelper;
-import com.ipoki.xacobeo.bb.HttpRequester;
+import com.ipoki.xacoveo.bb.EPeregrinoSettings;
+import com.ipoki.xacoveo.bb.HttpRequestHelper;
+import com.ipoki.xacoveo.bb.HttpRequester;
 
 public class LoginScreen extends MainScreen implements FieldChangeListener, HttpRequester {
 	BitmapField logoBitmapField;
