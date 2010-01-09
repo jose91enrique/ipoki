@@ -1,0 +1,10 @@
+MIDlet-Name: XacoVeo
+MIDlet-Version: 0.2
+MIDlet-Vendor: Ipoki
+MIDlet-Description: XacoVeo from Ipoki
+MIDlet-Jar-URL: XacoVeo.jar
+MIDlet-Jar-Size: 0
+MicroEdition-Profile: MIDP-2.0
+MicroEdition-Configuration: CLDC-1.1
+MIDlet-1: XacoVeo,res/logo.png,
+RIM-MIDlet-Flags-1: 0
