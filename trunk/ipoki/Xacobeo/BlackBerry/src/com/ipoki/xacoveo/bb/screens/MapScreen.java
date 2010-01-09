@@ -1,4 +1,4 @@
-package com.ipoki.xacobeo.bb.screens;
+package com.ipoki.xacoveo.bb.screens;
 
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.MainScreen;
