@@ -9,7 +9,7 @@ import javax.microedition.location.QualifiedCoordinates;
 
 import com.ipoki.xacoveo.bb.screens.LocationScreen;
 
-public class LocationHandler extends Thread implements LocationListener {
+public class LocationHandler extends Thread implements LocationListener, HttpRequester {
 	private LocationScreen screen;
 
 	public LocationHandler(LocationScreen screen) {
@@ -33,8 +33,8 @@ public class LocationHandler extends Thread implements LocationListener {
 		try {
 			LocationProvider provider = LocationProvider.getInstance(criteria);
 			Location location = provider.getLocation(-1);
-			QualifiedCoordinates coord = location.getQualifiedCoordinates();
-			screen.setLocationData(coord.getLongitude(), coord.getLatitude(), location.getSpeed(), coord.getAltitude());
+			locationUpdated(provider, location);
+			provider.setLocationListener(this, 30, 10, -1);
 		} catch (LocationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -45,12 +45,35 @@ public class LocationHandler extends Thread implements LocationListener {
 		
 	}
 
-	public void locationUpdated(LocationProvider arg0, Location arg1) {
+	public void locationUpdated(LocationProvider provider, Location location) {
+		if (location.isValid()) {
+			QualifiedCoordinates coord = location.getQualifiedCoordinates();
+			screen.setLocationData(coord.getLongitude(), coord.getLatitude(), location.getSpeed(), coord.getAltitude());
+			if (EPeregrinoSettings.Connected) {
+				long updateFreq = Long.parseLong(EPeregrinoSettings.UpdateFreq) * 1000;
+				if (System.currentTimeMillis() - EPeregrinoSettings.Lapse > updateFreq) {
+					EPeregrinoSettings.Lapse = System.currentTimeMillis();
+					String url = "http://www.ipoki.com/ear.php?iduser=" + EPeregrinoSettings.UserKey + 
+						"&lat=" + String.valueOf(coord.getLatitude()) +  "&lon=" + String.valueOf(coord.getLongitude())+ 
+						"&h=" + String.valueOf(coord.getAltitude()) + "&speed=" + String.valueOf(location.getSpeed());
+					HttpRequestHelper helper = new HttpRequestHelper(url, this);
+					helper.start();
+				}
+			}
+		}
+	}
+
+	public void providerStateChanged(LocationProvider arg0, int arg1) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void providerStateChanged(LocationProvider arg0, int arg1) {
+	public void requestFailed(String message) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void requestSucceeded(byte[] result, String contentType) {
 		// TODO Auto-generated method stub
 		
 	}
