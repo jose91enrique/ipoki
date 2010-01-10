@@ -1,5 +1,7 @@
 package com.ipoki.xacoveo.bb.screens;
 
+import java.util.Vector;
+
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MapsArguments;
 import net.rim.blackberry.api.maps.MapView;
@@ -15,9 +17,13 @@ import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.ipoki.xacoveo.bb.EPeregrinoSettings;
+import com.ipoki.xacoveo.bb.Friend;
+import com.ipoki.xacoveo.bb.HttpRequestHelper;
+import com.ipoki.xacoveo.bb.HttpRequester;
 import com.ipoki.xacoveo.bb.LocationHandler;
+import com.ipoki.xacoveo.bb.Utils;
 
-public class LocationScreen extends MainScreen implements FieldChangeListener {
+public class LocationScreen extends MainScreen implements FieldChangeListener, HttpRequester {
 	LabelField statusLabel;
 	EditField latitudeField;
 	EditField longitudeField;
@@ -28,8 +34,14 @@ public class LocationScreen extends MainScreen implements FieldChangeListener {
 	ButtonField connectButton;
 	double longitude;
 	double latitude;
+	Friend[] friends;
 
 	public LocationScreen() {
+		String url = "http://www.ipoki.com/myfriends2.php?iduser=" + EPeregrinoSettings.UserKey;
+		HttpRequestHelper helper = new HttpRequestHelper(url, this);
+		helper.start();
+
+		
 		statusLabel = new LabelField("Disconnected");
 		add(statusLabel);
 		
@@ -89,8 +101,8 @@ public class LocationScreen extends MainScreen implements FieldChangeListener {
 		menu.add(new MenuItem("Ver mapa",10, 10) {
 			public void run() {
 				MapView mv = new MapView();
-				mv.setLatitude(100000 * (int) LocationScreen.this.latitude);
-				mv.setLongitude(100000 * (int) LocationScreen.this.longitude);
+				mv.setLatitude((int)(100000 * LocationScreen.this.latitude));
+				mv.setLongitude((int) (100000 * LocationScreen.this.longitude));
 				mv.setZoom(3);
 				MapsArguments args = new MapsArguments(mv);
 				Invoke.invokeApplication(Invoke.APP_TYPE_MAPS, args);
@@ -112,5 +124,26 @@ public class LocationScreen extends MainScreen implements FieldChangeListener {
 				connectButton.setLabel("Desconectar");
 			}
 		}
+	}
+
+	public void requestFailed(String message) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void requestSucceeded(byte[] result, String contentType) {
+		String message = new String(result, 0, result.length);
+		Vector tokens = Utils.parseMessage(message);
+		
+    	int friendsNum = tokens.size() / 6;
+    	Friend[] friends = new Friend[friendsNum];
+    	for (int i = 0; i < friendsNum; i++) {
+    		friends[i] = new Friend(String.valueOf(tokens.elementAt(6 * i)), 
+    				String.valueOf(tokens.elementAt(6 * i + 1)), 
+    				String.valueOf(tokens.elementAt(6 * i + 2)), 
+    				String.valueOf(tokens.elementAt(6 * i + 4)));
+    	}
+    	
+    	this.friends = friends;
 	}
 }
