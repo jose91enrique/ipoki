@@ -22,6 +22,7 @@ import net.rim.device.api.ui.container.MainScreen;
 import com.ipoki.xacoveo.bb.EPeregrinoSettings;
 import com.ipoki.xacoveo.bb.HttpRequestHelper;
 import com.ipoki.xacoveo.bb.HttpRequester;
+import com.ipoki.xacoveo.bb.Utils;
 
 public class LoginScreen extends MainScreen implements FieldChangeListener, HttpRequester {
 	BitmapField logoBitmapField;
@@ -85,27 +86,10 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 		});
 	}
 	
-	private Vector parseMessage(String message)
-    {
-        Vector tokens = new java.util.Vector();
-        
-        // $$$ is the separator string
-        int nextIndex = message.indexOf("$$$");
-        int prevIndex = 0;
-        while (nextIndex != -1)
-        {
-            tokens.addElement(message.substring(prevIndex, nextIndex));
-            prevIndex = nextIndex + 3;
-            nextIndex = message.indexOf("$$$", prevIndex);
-        }
-            
-        return tokens;
-    }
-
 	public void requestSucceeded(byte[] result, String contentType) {
 		String message = new String(result, 0, result.length);
 		System.out.println(message);
-		Vector tokens = parseMessage(message);
+		Vector tokens = Utils.parseMessage(message);
     	if (tokens.size() >= 6) {
 	 		EPeregrinoSettings.UserKey = (String) tokens.elementAt(1);
 	 		EPeregrinoSettings.Recording = (String) tokens.elementAt(4);
@@ -117,16 +101,12 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 			PersistentObject persistentObject = PersistentStore.getPersistentObject(EPeregrinoSettings.KEY);
 			persistentObject.setContents(EPeregrinoSettings.getSettings());
     	}
-    	System.out.println("Fin");
-		//
-    	System.out.println("Fin2");
+
 		UiApplication.getUiApplication().invokeLater(new Runnable() {
 			public void run() {
 				UiApplication.getUiApplication().popScreen(LoginScreen.this);
 				UiApplication.getUiApplication().pushScreen(new LocationScreen());
 			}
 		});
-
-    	System.out.println("Fin3");
 	}
 }
