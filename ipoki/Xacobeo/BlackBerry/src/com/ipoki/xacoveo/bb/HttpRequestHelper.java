@@ -1,9 +1,8 @@
 package com.ipoki.xacoveo.bb;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-
+import net.rim.device.api.system.CoverageInfo;
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 
@@ -21,7 +20,9 @@ public class HttpRequestHelper extends Thread {
 			System.out.println(url);
 			HttpConnection connection = (HttpConnection)Connector.open(url);
 			connection.setRequestMethod("GET");
-			
+			if (CoverageInfo.getCoverageStatus() == CoverageInfo.COVERAGE_NONE)
+				requester.requestFailed("No se ha encontrado conexión");
+			 
 			int responseCode = connection.getResponseCode();
 			if (responseCode != HttpConnection.HTTP_OK) {
 				requester.requestFailed("Error en la conexión: " + responseCode);
@@ -44,7 +45,7 @@ public class HttpRequestHelper extends Thread {
 			
 			requester.requestSucceeded(outStream.toByteArray(), contentType);
 		}
-		catch (IOException ex) {
+		catch (Exception ex) {
 			requester.requestFailed(ex.getMessage());
 		}
 	}

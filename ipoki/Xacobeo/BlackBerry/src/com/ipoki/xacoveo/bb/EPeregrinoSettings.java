@@ -11,6 +11,9 @@ public class EPeregrinoSettings {
 	public static String UserKey;
 	public static String Recording;
 	public static String Private;
+	public static boolean Connected = false;
+	public static long Lapse;
+
 	
 	public static void setSettings(Hashtable settings) {
 		EPeregrinoSettings.UserName = (String) settings.get("username");
