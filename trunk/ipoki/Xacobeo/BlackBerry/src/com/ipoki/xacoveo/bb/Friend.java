@@ -20,4 +20,12 @@ public class Friend {
 	public String getLocationTime() {
 		return this.dateTime;
 	}
+	
+	public String getLatitude() {
+		return this.latitude;
+	}
+	
+	public String getLongitude() {
+		return this.longitude;
+	}
 }

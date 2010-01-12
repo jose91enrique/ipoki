@@ -108,6 +108,11 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 				Invoke.invokeApplication(Invoke.APP_TYPE_MAPS, args);
 			}
 		});
+		menu.add(new MenuItem("Ver amigos",10, 10) {
+			public void run() {
+				UiApplication.getUiApplication().pushScreen(new FriendsListScreen(friends));
+			}
+		});
 	}
 	
 	public void fieldChanged(Field field, int context) {
@@ -138,10 +143,10 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
     	int friendsNum = tokens.size() / 6;
     	Friend[] friends = new Friend[friendsNum];
     	for (int i = 0; i < friendsNum; i++) {
-    		friends[i] = new Friend(String.valueOf(tokens.elementAt(6 * i)), 
-    				String.valueOf(tokens.elementAt(6 * i + 1)), 
+    		friends[i] = new Friend(String.valueOf(tokens.elementAt(6 * i + 1)), 
     				String.valueOf(tokens.elementAt(6 * i + 2)), 
-    				String.valueOf(tokens.elementAt(6 * i + 4)));
+    				String.valueOf(tokens.elementAt(6 * i + 3)), 
+    				String.valueOf(tokens.elementAt(6 * i + 5)));
     	}
     	
     	this.friends = friends;
