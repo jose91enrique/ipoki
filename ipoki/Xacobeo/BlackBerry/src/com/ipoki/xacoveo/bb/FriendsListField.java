@@ -6,6 +6,7 @@ import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.FontFamily;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.LabelField;
@@ -15,13 +16,23 @@ import net.rim.device.api.ui.component.ListFieldCallback;
 public class FriendsListField extends ListField implements ListFieldCallback {
 	private Friend[] friends;
 	private Vector rows;
+	private Font font;
 
 	public FriendsListField(Friend[] friends) {
         super(0, ListField.MULTI_SELECT);
         setRowHeight(40);
-        setEmptyString("Hooray, no tasks here!", DrawStyle.HCENTER);
+        setEmptyString("No se ha encontrado ningún contacto", DrawStyle.HCENTER);
         setCallback(this);
-        
+        try
+        {
+            FontFamily fontFamily = FontFamily.forName("BBClarity");
+            font = fontFamily.getFont(Font.BOLD, 18);
+        }
+        catch(ClassNotFoundException e)
+        {
+            System.out.println(e.toString());
+        }
+
 		this.friends = friends;
         rows = new Vector();
         
@@ -29,15 +40,13 @@ public class FriendsListField extends ListField implements ListFieldCallback {
         {
             TableRowManager row = new TableRowManager();
             
-            
-            // SET THE TASK NAME LABELFIELD
-            // if overdue, bold/underline
             LabelField friend = new LabelField(friends[x].getName(), DrawStyle.ELLIPSIS);
+            friend.setFont(font);
             row.add(friend);
 
             LabelField dateLoc = new LabelField(friends[x].getLocationTime(), DrawStyle.ELLIPSIS);
-            int height = Font.getDefault().getHeight() - 3;
-            dateLoc.setFont(Font.getDefault().derive(Font.PLAIN, height));
+            int height = font.getHeight() - 3;
+            dateLoc.setFont(font.derive(Font.PLAIN, height));
 
             row.add(dateLoc);
             
@@ -71,7 +80,7 @@ public class FriendsListField extends ListField implements ListFieldCallback {
             
             g.setColor(0x00CACACA);
             g.drawLine(0, 0, getPreferredWidth(), 0);
-            g.drawLine(10, 0, 10, getPreferredHeight());
+            //g.drawLine(10, 0, 10, getPreferredHeight());
 
             // Restore the graphics context.
             g.popContext();
@@ -80,15 +89,13 @@ public class FriendsListField extends ListField implements ListFieldCallback {
         protected void sublayout(int width, int height)
         {
             // set the size and position of each field.
-            int fontHeight = Font.getDefault().getHeight();
+            int fontHeight = font.getHeight();
             int preferredWidth = getPreferredWidth();
             
-            // start with the Bitmap Field of the priority icon
             Field field = getField(0);
             layoutChild(field, preferredWidth, fontHeight+1);
             setPositionChild(field, 0, 3);
             
-            // set the list name label field 
             field = getField(1);
             layoutChild(field, preferredWidth, fontHeight+1);
             setPositionChild(field, 0, fontHeight+6);
