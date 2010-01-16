@@ -23,8 +23,9 @@ import com.ipoki.xacoveo.bb.EPeregrinoSettings;
 import com.ipoki.xacoveo.bb.HttpRequestHelper;
 import com.ipoki.xacoveo.bb.HttpRequester;
 import com.ipoki.xacoveo.bb.Utils;
+import com.ipoki.xacoveo.bb.local.XacoveoLocalResource;
 
-public class LoginScreen extends MainScreen implements FieldChangeListener, HttpRequester {
+public class LoginScreen extends MainScreen implements FieldChangeListener, HttpRequester, XacoveoLocalResource {
 	BitmapField logoBitmapField;
 	EditField usernameField;
 	PasswordEditField passwordField;
@@ -46,16 +47,16 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 
 		usernameField = new EditField("", EPeregrinoSettings.UserName);
 		passwordField = new PasswordEditField("", EPeregrinoSettings.UserPassword);
-		add(new LabelField("Usuario:"));
+		add(new LabelField(EPeregrinoSettings.XacoveoResource.getString(LOG_SCR_USER)));
 		add(usernameField);
-		add(new LabelField("Password:"));
+		add(new LabelField(EPeregrinoSettings.XacoveoResource.getString(LOG_SCR_PASS)));
 		add(passwordField);
 
 		add(new SeparatorField());
 
-		loginButton = new ButtonField("Entrar", ButtonField.CONSUME_CLICK);
+		loginButton = new ButtonField(EPeregrinoSettings.XacoveoResource.getString(LOG_SCR_LOGIN), ButtonField.CONSUME_CLICK);
 		loginButton.setChangeListener(this);
-		exitButton = new ButtonField("Salir", ButtonField.CONSUME_CLICK);
+		exitButton = new ButtonField(EPeregrinoSettings.XacoveoResource.getString(LOG_SCR_QUIT), ButtonField.CONSUME_CLICK);
 		exitButton.setChangeListener(this);
 		HorizontalFieldManager buttonManager = new HorizontalFieldManager(Field.FIELD_RIGHT);
 		buttonManager.add(loginButton);
@@ -81,7 +82,7 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 	public void requestFailed(final String message) {
 		UiApplication.getUiApplication().invokeLater(new Runnable() {
 			public void run() {
-				Dialog.alert("Fallo en la conexión. Motivo: " + message);
+				Dialog.alert(EPeregrinoSettings.XacoveoResource.getString(LOG_SCR_CONNECTION_FAILURE) + message);
 			}
 		});
 	}

@@ -21,8 +21,9 @@ import com.ipoki.xacoveo.bb.HttpRequestHelper;
 import com.ipoki.xacoveo.bb.HttpRequester;
 import com.ipoki.xacoveo.bb.LocationHandler;
 import com.ipoki.xacoveo.bb.Utils;
+import com.ipoki.xacoveo.bb.local.XacoveoLocalResource;
 
-public class LocationScreen extends MainScreen implements FieldChangeListener, HttpRequester {
+public class LocationScreen extends MainScreen implements FieldChangeListener, HttpRequester, XacoveoLocalResource {
 	LabelField statusLabel;
 	EditField latitudeField;
 	EditField longitudeField;
@@ -41,35 +42,35 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 		helper.start();
 
 		
-		statusLabel = new LabelField("Disconnected");
+		statusLabel = new LabelField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_DISCONNECTED));
 		add(statusLabel);
 		
 		add(new SeparatorField());
 		
-		latitudeField = new EditField("Latitude: ", "");
+		latitudeField = new EditField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_LATITUDE), "");
 		latitudeField.setEditable(false);
-		longitudeField = new EditField("Longitude: ", "");
+		longitudeField = new EditField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_LONGITUDE), "");
 		longitudeField.setEditable(false);
 		add(latitudeField);
 		add(longitudeField);
 		
 		add(new SeparatorField());
 		
-		speedField = new EditField("Speed: ", "");
+		speedField = new EditField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_SPEED), "");
 		speedField.setEditable(false);
-		heightField = new EditField("Height: ", "");
+		heightField = new EditField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_HEIGHT), "");
 		heightField.setEditable(false);
 		add(speedField);
 		add(heightField);
 
 		add(new SeparatorField());
 		
-		privacyLabel = new LabelField("Posición pública");
-		recLabel = new LabelField("Guardando ruta");
+		privacyLabel = new LabelField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_PUBLIC_POS));
+		recLabel = new LabelField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_REC_ON));
 		add(privacyLabel);
 		add(recLabel);
 
-		connectButton = new ButtonField("Conectar", ButtonField.CONSUME_CLICK);
+		connectButton = new ButtonField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_BUT_CONNECT), ButtonField.CONSUME_CLICK);
 		connectButton.setChangeListener(this);
 		add(connectButton);
 		
@@ -79,8 +80,8 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 
 	public void gettingLocation() {
 		synchronized(UiApplication.getEventLock()) {
-			latitudeField.setText("Obteniendo posición...");
-			longitudeField.setText("Obteniendo posición...");
+			latitudeField.setText(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_GETTING_POS));
+			longitudeField.setText(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_GETTING_POS));
 		}
 	}
 	
@@ -97,7 +98,7 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 	
 	protected void makeMenu(Menu menu, int instance) {
 		super.makeMenu(menu, instance);
-		menu.add(new MenuItem("Ver mapa",10, 10) {
+		menu.add(new MenuItem(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_VIEW_MAP),10, 10) {
 			public void run() {
 				int latitude = (int)(100000 * LocationScreen.this.latitude);
 				int longitude = (int)(100000 * LocationScreen.this.longitude);;
@@ -112,17 +113,17 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
                       MapsArguments.ARG_LOCATION_DOCUMENT,document));
 			}
 		});
-		menu.add(new MenuItem("Ver amigos",20, 10) {
+		menu.add(new MenuItem(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_VIEW_FRIENDS),20, 10) {
 			public void run() {
 				UiApplication.getUiApplication().pushScreen(new FriendsListScreen(friends));
 			}
 		});
-		menu.add(new MenuItem("Configuración",30, 10) {
+		menu.add(new MenuItem(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_VIEW_CONF),30, 10) {
 			public void run() {
 				UiApplication.getUiApplication().pushScreen(new ConfigurationScreen());
 			}
 		});
-		menu.add(new MenuItem("Acerca de XacoVeo",30, 10) {
+		menu.add(new MenuItem(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_VIEW_ABOUT),30, 10) {
 			public void run() {
 				UiApplication.getUiApplication().pushScreen(new AboutScreen());
 			}
@@ -134,13 +135,13 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 			EPeregrinoSettings.Lapse = 0;
 			if (EPeregrinoSettings.Connected) {
 				EPeregrinoSettings.Connected = false;
-				statusLabel.setText("Desconectado");
-				connectButton.setLabel("Conectar");
+				statusLabel.setText(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_DISCONNECTED));
+				connectButton.setLabel(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_BUT_CONNECT));
 			}
 			else {
 				EPeregrinoSettings.Connected = true;
-				statusLabel.setText("Conectado");
-				connectButton.setLabel("Desconectar");
+				statusLabel.setText(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_CONNECTED));
+				connectButton.setLabel(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_BUT_DISCONNECT));
 			}
 		}
 	}
