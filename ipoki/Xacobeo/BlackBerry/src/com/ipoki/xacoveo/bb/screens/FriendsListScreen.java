@@ -2,15 +2,8 @@ package com.ipoki.xacoveo.bb.screens;
 
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MapsArguments;
-import net.rim.blackberry.api.maps.MapView;
-import net.rim.device.api.system.Characters;
-import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.ui.DrawStyle;
-import net.rim.device.api.ui.Font;
-import net.rim.device.api.ui.FontFamily;
 import net.rim.device.api.ui.MenuItem;
-import net.rim.device.api.ui.UiApplication;
-import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.SeparatorField;
@@ -39,12 +32,17 @@ public class FriendsListScreen extends MainScreen {
 			public void run() {
 				FriendsListField list = FriendsListScreen.this.friendsListField; 
 				Friend f = (Friend) list.get(list, list.getSelectedIndex());
-				MapView mv = new MapView();
-				mv.setLatitude((int)(100000 * Double.parseDouble(f.getLatitude())));
-				mv.setLongitude((int) (100000 * Double.parseDouble(f.getLongitude())));
-				mv.setZoom(3);
-				MapsArguments args = new MapsArguments(mv);
-				Invoke.invokeApplication(Invoke.APP_TYPE_MAPS, args);
+				int latitude = (int)(100000 * Double.parseDouble(f.getLatitude()));
+				int longitude = (int)(100000 * Double.parseDouble(f.getLongitude()));;
+				String document = 
+						"<lbs clear='ALL'><location-document>" +
+							"<location lon='" + String.valueOf(longitude) + "' lat='" + String.valueOf(latitude) + "'" +
+							" label='" + f.getName() + "' description='" + f.getLocationTime() + "' zoom='4'/>" +
+                "</location-document></lbs>";
+
+				Invoke.invokeApplication(Invoke.APP_TYPE_MAPS,
+                      new MapsArguments(
+                      MapsArguments.ARG_LOCATION_DOCUMENT,document));
 			}
 		});
 	}
