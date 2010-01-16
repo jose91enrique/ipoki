@@ -4,7 +4,6 @@ import java.util.Vector;
 
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MapsArguments;
-import net.rim.blackberry.api.maps.MapView;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.MenuItem;
@@ -100,17 +99,32 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 		super.makeMenu(menu, instance);
 		menu.add(new MenuItem("Ver mapa",10, 10) {
 			public void run() {
-				MapView mv = new MapView();
-				mv.setLatitude((int)(100000 * LocationScreen.this.latitude));
-				mv.setLongitude((int) (100000 * LocationScreen.this.longitude));
-				mv.setZoom(3);
-				MapsArguments args = new MapsArguments(mv);
-				Invoke.invokeApplication(Invoke.APP_TYPE_MAPS, args);
+				int latitude = (int)(100000 * LocationScreen.this.latitude);
+				int longitude = (int)(100000 * LocationScreen.this.longitude);;
+				String document = 
+						"<lbs clear='ALL'><location-document>" +
+							"<location lon='" + String.valueOf(longitude) + "' lat='" + String.valueOf(latitude) + "'" +
+							" label='" + EPeregrinoSettings.UserName + "' description='' zoom='4'/>" +
+                "</location-document></lbs>";
+
+				Invoke.invokeApplication(Invoke.APP_TYPE_MAPS,
+                      new MapsArguments(
+                      MapsArguments.ARG_LOCATION_DOCUMENT,document));
 			}
 		});
-		menu.add(new MenuItem("Ver amigos",10, 10) {
+		menu.add(new MenuItem("Ver amigos",20, 10) {
 			public void run() {
 				UiApplication.getUiApplication().pushScreen(new FriendsListScreen(friends));
+			}
+		});
+		menu.add(new MenuItem("Configuración",30, 10) {
+			public void run() {
+				UiApplication.getUiApplication().pushScreen(new ConfigurationScreen());
+			}
+		});
+		menu.add(new MenuItem("Acerca de XacoVeo",30, 10) {
+			public void run() {
+				UiApplication.getUiApplication().pushScreen(new AboutScreen());
 			}
 		});
 	}
