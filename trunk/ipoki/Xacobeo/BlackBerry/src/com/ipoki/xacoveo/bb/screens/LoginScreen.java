@@ -65,7 +65,7 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 	}
 	
 	private void makeLoginRequest() {
-		String url = "http://www.ipoki.com/signin.php?user=" + usernameField.getText() + "&pass=" + passwordField.getText();
+		String url = EPeregrinoSettings.getLoginUrl(usernameField.getText(), passwordField.getText());
 		HttpRequestHelper helper = new HttpRequestHelper(url, this);
 		helper.start();
 	}

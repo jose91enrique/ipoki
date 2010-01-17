@@ -1,10 +1,7 @@
 package com.ipoki.xacoveo.bb.screens;
 
-import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
-import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.Menu;
@@ -25,12 +22,6 @@ public class ConfigurationScreen extends MainScreen implements XacoveoLocalResou
 		usernameField = new EditField(EPeregrinoSettings.XacoveoResource.getString(CONF_SCR_USERNAME), EPeregrinoSettings.UserName);
 		passwordField = new PasswordEditField(EPeregrinoSettings.XacoveoResource.getString(CONF_SCR_PASSWORD), EPeregrinoSettings.UserPassword);
 		freqField = new EditField(EPeregrinoSettings.XacoveoResource.getString(CONF_SCR_UPDATE), EPeregrinoSettings.UpdateFreq, 5, EditField.FILTER_NUMERIC);
-		idiomaField = new ObjectChoiceField(EPeregrinoSettings.XacoveoResource.getString(CONF_SCR_LANG), 
-				new String[] {
-						EPeregrinoSettings.XacoveoResource.getString(CONF_SCR_SPANISH), 
-						EPeregrinoSettings.XacoveoResource.getString(CONF_SCR_GALICIAN), 
-						EPeregrinoSettings.XacoveoResource.getString(CONF_SCR_ENGLISH)});
-		idiomaField.setSelectedIndex(EPeregrinoSettings.Language);
 		
 		add(usernameField);
 		add(passwordField);
@@ -45,17 +36,6 @@ public class ConfigurationScreen extends MainScreen implements XacoveoLocalResou
 				EPeregrinoSettings.UserName = usernameField.getText().trim();
 				EPeregrinoSettings.UserPassword = passwordField.getText().trim();
 				EPeregrinoSettings.UpdateFreq = freqField.getText().trim();
-				EPeregrinoSettings.Language = idiomaField.getSelectedIndex();
-				switch(EPeregrinoSettings.Language) {
-				case 0:
-					Locale.setDefault(Locale.get(Locale.LOCALE_es));
-					break;
-				case 1:
-					Locale.setDefault(Locale.get(Locale.LOCALE_es));
-					break;
-				case 2:
-					Locale.setDefault(Locale.get(Locale.LOCALE_es));
-				}
 				PersistentObject persistentObject = PersistentStore.getPersistentObject(EPeregrinoSettings.KEY);
 				persistentObject.setContents(EPeregrinoSettings.getSettings());
 			}

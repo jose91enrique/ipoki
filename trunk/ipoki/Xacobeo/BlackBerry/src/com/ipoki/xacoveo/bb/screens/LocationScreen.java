@@ -12,6 +12,8 @@ import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
+import net.rim.device.api.ui.component.RadioButtonField;
+import net.rim.device.api.ui.component.RadioButtonGroup;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
 
@@ -32,12 +34,19 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 	LabelField privacyLabel;
 	LabelField recLabel;
 	ButtonField connectButton;
+	RadioButtonGroup recordGroup;
+	RadioButtonField recordOnButton;
+	RadioButtonField recordOffButton;
+	RadioButtonGroup publicGroup;
+	RadioButtonField publicOnButton;
+	RadioButtonField publicOffButton;
 	double longitude;
 	double latitude;
 	Friend[] friends;
 
 	public LocationScreen() {
-		String url = "http://www.ipoki.com/myfriends2.php?iduser=" + EPeregrinoSettings.UserKey;
+		String url = EPeregrinoSettings.getFriendsUrl();
+		
 		HttpRequestHelper helper = new HttpRequestHelper(url, this);
 		helper.start();
 
@@ -65,17 +74,26 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 
 		add(new SeparatorField());
 		
-		privacyLabel = new LabelField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_PUBLIC_POS));
-		recLabel = new LabelField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_REC_ON));
-		add(privacyLabel);
-		add(recLabel);
-
+		recordGroup = new RadioButtonGroup();
+		recordGroup.setChangeListener(this);
+		recordOnButton = new RadioButtonField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_REC_ON), recordGroup, true);
+		recordOffButton = new RadioButtonField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_REC_OFF), recordGroup, false);
+		add(recordOnButton);
+		add(recordOffButton);
+		
+		publicGroup = new RadioButtonGroup();
+		publicGroup.setChangeListener(this);
+		publicOnButton = new RadioButtonField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_PUBLIC_POS), publicGroup, true);
+		publicOffButton = new RadioButtonField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_PRIVATE_POS), publicGroup, false);
+		add(publicOnButton);
+		add(publicOffButton);
+		
+		LocationHandler handler = new LocationHandler(this);
+		handler.start();
 		connectButton = new ButtonField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_BUT_CONNECT), ButtonField.CONSUME_CLICK);
 		connectButton.setChangeListener(this);
 		add(connectButton);
 		
-		LocationHandler handler = new LocationHandler(this);
-		handler.start();
 	}
 
 	public void gettingLocation() {
@@ -143,6 +161,26 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 				statusLabel.setText(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_CONNECTED));
 				connectButton.setLabel(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_BUT_DISCONNECT));
 			}
+		}
+		else if (field == publicOnButton) {
+			String url = EPeregrinoSettings.getPublicOnUrl();
+			HttpRequestHelper helper = new HttpRequestHelper(url, this);
+			helper.start();
+		}
+		else if (field == publicOffButton) {
+			String url = EPeregrinoSettings.getPublicOffUrl();
+			HttpRequestHelper helper = new HttpRequestHelper(url, this);
+			helper.start();
+		}
+		else if (field == recordOnButton) {
+			String url = EPeregrinoSettings.getRecordOnUrl();
+			HttpRequestHelper helper = new HttpRequestHelper(url, this);
+			helper.start();
+		}
+		else if (field == recordOffButton) {
+			String url = EPeregrinoSettings.getRecordOffUrl();
+			HttpRequestHelper helper = new HttpRequestHelper(url, this);
+			helper.start();
 		}
 	}
 

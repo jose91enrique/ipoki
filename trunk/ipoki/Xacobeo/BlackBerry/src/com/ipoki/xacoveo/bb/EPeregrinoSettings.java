@@ -19,8 +19,32 @@ public class EPeregrinoSettings implements XacoveoLocalResource{
 	public static boolean Connected = false;
 	public static long Lapse;
 	public static int Language = 0;
+	public static String ServerUrl = "http://www.ipoki.com/";
 
+	public static String getFriendsUrl() {
+		return ServerUrl + "myfriends2.php?iduser=" + UserKey;
+	}
 	
+	public static String getLoginUrl(String user, String password) {
+		return ServerUrl + "signin.php?user=" + user + "&pass=" + password;
+	}
+	
+	public static String getRecordOnUrl() {
+		return ServerUrl + "set_h_on.php?iduser=" + UserKey;
+	}
+	
+	public static String getRecordOffUrl() {
+		return ServerUrl + "set_h_off.php?iduser=" + UserKey;
+	}
+	
+	public static String getPublicOnUrl() {
+		return ServerUrl + "set_p_on.php?iduser=" + UserKey;
+	}
+
+	public static String getPublicOffUrl() {
+		return ServerUrl + "set_p_off.php?iduser=" + UserKey;
+	}
+
 	public static void setSettings(Hashtable settings) {
 		EPeregrinoSettings.UserName = (String) settings.get("username");
 		EPeregrinoSettings.UserPassword = (String) settings.get("password");
