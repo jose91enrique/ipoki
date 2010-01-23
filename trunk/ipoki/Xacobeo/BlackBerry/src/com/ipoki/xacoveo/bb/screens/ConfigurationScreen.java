@@ -5,7 +5,6 @@ import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.Menu;
-import net.rim.device.api.ui.component.ObjectChoiceField;
 import net.rim.device.api.ui.component.PasswordEditField;
 import net.rim.device.api.ui.container.MainScreen;
 
@@ -16,7 +15,6 @@ public class ConfigurationScreen extends MainScreen implements XacoveoLocalResou
 	EditField usernameField;
 	PasswordEditField passwordField;
 	EditField freqField;
-	ObjectChoiceField idiomaField;
 
 	public ConfigurationScreen() {
 		usernameField = new EditField(XacoVeoSettings.XacoveoResource.getString(CONF_SCR_USERNAME), XacoVeoSettings.UserName);
@@ -26,7 +24,6 @@ public class ConfigurationScreen extends MainScreen implements XacoveoLocalResou
 		add(usernameField);
 		add(passwordField);
 		add(freqField);
-		add(idiomaField);
 	}
 	
 	protected void makeMenu(Menu menu, int instance) {
