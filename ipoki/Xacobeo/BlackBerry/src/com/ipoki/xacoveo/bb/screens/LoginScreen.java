@@ -4,32 +4,32 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.Display;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.FontFamily;
+import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UiApplication;
-import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.PasswordEditField;
-import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.MainScreen;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 
-import com.ipoki.xacoveo.bb.XacoVeoSettings;
 import com.ipoki.xacoveo.bb.HttpRequestHelper;
 import com.ipoki.xacoveo.bb.HttpRequester;
 import com.ipoki.xacoveo.bb.Utils;
+import com.ipoki.xacoveo.bb.XacoVeoSettings;
 import com.ipoki.xacoveo.bb.local.XacoveoLocalResource;
 
 public class LoginScreen extends MainScreen implements FieldChangeListener, HttpRequester, XacoveoLocalResource {
-	BitmapField logoBitmapField;
 	EditField usernameField;
 	PasswordEditField passwordField;
 	ButtonField loginButton;
@@ -41,28 +41,69 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 		if ((settings = (Hashtable) persistentObject.getContents()) != null) {
 			 XacoVeoSettings.setSettings(settings);
 		}
+
+		Bitmap tmpLogo = Bitmap.getBitmapResource("res/logo_m.png");
+		final int displayWidth = Display.getWidth();
+		final int displayHeight = Display.getHeight();
+		int spaceWidth = 0;
+		Font appFont;
 		try {
 			FontFamily fontFam = FontFamily.forName("BBAlpha Sans");
-			Font appFont = fontFam.getFont(Font.PLAIN, 9, Ui.UNITS_pt);
+			if (displayWidth < 320) {
+				tmpLogo = Bitmap.getBitmapResource("res/logo_s.png");
+				appFont = fontFam.getFont(Font.PLAIN, 8, Ui.UNITS_pt);
+				spaceWidth = 100;
+			}
+			else if (displayWidth < 370) {
+				tmpLogo = Bitmap.getBitmapResource("res/logo_m.png");
+				appFont = fontFam.getFont(Font.PLAIN, 9, Ui.UNITS_pt);
+				spaceWidth = 120;
+			}
+			else {
+				tmpLogo = Bitmap.getBitmapResource("res/logo_b.png");
+				appFont = fontFam.getFont(Font.PLAIN, 10, Ui.UNITS_pt);
+				spaceWidth = 140;
+			}
 			Font.setDefaultFont(appFont);
 		} catch (ClassNotFoundException e) {
 		}
+		final Bitmap logoBitmap = tmpLogo;
 		
-		Bitmap logoBitmap = Bitmap.getBitmapResource("res/logo.png");
-		logoBitmapField = new BitmapField(logoBitmap, Field.FIELD_HCENTER);
-		add(logoBitmapField);
 		
-		add(new SeparatorField());
+		VerticalFieldManager mainManager = new VerticalFieldManager(
+				VerticalFieldManager.USE_ALL_WIDTH | VerticalFieldManager.USE_ALL_HEIGHT | VerticalFieldManager.NO_VERTICAL_SCROLL){
+		    // override pain method to create the background image
+		    public void paint(Graphics graphics) {
+		        // draw the background image
+		        graphics.drawBitmap(0, 0, displayWidth, displayHeight, logoBitmap, 0, 0);
+		        super.paint(graphics);
+		    }            
+		};
+		SpacerField sfTop = new SpacerField(displayWidth, 80);
+		mainManager.add(sfTop);
 
+		LabelField labelUser = new LabelField(XacoVeoSettings.XacoveoResource.getString(LOG_SCR_USER));
 		usernameField = new EditField("", XacoVeoSettings.UserName);
+		LabelField labelPass = new LabelField(XacoVeoSettings.XacoveoResource.getString(LOG_SCR_PASS));
 		passwordField = new PasswordEditField("", XacoVeoSettings.UserPassword);
-		add(new LabelField(XacoVeoSettings.XacoveoResource.getString(LOG_SCR_USER)));
-		add(usernameField);
-		add(new LabelField(XacoVeoSettings.XacoveoResource.getString(LOG_SCR_PASS)));
-		add(passwordField);
+		
+		VerticalFieldManager spaceManager = new VerticalFieldManager();
+		SpacerField sfLeft = new SpacerField(spaceWidth, 20);
+		spaceManager.add(sfLeft);
+		VerticalFieldManager vertManager = new VerticalFieldManager();
+		vertManager.add(labelUser);
+		vertManager.add(usernameField);
+		vertManager.add(labelPass);
+		vertManager.add(passwordField);
 
-		add(new SeparatorField());
+		HorizontalFieldManager loginPassManager = new HorizontalFieldManager(Field.FIELD_RIGHT);
+		loginPassManager.add(spaceManager);
+		loginPassManager.add(vertManager);
+		
+		mainManager.add(loginPassManager);
 
+		//mainManager.add(new SeparatorField());
+		
 		loginButton = new ButtonField(XacoVeoSettings.XacoveoResource.getString(LOG_SCR_LOGIN), ButtonField.CONSUME_CLICK);
 		loginButton.setChangeListener(this);
 		exitButton = new ButtonField(XacoVeoSettings.XacoveoResource.getString(LOG_SCR_QUIT), ButtonField.CONSUME_CLICK);
@@ -70,7 +111,9 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 		HorizontalFieldManager buttonManager = new HorizontalFieldManager(Field.FIELD_RIGHT);
 		buttonManager.add(loginButton);
 		buttonManager.add(exitButton);
-		add(buttonManager);
+		mainManager.add(buttonManager);
+		
+		add(mainManager);
 	}
 	
 	private void makeLoginRequest() {
