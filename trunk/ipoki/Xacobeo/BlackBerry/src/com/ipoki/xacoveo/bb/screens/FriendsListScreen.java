@@ -9,7 +9,7 @@ import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
 
-import com.ipoki.xacoveo.bb.EPeregrinoSettings;
+import com.ipoki.xacoveo.bb.XacoVeoSettings;
 import com.ipoki.xacoveo.bb.Friend;
 import com.ipoki.xacoveo.bb.FriendsListField;
 import com.ipoki.xacoveo.bb.local.XacoveoLocalResource;
@@ -21,7 +21,7 @@ public class FriendsListScreen extends MainScreen implements XacoveoLocalResourc
 		super();
 		this.friendsListField = new FriendsListField(friends);
 		
-		setTitle(new LabelField(EPeregrinoSettings.XacoveoResource.getString(FRIENDS_SCR_FRIENDS), LabelField.USE_ALL_WIDTH | DrawStyle.HCENTER));
+		setTitle(new LabelField(XacoVeoSettings.XacoveoResource.getString(FRIENDS_SCR_FRIENDS), LabelField.USE_ALL_WIDTH | DrawStyle.HCENTER));
         add(friendsListField);
         add(new SeparatorField());
         
@@ -30,7 +30,7 @@ public class FriendsListScreen extends MainScreen implements XacoveoLocalResourc
 
 	protected void makeMenu(Menu menu, int instance) {
 		super.makeMenu(menu, instance);
-		menu.add(new MenuItem(EPeregrinoSettings.XacoveoResource.getString(FRIENDS_SCR_MAP),10, 10) {
+		menu.add(new MenuItem(XacoVeoSettings.XacoveoResource.getString(FRIENDS_SCR_MAP),10, 10) {
 			public void run() {
 				FriendsListField list = FriendsListScreen.this.friendsListField; 
 				Friend f = (Friend) list.get(list, list.getSelectedIndex());

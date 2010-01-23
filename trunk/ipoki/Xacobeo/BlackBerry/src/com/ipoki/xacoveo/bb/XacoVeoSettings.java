@@ -6,7 +6,7 @@ import net.rim.device.api.i18n.ResourceBundle;
 
 import com.ipoki.xacoveo.bb.local.XacoveoLocalResource;
 
-public class EPeregrinoSettings implements XacoveoLocalResource{
+public class XacoVeoSettings implements XacoveoLocalResource{
 	public static final long KEY = 0xe57fdf6ef36bdfe1L;
 	public static ResourceBundle XacoveoResource = ResourceBundle.getBundle(BUNDLE_ID, BUNDLE_NAME);
 
@@ -46,20 +46,20 @@ public class EPeregrinoSettings implements XacoveoLocalResource{
 	}
 
 	public static void setSettings(Hashtable settings) {
-		EPeregrinoSettings.UserName = (String) settings.get("username");
-		EPeregrinoSettings.UserPassword = (String) settings.get("password");
-		EPeregrinoSettings.UpdateFreq = (String) settings.get("updatefreq");
+		XacoVeoSettings.UserName = (String) settings.get("username");
+		XacoVeoSettings.UserPassword = (String) settings.get("password");
+		XacoVeoSettings.UpdateFreq = (String) settings.get("updatefreq");
 		String lang = (String)settings.get("language");
 		if (lang != null)
-			EPeregrinoSettings.Language = Integer.parseInt(lang);
+			XacoVeoSettings.Language = Integer.parseInt(lang);
 	}
 	
 	public static Hashtable getSettings() {
 		Hashtable settings = new Hashtable();
-		settings.put("username", EPeregrinoSettings.UserName);
-		settings.put("password", EPeregrinoSettings.UserPassword);
-		settings.put("updatefreq", EPeregrinoSettings.UpdateFreq);
-		settings.put("language", String.valueOf(EPeregrinoSettings.Language));
+		settings.put("username", XacoVeoSettings.UserName);
+		settings.put("password", XacoVeoSettings.UserPassword);
+		settings.put("updatefreq", XacoVeoSettings.UpdateFreq);
+		settings.put("language", String.valueOf(XacoVeoSettings.Language));
 		
 		return settings;
 	}

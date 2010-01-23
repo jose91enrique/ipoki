@@ -4,14 +4,14 @@ import net.rim.device.api.ui.UiApplication;
 
 import com.ipoki.xacoveo.bb.screens.LoginScreen;
 
-public class EPeregrino extends UiApplication {
-	public EPeregrino() {
+public class XacoVeo extends UiApplication {
+	public XacoVeo() {
 		LoginScreen loginScreen = new LoginScreen();
 		pushScreen(loginScreen);
 	}
 	
 	public static void main(String[] args) {
-		EPeregrino app = new EPeregrino();
+		XacoVeo app = new XacoVeo();
 		app.enterEventDispatcher();
 	}
 }
