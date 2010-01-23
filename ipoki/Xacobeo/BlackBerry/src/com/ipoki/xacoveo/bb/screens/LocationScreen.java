@@ -4,18 +4,23 @@ import java.util.Vector;
 
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MapsArguments;
+import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.ButtonField;
-import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.RadioButtonField;
 import net.rim.device.api.ui.component.RadioButtonGroup;
 import net.rim.device.api.ui.component.SeparatorField;
+import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.MainScreen;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.ipoki.xacoveo.bb.XacoVeoSettings;
 import com.ipoki.xacoveo.bb.Friend;
@@ -27,10 +32,10 @@ import com.ipoki.xacoveo.bb.local.XacoveoLocalResource;
 
 public class LocationScreen extends MainScreen implements FieldChangeListener, HttpRequester, XacoveoLocalResource {
 	LabelField statusLabel;
-	EditField latitudeField;
-	EditField longitudeField;
-	EditField speedField;
-	EditField heightField;
+	LabelField latitudeField;
+	LabelField longitudeField;
+	LabelField speedField;
+	LabelField heightField;
 	LabelField privacyLabel;
 	LabelField recLabel;
 	ButtonField connectButton;
@@ -45,55 +50,99 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 	Friend[] friends;
 
 	public LocationScreen() {
+		super(NO_VERTICAL_SCROLL);
+
 		String url = XacoVeoSettings.getFriendsUrl();
 		
 		HttpRequestHelper helper = new HttpRequestHelper(url, this);
 		helper.start();
 
-		
-		statusLabel = new LabelField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_DISCONNECTED));
-		add(statusLabel);
-		
-		add(new SeparatorField());
-		
-		latitudeField = new EditField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_LATITUDE), "");
-		latitudeField.setEditable(false);
-		longitudeField = new EditField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_LONGITUDE), "");
-		longitudeField.setEditable(false);
-		add(latitudeField);
-		add(longitudeField);
-		
-		add(new SeparatorField());
-		
-		speedField = new EditField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_SPEED), "");
-		speedField.setEditable(false);
-		heightField = new EditField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_HEIGHT), "");
-		heightField.setEditable(false);
-		add(speedField);
-		add(heightField);
+		final Bitmap logoBitmap = Bitmap.getBitmapResource("res/fondo.png");
+		final int displayWidth = Display.getWidth();
+		final int displayHeight = Display.getHeight();
 
-		add(new SeparatorField());
+		VerticalFieldManager mainManager = new VerticalFieldManager(
+				VerticalFieldManager.USE_ALL_WIDTH | VerticalFieldManager.USE_ALL_HEIGHT | VerticalFieldManager.NO_VERTICAL_SCROLL){
+		    // override pain method to create the background image
+		    public void paint(Graphics graphics) {
+		        // draw the background image
+		        graphics.drawBitmap(0, 0, displayWidth, displayHeight, logoBitmap, 0, 0);
+		        super.paint(graphics);
+		    }            
+		};
+
+		statusLabel = new LabelField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_DISCONNECTED), Field.FIELD_HCENTER);
+		mainManager.add(statusLabel);
 		
+		mainManager.add(new SeparatorField());
+
+		VerticalFieldManager lonlatLabManager = new VerticalFieldManager();
+		lonlatLabManager.add(new LabelField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_LATITUDE)));
+		lonlatLabManager.add(new LabelField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_LONGITUDE)));
+		
+		VerticalFieldManager lonlatDataManager = new VerticalFieldManager();
+		latitudeField = new LabelField("");
+		latitudeField.setFont(getFont().derive(Font.ITALIC));
+		longitudeField = new LabelField("");
+		longitudeField.setFont(getFont().derive(Font.ITALIC));
+		lonlatDataManager.add(latitudeField);
+		lonlatDataManager.add(longitudeField);
+		
+		HorizontalFieldManager latlonManager = new HorizontalFieldManager();
+		latlonManager.add(lonlatLabManager);
+		latlonManager.add(lonlatDataManager);
+		
+		mainManager.add(latlonManager);
+		
+		mainManager.add(new SeparatorField());
+		
+		VerticalFieldManager shLabManager = new VerticalFieldManager();
+		shLabManager.add(new LabelField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_SPEED)));
+		shLabManager.add(new LabelField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_HEIGHT)));
+		
+		VerticalFieldManager shDataManager = new VerticalFieldManager();
+		speedField = new LabelField("");
+		heightField = new LabelField("");
+		shDataManager.add(speedField);
+		shDataManager.add(heightField);
+		
+		HorizontalFieldManager shManager = new HorizontalFieldManager();
+		shManager.add(shLabManager);
+		shManager.add(shDataManager);
+		
+		mainManager.add(shManager);
+
+		mainManager.add(new SeparatorField());
+		
+		VerticalFieldManager recordManager = new VerticalFieldManager();
 		recordGroup = new RadioButtonGroup();
 		recordGroup.setChangeListener(this);
 		recordOnButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_REC_ON), recordGroup, true);
 		recordOffButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_REC_OFF), recordGroup, false);
-		add(recordOnButton);
-		add(recordOffButton);
+		recordManager.add(recordOnButton);
+		recordManager.add(recordOffButton);
 		
+		VerticalFieldManager publicManager = new VerticalFieldManager();
 		publicGroup = new RadioButtonGroup();
 		publicGroup.setChangeListener(this);
 		publicOnButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_PUBLIC_POS), publicGroup, true);
 		publicOffButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_PRIVATE_POS), publicGroup, false);
-		add(publicOnButton);
-		add(publicOffButton);
+		publicManager.add(publicOnButton);
+		publicManager.add(publicOffButton);
+		
+		HorizontalFieldManager radioManager = new HorizontalFieldManager();
+		radioManager.add(recordManager);
+		radioManager.add(publicManager);
+		
+		mainManager.add(radioManager);
 		
 		LocationHandler handler = new LocationHandler(this);
 		handler.start();
 		connectButton = new ButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_BUT_CONNECT), ButtonField.CONSUME_CLICK);
 		connectButton.setChangeListener(this);
-		add(connectButton);
+		mainManager.add(connectButton);
 		
+		add(mainManager);
 	}
 
 	public void gettingLocation() {

@@ -22,6 +22,7 @@ AutoRestart=0
 Description=XacoVeo from Ipoki
 ExcludeFromBuildAll=0
 [Files
+res\fondo.png
 res\icon.png
 res\logo_b.png
 res\logo_m.png
@@ -50,6 +51,7 @@ HaveDefs=0
 HaveImports=0
 [Icons
 res\icon.png
+res\fondo.png
 ]
 [ImplicitRules
 ]
