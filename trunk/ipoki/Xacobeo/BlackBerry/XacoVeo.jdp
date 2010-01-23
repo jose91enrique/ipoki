@@ -22,9 +22,10 @@ AutoRestart=0
 Description=XacoVeo from Ipoki
 ExcludeFromBuildAll=0
 [Files
-res\logo.png
-src\com\ipoki\xacoveo\bb\EPeregrino.java
-src\com\ipoki\xacoveo\bb\EPeregrinoSettings.java
+res\icon.png
+res\logo_b.png
+res\logo_m.png
+res\logo_s.png
 src\com\ipoki\xacoveo\bb\Friend.java
 src\com\ipoki\xacoveo\bb\FriendsListField.java
 src\com\ipoki\xacoveo\bb\HttpRequester.java
@@ -39,13 +40,16 @@ src\com\ipoki\xacoveo\bb\screens\ConfigurationScreen.java
 src\com\ipoki\xacoveo\bb\screens\FriendsListScreen.java
 src\com\ipoki\xacoveo\bb\screens\LocationScreen.java
 src\com\ipoki\xacoveo\bb\screens\LoginScreen.java
+src\com\ipoki\xacoveo\bb\screens\SpacerField.java
 src\com\ipoki\xacoveo\bb\Utils.java
+src\com\ipoki\xacoveo\bb\XacoVeo.java
+src\com\ipoki\xacoveo\bb\XacoVeoSettings.java
 ]
 HaveAlxImports=0
 HaveDefs=0
 HaveImports=0
 [Icons
-res\logo.png
+res\icon.png
 ]
 [ImplicitRules
 ]
