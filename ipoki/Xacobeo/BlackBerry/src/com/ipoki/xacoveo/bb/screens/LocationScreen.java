@@ -17,7 +17,7 @@ import net.rim.device.api.ui.component.RadioButtonGroup;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
 
-import com.ipoki.xacoveo.bb.EPeregrinoSettings;
+import com.ipoki.xacoveo.bb.XacoVeoSettings;
 import com.ipoki.xacoveo.bb.Friend;
 import com.ipoki.xacoveo.bb.HttpRequestHelper;
 import com.ipoki.xacoveo.bb.HttpRequester;
@@ -45,29 +45,29 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 	Friend[] friends;
 
 	public LocationScreen() {
-		String url = EPeregrinoSettings.getFriendsUrl();
+		String url = XacoVeoSettings.getFriendsUrl();
 		
 		HttpRequestHelper helper = new HttpRequestHelper(url, this);
 		helper.start();
 
 		
-		statusLabel = new LabelField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_DISCONNECTED));
+		statusLabel = new LabelField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_DISCONNECTED));
 		add(statusLabel);
 		
 		add(new SeparatorField());
 		
-		latitudeField = new EditField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_LATITUDE), "");
+		latitudeField = new EditField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_LATITUDE), "");
 		latitudeField.setEditable(false);
-		longitudeField = new EditField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_LONGITUDE), "");
+		longitudeField = new EditField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_LONGITUDE), "");
 		longitudeField.setEditable(false);
 		add(latitudeField);
 		add(longitudeField);
 		
 		add(new SeparatorField());
 		
-		speedField = new EditField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_SPEED), "");
+		speedField = new EditField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_SPEED), "");
 		speedField.setEditable(false);
-		heightField = new EditField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_HEIGHT), "");
+		heightField = new EditField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_HEIGHT), "");
 		heightField.setEditable(false);
 		add(speedField);
 		add(heightField);
@@ -76,21 +76,21 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 		
 		recordGroup = new RadioButtonGroup();
 		recordGroup.setChangeListener(this);
-		recordOnButton = new RadioButtonField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_REC_ON), recordGroup, true);
-		recordOffButton = new RadioButtonField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_REC_OFF), recordGroup, false);
+		recordOnButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_REC_ON), recordGroup, true);
+		recordOffButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_REC_OFF), recordGroup, false);
 		add(recordOnButton);
 		add(recordOffButton);
 		
 		publicGroup = new RadioButtonGroup();
 		publicGroup.setChangeListener(this);
-		publicOnButton = new RadioButtonField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_PUBLIC_POS), publicGroup, true);
-		publicOffButton = new RadioButtonField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_PRIVATE_POS), publicGroup, false);
+		publicOnButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_PUBLIC_POS), publicGroup, true);
+		publicOffButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_PRIVATE_POS), publicGroup, false);
 		add(publicOnButton);
 		add(publicOffButton);
 		
 		LocationHandler handler = new LocationHandler(this);
 		handler.start();
-		connectButton = new ButtonField(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_BUT_CONNECT), ButtonField.CONSUME_CLICK);
+		connectButton = new ButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_BUT_CONNECT), ButtonField.CONSUME_CLICK);
 		connectButton.setChangeListener(this);
 		add(connectButton);
 		
@@ -98,8 +98,8 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 
 	public void gettingLocation() {
 		synchronized(UiApplication.getEventLock()) {
-			latitudeField.setText(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_GETTING_POS));
-			longitudeField.setText(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_GETTING_POS));
+			latitudeField.setText(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_GETTING_POS));
+			longitudeField.setText(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_GETTING_POS));
 		}
 	}
 	
@@ -116,14 +116,14 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 	
 	protected void makeMenu(Menu menu, int instance) {
 		super.makeMenu(menu, instance);
-		menu.add(new MenuItem(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_VIEW_MAP),10, 10) {
+		menu.add(new MenuItem(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_VIEW_MAP),10, 10) {
 			public void run() {
 				int latitude = (int)(100000 * LocationScreen.this.latitude);
 				int longitude = (int)(100000 * LocationScreen.this.longitude);;
 				String document = 
 						"<lbs clear='ALL'><location-document>" +
 							"<location lon='" + String.valueOf(longitude) + "' lat='" + String.valueOf(latitude) + "'" +
-							" label='" + EPeregrinoSettings.UserName + "' description='' zoom='4'/>" +
+							" label='" + XacoVeoSettings.UserName + "' description='' zoom='4'/>" +
                 "</location-document></lbs>";
 
 				Invoke.invokeApplication(Invoke.APP_TYPE_MAPS,
@@ -131,17 +131,17 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
                       MapsArguments.ARG_LOCATION_DOCUMENT,document));
 			}
 		});
-		menu.add(new MenuItem(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_VIEW_FRIENDS),20, 10) {
+		menu.add(new MenuItem(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_VIEW_FRIENDS),20, 10) {
 			public void run() {
 				UiApplication.getUiApplication().pushScreen(new FriendsListScreen(friends));
 			}
 		});
-		menu.add(new MenuItem(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_VIEW_CONF),30, 10) {
+		menu.add(new MenuItem(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_VIEW_CONF),30, 10) {
 			public void run() {
 				UiApplication.getUiApplication().pushScreen(new ConfigurationScreen());
 			}
 		});
-		menu.add(new MenuItem(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_VIEW_ABOUT),30, 10) {
+		menu.add(new MenuItem(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_VIEW_ABOUT),30, 10) {
 			public void run() {
 				UiApplication.getUiApplication().pushScreen(new AboutScreen());
 			}
@@ -150,35 +150,35 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 	
 	public void fieldChanged(Field field, int context) {
 		if (field == connectButton) {
-			EPeregrinoSettings.Lapse = 0;
-			if (EPeregrinoSettings.Connected) {
-				EPeregrinoSettings.Connected = false;
-				statusLabel.setText(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_DISCONNECTED));
-				connectButton.setLabel(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_BUT_CONNECT));
+			XacoVeoSettings.Lapse = 0;
+			if (XacoVeoSettings.Connected) {
+				XacoVeoSettings.Connected = false;
+				statusLabel.setText(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_DISCONNECTED));
+				connectButton.setLabel(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_BUT_CONNECT));
 			}
 			else {
-				EPeregrinoSettings.Connected = true;
-				statusLabel.setText(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_CONNECTED));
-				connectButton.setLabel(EPeregrinoSettings.XacoveoResource.getString(LOC_SCR_BUT_DISCONNECT));
+				XacoVeoSettings.Connected = true;
+				statusLabel.setText(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_CONNECTED));
+				connectButton.setLabel(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_BUT_DISCONNECT));
 			}
 		}
 		else if (field == publicOnButton) {
-			String url = EPeregrinoSettings.getPublicOnUrl();
+			String url = XacoVeoSettings.getPublicOnUrl();
 			HttpRequestHelper helper = new HttpRequestHelper(url, this);
 			helper.start();
 		}
 		else if (field == publicOffButton) {
-			String url = EPeregrinoSettings.getPublicOffUrl();
+			String url = XacoVeoSettings.getPublicOffUrl();
 			HttpRequestHelper helper = new HttpRequestHelper(url, this);
 			helper.start();
 		}
 		else if (field == recordOnButton) {
-			String url = EPeregrinoSettings.getRecordOnUrl();
+			String url = XacoVeoSettings.getRecordOnUrl();
 			HttpRequestHelper helper = new HttpRequestHelper(url, this);
 			helper.start();
 		}
 		else if (field == recordOffButton) {
-			String url = EPeregrinoSettings.getRecordOffUrl();
+			String url = XacoVeoSettings.getRecordOffUrl();
 			HttpRequestHelper helper = new HttpRequestHelper(url, this);
 			helper.start();
 		}

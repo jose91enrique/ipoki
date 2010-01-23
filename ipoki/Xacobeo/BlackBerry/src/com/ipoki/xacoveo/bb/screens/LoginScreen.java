@@ -8,6 +8,9 @@ import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.FontFamily;
+import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.component.ButtonField;
@@ -19,7 +22,7 @@ import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.MainScreen;
 
-import com.ipoki.xacoveo.bb.EPeregrinoSettings;
+import com.ipoki.xacoveo.bb.XacoVeoSettings;
 import com.ipoki.xacoveo.bb.HttpRequestHelper;
 import com.ipoki.xacoveo.bb.HttpRequester;
 import com.ipoki.xacoveo.bb.Utils;
@@ -33,10 +36,16 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 	ButtonField exitButton;
 	
 	public LoginScreen() {
-		PersistentObject persistentObject = PersistentStore.getPersistentObject(EPeregrinoSettings.KEY);
+		PersistentObject persistentObject = PersistentStore.getPersistentObject(XacoVeoSettings.KEY);
 		Hashtable settings;
 		if ((settings = (Hashtable) persistentObject.getContents()) != null) {
-			 EPeregrinoSettings.setSettings(settings);
+			 XacoVeoSettings.setSettings(settings);
+		}
+		try {
+			FontFamily fontFam = FontFamily.forName("BBAlpha Sans");
+			Font appFont = fontFam.getFont(Font.PLAIN, 9, Ui.UNITS_pt);
+			Font.setDefaultFont(appFont);
+		} catch (ClassNotFoundException e) {
 		}
 		
 		Bitmap logoBitmap = Bitmap.getBitmapResource("res/logo.png");
@@ -45,18 +54,18 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 		
 		add(new SeparatorField());
 
-		usernameField = new EditField("", EPeregrinoSettings.UserName);
-		passwordField = new PasswordEditField("", EPeregrinoSettings.UserPassword);
-		add(new LabelField(EPeregrinoSettings.XacoveoResource.getString(LOG_SCR_USER)));
+		usernameField = new EditField("", XacoVeoSettings.UserName);
+		passwordField = new PasswordEditField("", XacoVeoSettings.UserPassword);
+		add(new LabelField(XacoVeoSettings.XacoveoResource.getString(LOG_SCR_USER)));
 		add(usernameField);
-		add(new LabelField(EPeregrinoSettings.XacoveoResource.getString(LOG_SCR_PASS)));
+		add(new LabelField(XacoVeoSettings.XacoveoResource.getString(LOG_SCR_PASS)));
 		add(passwordField);
 
 		add(new SeparatorField());
 
-		loginButton = new ButtonField(EPeregrinoSettings.XacoveoResource.getString(LOG_SCR_LOGIN), ButtonField.CONSUME_CLICK);
+		loginButton = new ButtonField(XacoVeoSettings.XacoveoResource.getString(LOG_SCR_LOGIN), ButtonField.CONSUME_CLICK);
 		loginButton.setChangeListener(this);
-		exitButton = new ButtonField(EPeregrinoSettings.XacoveoResource.getString(LOG_SCR_QUIT), ButtonField.CONSUME_CLICK);
+		exitButton = new ButtonField(XacoVeoSettings.XacoveoResource.getString(LOG_SCR_QUIT), ButtonField.CONSUME_CLICK);
 		exitButton.setChangeListener(this);
 		HorizontalFieldManager buttonManager = new HorizontalFieldManager(Field.FIELD_RIGHT);
 		buttonManager.add(loginButton);
@@ -65,7 +74,7 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 	}
 	
 	private void makeLoginRequest() {
-		String url = EPeregrinoSettings.getLoginUrl(usernameField.getText(), passwordField.getText());
+		String url = XacoVeoSettings.getLoginUrl(usernameField.getText(), passwordField.getText());
 		HttpRequestHelper helper = new HttpRequestHelper(url, this);
 		helper.start();
 	}
@@ -82,7 +91,7 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 	public void requestFailed(final String message) {
 		UiApplication.getUiApplication().invokeLater(new Runnable() {
 			public void run() {
-				Dialog.alert(EPeregrinoSettings.XacoveoResource.getString(LOG_SCR_CONNECTION_FAILURE) + message);
+				Dialog.alert(XacoVeoSettings.XacoveoResource.getString(LOG_SCR_CONNECTION_FAILURE) + message);
 			}
 		});
 	}
@@ -92,15 +101,15 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 		System.out.println(message);
 		Vector tokens = Utils.parseMessage(message);
     	if (tokens.size() >= 6) {
-	 		EPeregrinoSettings.UserKey = (String) tokens.elementAt(1);
-	 		EPeregrinoSettings.Recording = (String) tokens.elementAt(4);
-	 		EPeregrinoSettings.Private = (String) tokens.elementAt(5);
+	 		XacoVeoSettings.UserKey = (String) tokens.elementAt(1);
+	 		XacoVeoSettings.Recording = (String) tokens.elementAt(4);
+	 		XacoVeoSettings.Private = (String) tokens.elementAt(5);
     	}
-    	if (EPeregrinoSettings.UserName == "") {
-			EPeregrinoSettings.UserName = usernameField.getText();
-			EPeregrinoSettings.UserPassword = passwordField.getText();
-			PersistentObject persistentObject = PersistentStore.getPersistentObject(EPeregrinoSettings.KEY);
-			persistentObject.setContents(EPeregrinoSettings.getSettings());
+    	if (XacoVeoSettings.UserName == "") {
+			XacoVeoSettings.UserName = usernameField.getText();
+			XacoVeoSettings.UserPassword = passwordField.getText();
+			PersistentObject persistentObject = PersistentStore.getPersistentObject(XacoVeoSettings.KEY);
+			persistentObject.setContents(XacoVeoSettings.getSettings());
     	}
 
 		UiApplication.getUiApplication().invokeLater(new Runnable() {

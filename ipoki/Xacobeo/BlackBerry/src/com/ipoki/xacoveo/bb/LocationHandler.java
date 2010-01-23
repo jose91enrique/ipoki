@@ -49,11 +49,11 @@ public class LocationHandler extends Thread implements LocationListener, HttpReq
 		if (location.isValid()) {
 			QualifiedCoordinates coord = location.getQualifiedCoordinates();
 			screen.setLocationData(coord.getLongitude(), coord.getLatitude(), location.getSpeed(), coord.getAltitude());
-			if (EPeregrinoSettings.Connected) {
-				long updateFreq = Long.parseLong(EPeregrinoSettings.UpdateFreq) * 1000;
-				if (System.currentTimeMillis() - EPeregrinoSettings.Lapse > updateFreq) {
-					EPeregrinoSettings.Lapse = System.currentTimeMillis();
-					String url = "http://www.ipoki.com/ear.php?iduser=" + EPeregrinoSettings.UserKey + 
+			if (XacoVeoSettings.Connected) {
+				long updateFreq = Long.parseLong(XacoVeoSettings.UpdateFreq) * 1000;
+				if (System.currentTimeMillis() - XacoVeoSettings.Lapse > updateFreq) {
+					XacoVeoSettings.Lapse = System.currentTimeMillis();
+					String url = "http://www.ipoki.com/ear.php?iduser=" + XacoVeoSettings.UserKey + 
 						"&lat=" + String.valueOf(coord.getLatitude()) +  "&lon=" + String.valueOf(coord.getLongitude())+ 
 						"&h=" + String.valueOf(coord.getAltitude()) + "&speed=" + String.valueOf(location.getSpeed());
 					HttpRequestHelper helper = new HttpRequestHelper(url, this);

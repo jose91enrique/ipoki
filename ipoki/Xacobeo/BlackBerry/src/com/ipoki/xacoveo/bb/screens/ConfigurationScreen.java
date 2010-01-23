@@ -9,7 +9,7 @@ import net.rim.device.api.ui.component.ObjectChoiceField;
 import net.rim.device.api.ui.component.PasswordEditField;
 import net.rim.device.api.ui.container.MainScreen;
 
-import com.ipoki.xacoveo.bb.EPeregrinoSettings;
+import com.ipoki.xacoveo.bb.XacoVeoSettings;
 import com.ipoki.xacoveo.bb.local.XacoveoLocalResource;
 
 public class ConfigurationScreen extends MainScreen implements XacoveoLocalResource{
@@ -19,9 +19,9 @@ public class ConfigurationScreen extends MainScreen implements XacoveoLocalResou
 	ObjectChoiceField idiomaField;
 
 	public ConfigurationScreen() {
-		usernameField = new EditField(EPeregrinoSettings.XacoveoResource.getString(CONF_SCR_USERNAME), EPeregrinoSettings.UserName);
-		passwordField = new PasswordEditField(EPeregrinoSettings.XacoveoResource.getString(CONF_SCR_PASSWORD), EPeregrinoSettings.UserPassword);
-		freqField = new EditField(EPeregrinoSettings.XacoveoResource.getString(CONF_SCR_UPDATE), EPeregrinoSettings.UpdateFreq, 5, EditField.FILTER_NUMERIC);
+		usernameField = new EditField(XacoVeoSettings.XacoveoResource.getString(CONF_SCR_USERNAME), XacoVeoSettings.UserName);
+		passwordField = new PasswordEditField(XacoVeoSettings.XacoveoResource.getString(CONF_SCR_PASSWORD), XacoVeoSettings.UserPassword);
+		freqField = new EditField(XacoVeoSettings.XacoveoResource.getString(CONF_SCR_UPDATE), XacoVeoSettings.UpdateFreq, 5, EditField.FILTER_NUMERIC);
 		
 		add(usernameField);
 		add(passwordField);
@@ -31,13 +31,13 @@ public class ConfigurationScreen extends MainScreen implements XacoveoLocalResou
 	
 	protected void makeMenu(Menu menu, int instance) {
 		super.makeMenu(menu, instance);
-		menu.add(new MenuItem(EPeregrinoSettings.XacoveoResource.getString(CONF_SCR_SAVE),10, 10) {
+		menu.add(new MenuItem(XacoVeoSettings.XacoveoResource.getString(CONF_SCR_SAVE),10, 10) {
 			public void run() {
-				EPeregrinoSettings.UserName = usernameField.getText().trim();
-				EPeregrinoSettings.UserPassword = passwordField.getText().trim();
-				EPeregrinoSettings.UpdateFreq = freqField.getText().trim();
-				PersistentObject persistentObject = PersistentStore.getPersistentObject(EPeregrinoSettings.KEY);
-				persistentObject.setContents(EPeregrinoSettings.getSettings());
+				XacoVeoSettings.UserName = usernameField.getText().trim();
+				XacoVeoSettings.UserPassword = passwordField.getText().trim();
+				XacoVeoSettings.UpdateFreq = freqField.getText().trim();
+				PersistentObject persistentObject = PersistentStore.getPersistentObject(XacoVeoSettings.KEY);
+				persistentObject.setContents(XacoVeoSettings.getSettings());
 			}
 		});
 	}
