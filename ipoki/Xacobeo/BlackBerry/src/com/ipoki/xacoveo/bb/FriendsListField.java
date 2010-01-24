@@ -2,17 +2,20 @@ package com.ipoki.xacoveo.bb;
 
 import java.util.Vector;
 
+import com.ipoki.xacoveo.bb.local.XacoveoLocalResource;
+
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.ListField;
 import net.rim.device.api.ui.component.ListFieldCallback;
 
-public class FriendsListField extends ListField implements ListFieldCallback {
+public class FriendsListField extends ListField implements ListFieldCallback, XacoveoLocalResource {
 	private Friend[] friends;
 	private Vector rows;
 	private Font font;
@@ -20,9 +23,9 @@ public class FriendsListField extends ListField implements ListFieldCallback {
 	public FriendsListField(Friend[] friends) {
         super(0, ListField.MULTI_SELECT);
         setRowHeight(40);
-        setEmptyString("No se ha encontrado ningún contacto", DrawStyle.HCENTER);
+        setEmptyString(XacoVeoSettings.XacoveoResource.getString(FRIENDS_SCR_EMPTY), DrawStyle.HCENTER);
         setCallback(this);
-        font = getFont().derive(Font.BOLD);
+        font = getFont().derive(Font.BOLD, 8, Ui.UNITS_pt);
 		this.friends = friends;
         rows = new Vector();
         
