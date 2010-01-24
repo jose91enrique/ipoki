@@ -102,7 +102,9 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 		
 		VerticalFieldManager shDataManager = new VerticalFieldManager();
 		speedField = new LabelField("");
+		speedField.setFont(getFont().derive(Font.ITALIC));
 		heightField = new LabelField("");
+		heightField.setFont(getFont().derive(Font.ITALIC));
 		shDataManager.add(speedField);
 		shDataManager.add(heightField);
 		

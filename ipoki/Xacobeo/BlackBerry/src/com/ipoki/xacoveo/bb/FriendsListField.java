@@ -6,7 +6,6 @@ import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
-import net.rim.device.api.ui.FontFamily;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.LabelField;
@@ -23,16 +22,7 @@ public class FriendsListField extends ListField implements ListFieldCallback {
         setRowHeight(40);
         setEmptyString("No se ha encontrado ningún contacto", DrawStyle.HCENTER);
         setCallback(this);
-        try
-        {
-            FontFamily fontFamily = FontFamily.forName("BBClarity");
-            font = fontFamily.getFont(Font.BOLD, 18);
-        }
-        catch(ClassNotFoundException e)
-        {
-            System.out.println(e.toString());
-        }
-
+        font = getFont().derive(Font.BOLD);
 		this.friends = friends;
         rows = new Vector();
         

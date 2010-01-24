@@ -1,4 +1,7 @@
-ABOUT_SCR_ABOUT#0="About XacoVeo";
+ABOUT_SCR_PEXEGO#0="Copyright (c) Pexego 2010";
+ABOUT_SCR_URL#0="www.xacoveo.com";
+ABOUT_SCR_VERSION#0="Version ";
+ABOUT_SCR_XACOVEO_BB#0="XacoVeo for BlackBerry";
 APP_NAME#0="XacoVeo";
 CONF_SCR_ENGLISH#0="ENGLISH";
 CONF_SCR_GALICIAN#0="GALICIAN";
@@ -8,6 +11,7 @@ CONF_SCR_SAVE#0="Save";
 CONF_SCR_SPANISH#0="SPANISH";
 CONF_SCR_UPDATE#0="Update frequency (seconds)";
 CONF_SCR_USERNAME#0="User name";
+FRIENDS_SCR_EMPTY#0="No contacts found";
 FRIENDS_SCR_FRIENDS#0="Friends";
 FRIENDS_SCR_MAP#0="View Map";
 LOC_SCR_BUT_CONNECT#0="Connect";
