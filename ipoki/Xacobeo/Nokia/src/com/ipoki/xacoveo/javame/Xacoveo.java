@@ -5,6 +5,7 @@
 
 package com.ipoki.xacoveo.javame;
 
+import com.ipoki.xacoveo.javame.iu.FriendsScreen;
 import com.ipoki.xacoveo.javame.iu.LocationScreen;
 import com.ipoki.xacoveo.javame.iu.LoginScreen;
 import javax.microedition.midlet.*;
@@ -15,6 +16,7 @@ import javax.microedition.midlet.*;
 public class Xacoveo extends MIDlet {
     public static LoginScreen loginScreen;
     public static LocationScreen locationScreen;
+	public static FriendsScreen friendsScreen;
 
     public Xacoveo() {
         com.sun.lwuit.Display.init(this);
@@ -22,6 +24,10 @@ public class Xacoveo extends MIDlet {
         loginScreen = new LoginScreen(this);
         locationScreen = new LocationScreen(this);
     }
+
+	public static void createFriendsSreen(Friend[] friends) {
+		friendsScreen = new FriendsScreen(friends);
+	}
 
     public void startApp() {
         loginScreen.show();

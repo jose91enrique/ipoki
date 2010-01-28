@@ -19,6 +19,7 @@ import com.sun.lwuit.events.ActionEvent;
 import com.sun.lwuit.events.ActionListener;
 import java.util.Vector;
 import com.sun.lwuit.Display;
+import com.sun.lwuit.util.Log;
 import javax.microedition.rms.RecordStore;
 
 /**
@@ -56,6 +57,8 @@ public class LoginScreen extends Form implements ActionListener, HttpRequester {
         addComponent(new Label("Password: "));
         passwordField = new TextField(XacoveoSettings.UserPassword);
         addComponent(passwordField);
+
+		Log.p("End LoginScreen constructor");
     }
 
     public void actionPerformed(ActionEvent arg0) {
@@ -71,6 +74,7 @@ public class LoginScreen extends Form implements ActionListener, HttpRequester {
     }
 
     private void makeLoginRequest() {
+			Log.p("login request");
             String url = XacoveoSettings.getLoginUrl(userNameField.getText(), passwordField.getText());
             HttpRequestHelper helper = new HttpRequestHelper(url, this);
             helper.start();
@@ -85,6 +89,7 @@ public class LoginScreen extends Form implements ActionListener, HttpRequester {
     }
 
     public void requestSucceeded(byte[] result, String contentType) {
+		Log.p("Login finished");
         String message = new String(result, 0, result.length);
         System.out.println(message);
         Vector tokens = Utils.parseMessage(message);
@@ -110,7 +115,10 @@ public class LoginScreen extends Form implements ActionListener, HttpRequester {
 
         Display.getInstance().callSerially(new Runnable() {
             public void run() {
-                Xacoveo.locationScreen.show();            }
+				Xacoveo.locationScreen.downloadFriends();
+				Xacoveo.locationScreen.startLocating();
+                Xacoveo.locationScreen.show();
+			}
         });
     }
 }
