@@ -19,7 +19,7 @@ import com.sun.lwuit.Label;
 import com.sun.lwuit.RadioButton;
 import com.sun.lwuit.events.ActionEvent;
 import com.sun.lwuit.events.ActionListener;
-import com.sun.lwuit.plaf.UIManager;
+import com.sun.lwuit.util.Log;
 import java.util.Vector;
 
 /**
@@ -49,14 +49,9 @@ public class LocationScreen extends Form implements HttpRequester, ActionListene
     RadioButton publicOFF;
     ButtonGroup groupPublic;
 
-	Friend[] friends;
-
     public LocationScreen(Xacoveo x) {
         super("Location screen");
         xacoveo = x;
-
-        LocationHandler handler = new LocationHandler(this);
-        handler.start();
 
         connectCommand = new Command("Connect", 1);
         disConnectCommand = new Command("Disconnect", 1);
@@ -66,10 +61,6 @@ public class LocationScreen extends Form implements HttpRequester, ActionListene
         addCommand(new Command("Configuration", 4));
         addCommand(new Command("About", 5));
         this.addCommandListener(this);
-
-        String url = XacoveoSettings.getFriendsUrl();
-	HttpRequestHelper helper = new HttpRequestHelper(url, this);
-	helper.start();
 
         statusLabel = new Label("DISCONNECTED");
         addComponent(statusLabel);
@@ -129,9 +120,12 @@ public class LocationScreen extends Form implements HttpRequester, ActionListene
         groupPublic.add(publicOFF);
         addComponent(publicON);
         addComponent(publicOFF);
+
+		Log.p("End LocationScreen constructor");
     }
 
     public void setLocationData(double longitude, double latitude, float speed, float height) {
+		Log.p("Set location data");
         this.longitude = longitude;
         this.latitude = latitude;
         latitudeField.setText(Double.toString(latitude));
@@ -141,6 +135,7 @@ public class LocationScreen extends Form implements HttpRequester, ActionListene
     }
 
     public void gettingLocation() {
+		Log.p("Getting location");
         latitudeField.setText("Waiting for location...");
         longitudeField.setText("Waiting for location...");
     }
@@ -164,8 +159,10 @@ public class LocationScreen extends Form implements HttpRequester, ActionListene
                 }
                 break;
             case 2:
+
                 break;
             case 3:
+				Xacoveo.friendsScreen.show();
                 break;
             case 4:
                 break;
@@ -174,7 +171,19 @@ public class LocationScreen extends Form implements HttpRequester, ActionListene
         }
     }
 
+	public void downloadFriends() {
+        String url = XacoveoSettings.getFriendsUrl();
+		HttpRequestHelper helper = new HttpRequestHelper(url, this);
+		helper.start();
+	}
+
+	public void startLocating() {
+		LocationHandler handler = new LocationHandler(this);
+        handler.start();
+	}
+
     public void requestSucceeded(byte[] result, String contentType) {
+		Log.p("Friends downloaded");
 		String message = new String(result, 0, result.length);
 		Vector tokens = Utils.parseMessage(message);
 
@@ -186,9 +195,10 @@ public class LocationScreen extends Form implements HttpRequester, ActionListene
     				String.valueOf(tokens.elementAt(6 * i + 3)),
     				String.valueOf(tokens.elementAt(6 * i + 5)));
     	}
-    	this.friends = friends;
+		Xacoveo.createFriendsSreen(friends);
     }
 
     public void requestFailed(String message) {
+		Log.p(message);;
     }
 }
