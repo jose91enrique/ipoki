@@ -6,13 +6,16 @@ import net.rim.device.api.system.CoverageInfo;
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 
-public class HttpRequestHelper extends Thread {
+public class HttpRequestHelper extends Thread implements HttpRequester {
 	private String url;
 	private HttpRequester requester;
 	
 	public HttpRequestHelper(String url, HttpRequester requester) {
 		this.url = url;
-		this.requester = requester;
+		if (requester == null)
+			this.requester = this;
+		else
+			this.requester = requester;
 	}
 	
 	public void run() {
@@ -48,5 +51,15 @@ public class HttpRequestHelper extends Thread {
 		catch (Exception ex) {
 			requester.requestFailed(ex.getMessage());
 		}
+	}
+
+	public void requestFailed(String message) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void requestSucceeded(byte[] result, String contentType) {
+		// TODO Auto-generated method stub
+		
 	}
 }

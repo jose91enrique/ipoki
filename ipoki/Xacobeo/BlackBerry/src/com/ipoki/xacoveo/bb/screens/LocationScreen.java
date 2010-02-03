@@ -2,9 +2,14 @@ package com.ipoki.xacoveo.bb.screens;
 
 import java.util.Vector;
 
+import net.rim.blackberry.api.browser.URLEncodedPostData;
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MapsArguments;
+import net.rim.device.api.system.ApplicationDescriptor;
+import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.system.ApplicationManagerException;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -22,12 +27,12 @@ import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
-import com.ipoki.xacoveo.bb.XacoVeoSettings;
 import com.ipoki.xacoveo.bb.Friend;
 import com.ipoki.xacoveo.bb.HttpRequestHelper;
 import com.ipoki.xacoveo.bb.HttpRequester;
 import com.ipoki.xacoveo.bb.LocationHandler;
 import com.ipoki.xacoveo.bb.Utils;
+import com.ipoki.xacoveo.bb.XacoVeoSettings;
 import com.ipoki.xacoveo.bb.local.XacoveoLocalResource;
 
 public class LocationScreen extends MainScreen implements FieldChangeListener, HttpRequester, XacoveoLocalResource {
@@ -36,8 +41,6 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 	LabelField longitudeField;
 	LabelField speedField;
 	LabelField heightField;
-	LabelField privacyLabel;
-	LabelField recLabel;
 	ButtonField connectButton;
 	RadioButtonGroup recordGroup;
 	RadioButtonField recordOnButton;
@@ -132,11 +135,13 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 		publicManager.add(publicOnButton);
 		publicManager.add(publicOffButton);
 		
-		HorizontalFieldManager radioManager = new HorizontalFieldManager();
+		VerticalFieldManager radioManager = new VerticalFieldManager();
 		radioManager.add(recordManager);
+		radioManager.add(new SeparatorField());
 		radioManager.add(publicManager);
 		
 		mainManager.add(radioManager);
+		mainManager.add(new SeparatorField());
 		
 		LocationHandler handler = new LocationHandler(this);
 		handler.start();
@@ -162,6 +167,15 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 			longitudeField.setText(Double.toString(longitude));
 			speedField.setText(Float.toString(speed));
 			heightField.setText(Float.toString(height));
+			if (XacoVeoSettings.Connected) {
+				int freq = Integer.parseInt(XacoVeoSettings.UpdateFreq) * 1000;
+				long time = System.currentTimeMillis();
+				if (time - XacoVeoSettings.Lapse > freq) {
+					String url = XacoVeoSettings.getPositionUrl(Double.toString(latitude), Double.toString(longitude));
+					HttpRequestHelper helper = new HttpRequestHelper(url, null);
+					helper.start();
+				}
+			}
 		}
 	}
 	
@@ -169,17 +183,24 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 		super.makeMenu(menu, instance);
 		menu.add(new MenuItem(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_VIEW_MAP),10, 10) {
 			public void run() {
-				int latitude = (int)(100000 * LocationScreen.this.latitude);
-				int longitude = (int)(100000 * LocationScreen.this.longitude);;
-				String document = 
-						"<lbs clear='ALL'><location-document>" +
-							"<location lon='" + String.valueOf(longitude) + "' lat='" + String.valueOf(latitude) + "'" +
-							" label='" + XacoVeoSettings.UserName + "' description='' zoom='4'/>" +
-                "</location-document></lbs>";
-
-				Invoke.invokeApplication(Invoke.APP_TYPE_MAPS,
-                      new MapsArguments(
-                      MapsArguments.ARG_LOCATION_DOCUMENT,document));
+				try {
+					int mh = CodeModuleManager.getModuleHandle("GoogleMaps");
+					if (mh == 0) {
+					     throw new ApplicationManagerException("GoogleMaps isn't installed");
+					}
+					URLEncodedPostData uepd = new URLEncodedPostData(null, false);
+					uepd.append("action","LOCN");
+					uepd.append("a", "@latlon:"+ String.valueOf(LocationScreen.this.latitude) +"," + String.valueOf(LocationScreen.this.longitude));
+					uepd.append("title", XacoVeoSettings.UserName);
+					uepd.append("description", XacoVeoSettings.UserName);
+					String[] args = { "http://gmm/x?"+uepd.toString() };
+					ApplicationDescriptor ad = CodeModuleManager.getApplicationDescriptors(mh)[0];
+					ApplicationDescriptor ad2 = new ApplicationDescriptor(ad, args);
+					ApplicationManager.getApplicationManager().runApplication(ad2, true);
+				}
+				catch(Exception ex2) {
+					
+				}
 			}
 		});
 		menu.add(new MenuItem(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_VIEW_FRIENDS),20, 10) {
@@ -211,6 +232,7 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 				XacoVeoSettings.Connected = true;
 				statusLabel.setText(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_CONNECTED));
 				connectButton.setLabel(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_BUT_DISCONNECT));
+				XacoVeoSettings.Lapse = System.currentTimeMillis();
 			}
 		}
 		else if (field == publicOnButton) {

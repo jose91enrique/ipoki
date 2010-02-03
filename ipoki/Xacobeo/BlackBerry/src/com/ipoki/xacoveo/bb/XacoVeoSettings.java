@@ -19,7 +19,12 @@ public class XacoVeoSettings implements XacoveoLocalResource{
 	public static boolean Connected = false;
 	public static long Lapse;
 	public static int Language = 0;
-	public static String ServerUrl = "http://www.ipoki.com/";
+	public static String ServerUrl = "http://www.xacoveo.com/";
+	
+	public static String getPositionUrl(String lat, String lon) {
+		return ServerUrl + "geoserver/ear.php?iduser=" + UserKey +
+		"&lat=" + lat + "&lon=" + lon;
+	}
 
 	public static String getFriendsUrl() {
 		return ServerUrl + "myfriends2.php?iduser=" + UserKey;
