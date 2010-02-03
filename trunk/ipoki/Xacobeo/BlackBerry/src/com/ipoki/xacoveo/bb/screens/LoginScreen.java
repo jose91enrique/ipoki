@@ -62,7 +62,7 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 			}
 			else if (displayWidth < 370) {
 				tmpLogo = Bitmap.getBitmapResource("res/logo_m.png");
-				appFont = fontFam.getFont(Font.PLAIN, 9, Ui.UNITS_pt);
+				appFont = fontFam.getFont(Font.PLAIN, 8, Ui.UNITS_pt);
 				spaceWidth = 120;
 				topSpacerHeight = 60;
 				bottonSpacerHeight = 0;

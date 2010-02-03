@@ -1,7 +1,12 @@
 package com.ipoki.xacoveo.bb.screens;
 
+import net.rim.blackberry.api.browser.URLEncodedPostData;
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MapsArguments;
+import net.rim.device.api.system.ApplicationDescriptor;
+import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.system.ApplicationManagerException;
+import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.ui.DrawStyle;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.component.LabelField;
@@ -19,11 +24,13 @@ public class FriendsListScreen extends MainScreen implements XacoveoLocalResourc
 
 	public FriendsListScreen(Friend[] friends) {
 		super();
-		this.friendsListField = new FriendsListField(friends);
-		
 		setTitle(new LabelField(XacoVeoSettings.XacoveoResource.getString(FRIENDS_SCR_FRIENDS), LabelField.USE_ALL_WIDTH | DrawStyle.HCENTER));
-        add(friendsListField);
-        add(new SeparatorField());
+
+		if (friends != null && friends.length > 0) {
+			this.friendsListField = new FriendsListField(friends);
+	        add(friendsListField);
+	        add(new SeparatorField());
+		}
         
         removeFocus();
 	}
@@ -34,17 +41,25 @@ public class FriendsListScreen extends MainScreen implements XacoveoLocalResourc
 			public void run() {
 				FriendsListField list = FriendsListScreen.this.friendsListField; 
 				Friend f = (Friend) list.get(list, list.getSelectedIndex());
-				int latitude = (int)(100000 * Double.parseDouble(f.getLatitude()));
-				int longitude = (int)(100000 * Double.parseDouble(f.getLongitude()));;
-				String document = 
-						"<lbs clear='ALL'><location-document>" +
-							"<location lon='" + String.valueOf(longitude) + "' lat='" + String.valueOf(latitude) + "'" +
-							" label='" + f.getName() + "' description='" + f.getLocationTime() + "' zoom='4'/>" +
-                "</location-document></lbs>";
+				try {
+					int mh = CodeModuleManager.getModuleHandle("GoogleMaps");
+					if (mh == 0) {
+					     throw new ApplicationManagerException("GoogleMaps isn't installed");
+					}
+					URLEncodedPostData uepd = new URLEncodedPostData(null, false);
+					uepd.append("action","LOCN");
+					uepd.append("a", "@latlon:"+ f.getLatitude() +"," + f.getLongitude());
+					uepd.append("title", f.getName());
+					uepd.append("description", f.getLocationTime());
+					String[] args = { "http://gmm/x?"+uepd.toString() };
+					ApplicationDescriptor ad = CodeModuleManager.getApplicationDescriptors(mh)[0];
+					ApplicationDescriptor ad2 = new ApplicationDescriptor(ad, args);
+					ApplicationManager.getApplicationManager().runApplication(ad2, true);
+				}
+				catch(Exception ex2) {
+					
+				}
 
-				Invoke.invokeApplication(Invoke.APP_TYPE_MAPS,
-                      new MapsArguments(
-                      MapsArguments.ARG_LOCATION_DOCUMENT,document));
 			}
 		});
 	}

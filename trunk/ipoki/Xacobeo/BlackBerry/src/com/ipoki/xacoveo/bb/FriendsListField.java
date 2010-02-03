@@ -25,7 +25,7 @@ public class FriendsListField extends ListField implements ListFieldCallback, Xa
         setRowHeight(40);
         setEmptyString(XacoVeoSettings.XacoveoResource.getString(FRIENDS_SCR_EMPTY), DrawStyle.HCENTER);
         setCallback(this);
-        font = getFont().derive(Font.BOLD, 8, Ui.UNITS_pt);
+        font = Font.getDefault().derive(Font.BOLD, 8, Ui.UNITS_pt);
 		this.friends = friends;
         rows = new Vector();
         
