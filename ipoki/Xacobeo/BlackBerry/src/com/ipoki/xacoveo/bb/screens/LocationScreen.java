@@ -120,16 +120,18 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 		VerticalFieldManager recordManager = new VerticalFieldManager();
 		recordGroup = new RadioButtonGroup();
 		recordGroup.setChangeListener(this);
-		recordOnButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_REC_ON), recordGroup, true);
-		recordOffButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_REC_OFF), recordGroup, false);
+		boolean recordOn = XacoVeoSettings.Recording.equalsIgnoreCase("2");
+		recordOnButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_REC_ON), recordGroup, recordOn);
+		recordOffButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_REC_OFF), recordGroup, !recordOn);
 		recordManager.add(recordOnButton);
 		recordManager.add(recordOffButton);
 		
 		VerticalFieldManager publicManager = new VerticalFieldManager();
 		publicGroup = new RadioButtonGroup();
 		publicGroup.setChangeListener(this);
-		publicOnButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_PUBLIC_POS), publicGroup, true);
-		publicOffButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_PRIVATE_POS), publicGroup, false);
+		boolean privateOn = XacoVeoSettings.Private.equalsIgnoreCase("2");
+		publicOnButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_PUBLIC_POS), publicGroup, !privateOn);
+		publicOffButton = new RadioButtonField(XacoVeoSettings.XacoveoResource.getString(LOC_SCR_PRIVATE_POS), publicGroup, privateOn);
 		publicManager.add(publicOnButton);
 		publicManager.add(publicOffButton);
 		
