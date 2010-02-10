@@ -3,8 +3,6 @@ package com.ipoki.xacoveo.bb.screens;
 import java.util.Vector;
 
 import net.rim.blackberry.api.browser.URLEncodedPostData;
-import net.rim.blackberry.api.invoke.Invoke;
-import net.rim.blackberry.api.invoke.MapsArguments;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.ApplicationManagerException;
@@ -236,12 +234,12 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 			}
 		}
 		else if (field == publicOnButton) {
-			String url = XacoVeoSettings.getPublicOnUrl();
+			String url = XacoVeoSettings.getPrivateOffUrl();
 			HttpRequestHelper helper = new HttpRequestHelper(url, this);
 			helper.start();
 		}
 		else if (field == publicOffButton) {
-			String url = XacoVeoSettings.getPublicOffUrl();
+			String url = XacoVeoSettings.getPrivateOnUrl();
 			HttpRequestHelper helper = new HttpRequestHelper(url, this);
 			helper.start();
 		}
