@@ -19,7 +19,7 @@ AutoRestart=0
 ]
 [DependsOn
 ]
-Description=XacoVeo from Ipoki
+Description=XacoVeo from Pexego
 ExcludeFromBuildAll=0
 [Files
 res\fondo.png
@@ -27,6 +27,7 @@ res\icon.png
 res\logo_b.png
 res\logo_m.png
 res\logo_s.png
+res\newIcon.png
 src\com\ipoki\xacoveo\bb\Friend.java
 src\com\ipoki\xacoveo\bb\FriendsListField.java
 src\com\ipoki\xacoveo\bb\HttpRequester.java
@@ -50,8 +51,7 @@ HaveAlxImports=0
 HaveDefs=0
 HaveImports=0
 [Icons
-res\icon.png
-res\fondo.png
+res\newIcon.png
 ]
 [ImplicitRules
 ]
@@ -64,6 +64,7 @@ OutputFileName=XacoVeo
 ]
 RibbonPosition=0
 [RolloverIcons
+res\newIcon.png
 ]
 RunOnStartup=0
 StartupTier=7
@@ -75,5 +76,5 @@ TitleResourceBundleName=XacoveoLocal
 TitleResourceBundlePath=src\com\ipoki\xacoveo\bb\local\XacoveoLocal.rrh
 Type=0
 UserData=|src
-Vendor=Ipoki
-Version=0.4.2
+Vendor=Pexego
+Version=0.4.3

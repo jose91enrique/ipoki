@@ -256,6 +256,10 @@ public class LocationScreen extends MainScreen implements FieldChangeListener, H
 			helper.start();
 		}
 	}
+	
+	protected boolean onSavePrompt() {
+	       return true;
+	}
 
 	public void requestFailed(String message) {
 		// TODO Auto-generated method stub
