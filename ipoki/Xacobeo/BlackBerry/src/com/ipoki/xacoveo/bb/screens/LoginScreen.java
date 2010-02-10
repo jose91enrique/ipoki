@@ -135,6 +135,10 @@ public class LoginScreen extends MainScreen implements FieldChangeListener, Http
 			this.close();
 		}
 	}
+	
+	protected boolean onSavePrompt() {
+	       return true;
+	}
 
 	public void requestFailed(final String message) {
 		UiApplication.getUiApplication().invokeLater(new Runnable() {
