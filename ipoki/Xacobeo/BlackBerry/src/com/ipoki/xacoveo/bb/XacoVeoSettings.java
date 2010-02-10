@@ -42,12 +42,12 @@ public class XacoVeoSettings implements XacoveoLocalResource{
 		return ServerUrl + "set_h_off.php?iduser=" + UserKey;
 	}
 	
-	public static String getPublicOnUrl() {
-		return ServerUrl + "set_p_on.php?iduser=" + UserKey;
+	public static String getPrivateOffUrl() {
+		return ServerUrl + "set_p_off.php?iduser=" + UserKey;
 	}
 
-	public static String getPublicOffUrl() {
-		return ServerUrl + "set_p_off.php?iduser=" + UserKey;
+	public static String getPrivateOnUrl() {
+		return ServerUrl + "set_p_on.php?iduser=" + UserKey;
 	}
 
 	public static void setSettings(Hashtable settings) {
