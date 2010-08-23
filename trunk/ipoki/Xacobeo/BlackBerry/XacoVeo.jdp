@@ -1,9 +1,5 @@
 ## RIM Java Development Environment
 # RIM Project file
-#
-# This file is generated and managed by BlackBerry developer tools.
-# It SHOULD NOT BE modified manually.
-#
 AddOn=0
 AlwaysBuild=1
 [AlxImports
@@ -77,4 +73,4 @@ TitleResourceBundlePath=src\com\ipoki\xacoveo\bb\local\XacoveoLocal.rrh
 Type=0
 UserData=|src
 Vendor=Pexego
-Version=0.4.3
+Version=0.5.0
