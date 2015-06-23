@@ -1,0 +1,1 @@
+Ipoki is a GPS-based social network, that allows users to share their location. Ipoki plugins are software applications that send location information to Ipoki server.
